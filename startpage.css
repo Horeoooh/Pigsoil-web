@@ -1,0 +1,408 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Nunito:wght@400;500;600&display=swap');
+
+:root {
+    --base-font-size: 16px;
+    --line-height-base: 1.5;
+    --spacing-unit: 1rem;
+    
+    /* Typography Scale */
+    --text-xs: 0.75rem;   /* 12px */
+    --text-sm: 0.875rem;  /* 14px */
+    --text-base: 1rem;    /* 16px */
+    --text-lg: 1.125rem;  /* 18px */
+    --text-xl: 1.25rem;   /* 20px */
+    --text-2xl: 1.5rem;   /* 24px */
+    --text-3xl: 1.875rem; /* 30px */
+    --text-4xl: 2.25rem;  /* 36px */
+    --text-5xl: 3rem;     /* 48px */
+    
+    /* Spacing Scale */
+    --space-1: 0.25rem;   /* 4px */
+    --space-2: 0.5rem;    /* 8px */
+    --space-3: 0.75rem;   /* 12px */
+    --space-4: 1rem;      /* 16px */
+    --space-5: 1.25rem;   /* 20px */
+    --space-6: 1.5rem;    /* 24px */
+    --space-8: 2rem;      /* 32px */
+    --space-10: 2.5rem;   /* 40px */
+    --space-12: 3rem;     /* 48px */
+    --space-16: 4rem;     /* 64px */
+}
+
+body {
+    font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: var(--base-font-size);
+    line-height: var(--line-height-base);
+    background: linear-gradient(135deg, #f4e4c1 0%, #f0d0a0 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-4) var(--space-8);
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: #2d5a3d;
+    font-family: 'Poppins', sans-serif;
+}
+
+.logo-icon {
+    width: 140px;
+    height: 77px;
+    border-radius: 10%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: transparent;
+}
+
+.logo-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10%;
+}
+
+.logo-text {
+    height: 40px;
+    width: 171px;
+    object-fit: contain;
+}
+
+.nav-links {
+    display: flex;
+    gap: var(--space-8);
+    align-items: center;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #2d5a3d;
+    font-weight: 500;
+    font-size: var(--text-base);
+}
+
+.nav-links a:hover {
+    color: #5a8a6b;
+}
+
+.language-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border: 2px solid #2d5a3d;
+    border-radius: 25px;
+    background: transparent;
+    color: #2d5a3d;
+    cursor: pointer;
+    font-size: var(--text-sm);
+}
+
+.language-selector:hover {
+    background: #2d5a3d;
+    color: white;
+}
+
+.sign-in-btn {
+    background: #2d5a3d;
+    color: white;
+    padding: var(--space-3) var(--space-6);
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: var(--text-base);
+    transition: background 0.3s ease;
+}
+
+.sign-in-btn:hover {
+    background: #1f3d2a;
+}
+
+/* Main Content */
+.main-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-16);
+    padding: var(--space-8);
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: center;
+    min-height: calc(100vh - 100px);
+}
+
+.content-section {
+    padding: var(--space-8) 0;
+}
+
+.badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.8);
+    padding: var(--space-2) var(--space-4);
+    border-radius: 25px;
+    font-size: var(--text-sm);
+    color: #2d5a3d;
+    margin-bottom: var(--space-8);
+    border: 1px solid rgba(93, 138, 107, 0.3);
+    font-family: 'Nunito', sans-serif;
+}
+
+.main-title {
+    font-size: var(--text-5xl);
+    font-weight: 700;
+    color: #2d5a3d;
+    line-height: 1.1;
+    margin-bottom: var(--space-6);
+    font-family: 'Poppins', sans-serif;
+}
+
+.subtitle {
+    font-size: var(--text-xl);
+    color: #2d5a3d;
+    margin-bottom: var(--space-8);
+    opacity: 0.9;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.description {
+    font-size: var(--text-base);
+    color: #2d5a3d;
+    line-height: var(--line-height-base);
+    margin-bottom: var(--space-12);
+    opacity: 0.8;
+    font-family: 'Nunito', sans-serif;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-8);
+    margin-top: var(--space-12);
+}
+
+.feature-card {
+    background: rgba(255, 255, 255, 0.9);
+    padding: var(--space-8);
+    border-radius: 20px;
+    text-align: center;
+    border: 1px solid rgba(93, 138, 107, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    background: #2d5a3d;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-4);
+    color: white;
+    font-size: var(--text-2xl);
+}
+
+.feature-title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: #2d5a3d;
+    margin-bottom: var(--space-2);
+    font-family: 'Poppins', sans-serif;
+}
+
+.feature-description {
+    font-size: var(--text-sm);
+    color: #666;
+    line-height: 1.4;
+    font-family: 'Nunito', sans-serif;
+}
+
+/* Add this new rule for the button container */
+.button-container {
+    padding: 0 var(--space-6); /* Adds side spacing to buttons */
+}
+
+/* Login Section */
+.login-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 30px;
+    padding: var(--space-12) var(--space-10); /* Slightly reduced horizontal padding */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    max-width: 440px; /* Reduced from 480px but still wider than original 400px */
+    margin: 0 auto;
+    width: 100%;
+}
+
+.login-logo {
+    margin-top: var(--space-6);
+    margin-bottom: var(--space-6);
+}
+
+.login-logo img {
+    max-width: 200px;
+    height: auto;
+}
+
+.login-btn {
+    width: 100%;
+    background: #2d5a3d;
+    color: white;
+    padding: var(--space-4);
+    border: none;
+    border-radius: 25px;
+    font-size: var(--text-base);
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: var(--space-4);
+    font-family: 'Nunito', sans-serif;
+    transition: background 0.3s ease;
+}
+
+.login-btn:hover {
+    background: #1f3d2a;
+}
+
+.divider {
+    margin: var(--space-8) 0;
+    position: relative;
+    text-align: center;
+    color: #999;
+    font-size: var(--text-sm);
+    font-family: 'Nunito', sans-serif;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #ddd;
+}
+
+.divider span {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 0 var(--space-4);
+}
+
+.new-user-btn {
+    width: 100%;
+    background: transparent;
+    color: #2d5a3d;
+    padding: var(--space-4);
+    border: 2px solid #2d5a3d;
+    border-radius: 25px;
+    font-size: var(--text-base);
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.login-btn,
+.new-user-btn {
+    width: calc(100% - var(--space-6)); /* Accounts for the padding */
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+
+
+.new-user-btn:hover {
+    background: #2d5a3d;
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    :root {
+        --text-5xl: 2.5rem;  /* Smaller heading on mobile */
+        --text-4xl: 2rem;
+        --space-16: var(--space-8); /* Reduce large gaps on mobile */
+    }
+
+    .header {
+        padding: var(--space-4);
+        flex-wrap: wrap;
+    }
+
+    .nav-links {
+        gap: var(--space-4);
+        font-size: var(--text-sm);
+    }
+
+    .main-container {
+        grid-template-columns: 1fr;
+        gap: var(--space-8);
+        padding: var(--space-4);
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-4);
+    }
+
+    .login-section {
+        padding: var(--space-8);
+        margin: var(--space-4);
+    }
+
+    .login-logo img {
+        max-width: 160px;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --text-5xl: 2rem;    /* Even smaller on very small screens */
+        --text-4xl: 1.75rem;
+        --text-xl: 1.125rem;
+    }
+
+    .feature-card {
+        padding: var(--space-6);
+    }
+
+    .nav-links {
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+
+    .language-selector,
+    .sign-in-btn {
+        font-size: var(--text-xs);
+        padding: var(--space-2) var(--space-3);
+    }
+}

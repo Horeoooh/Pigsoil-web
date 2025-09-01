@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PigSoil+ - Account Settings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #fde2e4 0%, #fad0c4 100%);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #2d5a27;
+        }
+
+        .logo img {
+            width: 141px;
+            height: 77px;
+            vertical-align: middle;
+        }
+
+        .nav {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            padding: 8px 0;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav a.active {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+        }
+
+        .nav a:hover {
+            color: #4CAF50;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .notification-bell {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            opacity: 0.6;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        .settings-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            min-height: 500px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: #F0F0F0;
+            width: 250px;
+            padding: 24px 0;
+        }
+
+        .sidebar-item {
+            padding: 12px 24px;
+            cursor: pointer;
+            color: #666;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-right: 3px solid transparent;
+        }
+
+        .sidebar-item:hover {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .sidebar-item.active {
+            background: #e8f5e8;
+            color: #2d5a27;
+            border-right-color: #4CAF50;
+        }
+
+        .sidebar-section {
+            margin-top: 24px;
+            padding-top: 16px;
+        }
+
+        .sidebar-section-title {
+            padding: 0 24px 8px;
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            padding: 12px 24px;
+            color: #dc3545;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout-btn:hover {
+            background: #f8f9fa;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 32px;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .form-input[type="password"] {
+            font-family: monospace;
+        }
+
+        /* Account Removal Section */
+        .account-removal {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .account-removal h3 {
+            color: #dc3545;
+            margin-bottom: 8px;
+        }
+
+        .account-removal p {
+            color: #666;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #dc3545;
+            border: 1px solid #dc3545;
+        }
+
+        .btn-outline:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        /* .logo::before {
+            content: "🐷";
+            font-size: 24px;
+        } */
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="pig logo.png" alt="Pig Icon" style="width:141px;height:77px;vertical-align:middle;">
+            PigSoil+
+        </div>
+        <nav class="nav">
+            <a href="#">Dashboard</a>
+            <a href="#">Batches</a>
+            <a href="#" class="active">Market</a>
+            <a href="#">Guides</a>
+            <a href="#">Marong Bot</a>
+        </nav>
+        <div class="user-info">
+            <div class="notification-bell">🔔</div>
+            <div class="user-details">
+                <div class="user-name">Juan Dela Cruz</div>
+                <div class="user-role">Active Farmer</div>
+            </div>
+            <div class="user-avatar">6</div>
+        </div>
+    </div>
+
+    <main class="main-container">
+        <div class="settings-container">
+            <aside class="sidebar">
+                <div class="sidebar-item">My Address</div>
+                <div class="sidebar-item active">Account</div>
+                <div class="sidebar-item">Notification</div>
+                <div class="sidebar-item">Language</div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Billing</div>
+                    <div class="sidebar-item">Subscription</div>
+                    <div class="sidebar-item">Billing</div>
+                    <div class="sidebar-item">Appearance</div>
+                </div>
+
+                <div style="flex: 1;"></div>
+                <div class="logout-btn">
+                    🚪 Log Out
+                </div>
+            </aside>
+
+            <div class="content">
+                <div class="profile-header">
+                    <div class="profile-avatar">JD</div>
+                </div>
+
+                <form>
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-input" value="Juan Dela Cruz" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" value="cruzjuandela@gmail.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-input" value="+639123456789">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" value="••••••••">
+                    </div>
+                </form>
+
+                <div class="account-removal">
+                    <h3>Account Removal</h3>
+                    <p>Deleting your account means you can recover it at any time after taking this action</p>
+                    <div class="button-group">
+                        <button class="btn btn-danger">Disable Account</button>
+                        <button class="btn btn-outline">Delete Account</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
