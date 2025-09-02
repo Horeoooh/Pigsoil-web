@@ -4,7 +4,7 @@
     box-sizing: border-box;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Nunito:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 :root {
     --base-font-size: 16px;
@@ -36,7 +36,7 @@
 }
 
 body {
-    font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: var(--base-font-size);
     line-height: var(--line-height-base);
     background: linear-gradient(135deg, #f4e4c1 0%, #f0d0a0 100%);
@@ -62,7 +62,7 @@ body {
     align-items: center;
     gap: var(--space-2);
     font-size: var(--text-2xl);
-    font-weight: 700;
+    font-weight: 400;
     color: #2d5a3d;
     font-family: 'Poppins', sans-serif;
 }
@@ -167,7 +167,7 @@ body {
     color: #2d5a3d;
     margin-bottom: var(--space-8);
     border: 1px solid rgba(93, 138, 107, 0.3);
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 .main-title {
@@ -184,7 +184,7 @@ body {
     color: #2d5a3d;
     margin-bottom: var(--space-8);
     opacity: 0.9;
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Poppins', sans-serif;
     font-weight: 500;
     line-height: 1.4;
 }
@@ -195,7 +195,7 @@ body {
     line-height: var(--line-height-base);
     margin-bottom: var(--space-12);
     opacity: 0.8;
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 .features-grid {
@@ -244,7 +244,7 @@ body {
     font-size: var(--text-sm);
     color: #666;
     line-height: 1.4;
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 /* Add this new rule for the button container */
@@ -285,7 +285,7 @@ body {
     font-weight: 600;
     cursor: pointer;
     margin-bottom: var(--space-4);
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Poppins', sans-serif;
     transition: background 0.3s ease;
 }
 
@@ -299,7 +299,7 @@ body {
     text-align: center;
     color: #999;
     font-size: var(--text-sm);
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 .divider::before {
@@ -327,7 +327,7 @@ body {
     font-size: var(--text-base);
     font-weight: 600;
     cursor: pointer;
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Poppins', sans-serif;
     transition: all 0.3s ease;
 }
 

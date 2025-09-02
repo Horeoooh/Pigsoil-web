@@ -4,7 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all components
-    initializeNavigation();
+    // initializeNavigation();
     initializeBotInteractions();
     initializeQuickActions();
     initializeBatchManagement();

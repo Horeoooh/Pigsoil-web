@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PigSoil+ Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,93 +13,137 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #f5e6d3 0%, #e8d5c4 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* Header */
+        /* Header Styles */
         .header {
+            background-color: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(6px);
+            border-bottom: 1px solid #ddd;
+            position: sticky; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000; 
+            height: 80px;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 2rem;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            height: 100%;
+            padding: 0 20px;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #2d5016;
+            font-weight: 400;
         }
 
-        .logo::before {
-            content: "🐷";
-            font-size: 1.8rem;
-            animation: bounce 2s infinite;
+        .logo-img {
+            height: 50px;
+            width: auto;
         }
 
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
+        .logo-text {
+            height: 40px;
+            width: 171px;
+            object-fit: contain;
+            margin-left: 10px;
         }
 
-        .nav-links {
+        /* Navigation Links Styles - FIXED */
+        nav {
             display: flex;
-            gap: 2rem;
+            gap: 64px;
             align-items: center;
         }
 
-        .nav-links a {
-            color: #666;
+        nav a {
             text-decoration: none;
-            transition: color 0.3s ease;
+            color: #666;
+            font-weight: 400;
+            font-size: 16px;
+            transition: color 0.3s;
         }
 
-        .nav-links a:hover {
-            color: #2d5016;
+        nav a:hover {
+            color: #2d5a3d;
         }
 
-        .language-selector {
-            background: white;
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .language-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
             border: 1px solid #ddd;
             border-radius: 20px;
-            padding: 0.5rem 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            background: #f8f9fa;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
         }
 
-        .language-selector:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        .language-btn:hover {
+            background: #e9ecef;
+        }
+
+        .sign-up-btn {
+            background: transparent;
+            color: #2d5a3d;
+            padding: 10px 24px;
+            border: 2px solid #2d5a3d;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .sign-up-btn:hover {
+            background: #2d5a3d;
+            color: white;
         }
 
         .sign-in-btn {
-            background: #4a6741;
+            background: #2d5a3d;
             color: white;
+            padding: 10px 24px;
             border: none;
-            padding: 0.7rem 1.5rem;
-            border-radius: 25px;
-            cursor: pointer;
+            border-radius: 20px;
             font-weight: 500;
-            transition: all 0.3s ease;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
         }
 
         .sign-in-btn:hover {
-            background: #2d5016;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(77, 103, 65, 0.3);
+            background: #1f3d2a;
+        }
+
+        .globe-icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
         }
 
         /* Main content */
@@ -246,6 +291,7 @@
             gap: 0.5rem;
             transition: all 0.3s ease;
             margin-bottom: 1.5rem;
+            text-decoration: none;
         }
 
         .login-btn:hover {
@@ -311,21 +357,24 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Responsive */
+        /* Responsive Design */
         @media (max-width: 768px) {
             .header {
+                padding: 15px 20px;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .main-content {
                 padding: 1rem;
             }
-            
-            .nav-links {
-                gap: 1rem;
-            }
-            
+
             .login-container {
-                padding: 2rem;
-                margin: 1rem;
+                padding: 2rem 1.5rem;
             }
-            
+
             .welcome-title {
                 font-size: 1.5rem;
             }
@@ -334,16 +383,28 @@
 </head>
 <body>
     <header class="header">
-        <div class="logo">PigSoil+</div>
-        <nav class="nav-links">
-            <a href="#about">About</a>
-            <a href="#support">Support</a>
-            <div class="language-selector">
-                <span>English</span>
-                <span>🌍</span>
+        <div class="nav-container">
+            <div class="logo">
+                <img src="pig logo.png" alt="PigSoil Logo" class="logo-img">
+                <img src="pigsoil.png" alt="PigSoil+" class="logo-text">
             </div>
-            <button class="sign-in-btn">Sign In</button>
-        </nav>
+            
+            <nav>
+                <a href="#about">About</a>
+                <a href="#support">Support</a>
+            </nav>
+            
+            <div class="header-actions">
+                <a href="#" class="language-btn">
+                    <svg class="globe-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                    </svg>
+                    English
+                </a>
+                <a href="signup.html" class="sign-up-btn">Sign Up</a>
+                <a href="login.html" class="sign-in-btn">Sign In</a>
+            </div>
+        </div>
     </header>
 
     <main class="main-content">
@@ -382,9 +443,9 @@
                     <a href="#forgot" class="forgot-password">Forgot password?</a>
                 </div>
 
-                <button type="submit" class="login-btn" id="loginButton">
+                <a href="Pigsoil+ dashboard.html" class="login-btn" id="loginButton">
                     <span>Log In</span>
-                </button>
+                </a>
             </form>
 
             <a href="#signup" class="signup-link">Go to sign up</a>
@@ -455,16 +516,18 @@
         });
 
         // Language selector interaction
-        const languageSelector = document.querySelector('.language-selector');
-        languageSelector.addEventListener('click', function() {
-            this.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.style.transform = '';
-            }, 150);
-        });
+        const languageSelector = document.querySelector('.language-btn');
+        if (languageSelector) {
+            languageSelector.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+        }
 
         // Add hover sound effect (visual feedback)
-        const interactiveElements = document.querySelectorAll('button, a, .checkbox-container, .language-selector');
+        const interactiveElements = document.querySelectorAll('button, a, .checkbox-container, .language-btn');
         
         interactiveElements.forEach(element => {
             element.addEventListener('mouseenter', function() {
