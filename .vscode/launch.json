@@ -8,7 +8,7 @@
             "type": "chrome",
             "request": "launch",
             "name": "Open setting acc",
-            "file": "d:\\Coding Software\\ui for web pisoil+\\setting acc"
+            "file": "d:\\Coding Software\\ui for web pisoil+\\marketplace"
         }
     ]
 }

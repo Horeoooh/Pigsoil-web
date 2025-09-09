@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PigSoil+ Farmer Market</title>
+    <link rel="stylesheet" href="farmermarket.css">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Ccircle cx='25' cy='25' r='20' fill='%2368B984'/%3E%3Cpath d='M15 25 Q20 15 25 25 Q30 15 35 25 Q30 35 25 25 Q20 35 15 25 Z' fill='%23fff'/%3E%3C/svg%3E" alt="PigSoil+ Logo">
+                <span class="brand-name">PigSoil+</span>
+            </div>
+            <nav class="main-nav">
+                <a href="#" class="nav-link">Dashboard</a>
+                <a href="#" class="nav-link">Batches</a>
+                <a href="#" class="nav-link active">Market</a>
+                <a href="#" class="nav-link">Guides</a>
+                <a href="#" class="nav-link">Manong Bot</a>
+            </nav>
+            <div class="user-section">
+                <div class="notifications">
+                    <span class="notification-icon">🔔</span>
+                </div>
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name">Juan Dela Cruz</span>
+                        <span class="user-role">Active Farmer</span>
+                    </div>
+                    <div class="user-avatar">JD</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <h1>Farmer Market</h1>
+                <p>Connect with buyers and sellers in your local farming community</p>
+            </div>
+            <div class="hero-actions">
+                <button class="btn-primary">Add a Listing</button>
+                <button class="messages-btn">
+                    Messages
+                    <span class="message-count">2</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Filter Section -->
+        <section class="filter-section">
+            <div class="filter-tabs">
+                <button class="tab-btn active">My Listings</button>
+                <button class="tab-btn">Active</button>
+                <button class="tab-btn">Sold</button>
+                <button class="tab-btn">Nearby Buyers</button>
+            </div>
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search your listings...">
+            </div>
+        </section>
+
+        <!-- Listings Section -->
+        <section class="listings-section">
+            <h2>My Listings</h2>
+            <div class="listings-grid">
+                <!-- Active Listing 1 -->
+                <div class="listing-card">
+                    <div class="listing-image">
+                        <div class="status-badge active">Active</div>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%234a4a4a'/%3E%3Ccircle cx='150' cy='100' r='60' fill='%23333'/%3E%3Ctext x='150' y='105' text-anchor='middle' fill='white' font-size='14'%3ECompost%3C/text%3E%3C/svg%3E" alt="Premium Pig Compost">
+                    </div>
+                    <div class="listing-details">
+                        <div class="listing-header">
+                            <h3 class="listing-title">My Premium Pig Compost</h3>
+                            <span class="listing-price">P75/kg</span>
+                        </div>
+                        <div class="listing-stats">
+                            <div class="stat-item">
+                                <span class="stat-icon">📦</span>
+                                <span>35kg remaining</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-icon">👁️</span>
+                                <span>12 views today</span>
+                            </div>
+                        </div>
+                        <div class="listing-meta">
+                            <div class="meta-item">
+                                <span class="meta-icon">📅</span>
+                                <span>Posted 3 days ago</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">💬</span>
+                                <span>2 inquiries</span>
+                            </div>
+                        </div>
+                        <button class="btn-view">View</button>
+                    </div>
+                </div>
+
+                <!-- Sold Out Listing -->
+                <div class="listing-card">
+                    <div class="listing-image">
+                        <div class="status-badge sold">Sold Out</div>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%238B4513'/%3E%3Ccircle cx='150' cy='100' r='40' fill='%23654321'/%3E%3Ctext x='150' y='105' text-anchor='middle' fill='white' font-size='12'%3EHot Compost%3C/text%3E%3C/svg%3E" alt="Pig Compost Hot Method">
+                    </div>
+                    <div class="listing-details">
+                        <div class="listing-header">
+                            <h3 class="listing-title">Pig Compost Hot Method</h3>
+                            <span class="listing-price">P90/kg</span>
+                        </div>
+                        <div class="listing-stats">
+                            <div class="stat-item">
+                                <span class="stat-icon">✅</span>
+                                <span>30kg completely sold</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-icon">👁️</span>
+                                <span>5 views today</span>
+                            </div>
+                        </div>
+                        <div class="listing-meta">
+                            <div class="meta-item">
+                                <span class="meta-icon">💰</span>
+                                <span>Sold out last week</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">💵</span>
+                                <span>P 2,550 earned</span>
+                            </div>
+                        </div>
+                        <button class="btn-view">View</button>
+                    </div>
+                </div>
+
+                <!-- Active Listing 2 -->
+                <div class="listing-card">
+                    <div class="listing-image">
+                        <div class="status-badge active">Active</div>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%232E7D32'/%3E%3Ccircle cx='100' cy='80' r='30' fill='%231B5E20'/%3E%3Ccircle cx='200' cy='120' r='25' fill='%231B5E20'/%3E%3Ctext x='150' y='160' text-anchor='middle' fill='white' font-size='12'%3EOrganic Mix%3C/text%3E%3C/svg%3E" alt="Organic Fertilizer Mix">
+                    </div>
+                    <div class="listing-details">
+                        <div class="listing-header">
+                            <h3 class="listing-title">Organic Fertilizer Mix</h3>
+                            <span class="listing-price">P65/kg</span>
+                        </div>
+                        <div class="listing-stats">
+                            <div class="stat-item">
+                                <span class="stat-icon">📦</span>
+                                <span>50kg remaining</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-icon">👁️</span>
+                                <span>8 views today</span>
+                            </div>
+                        </div>
+                        <div class="listing-meta">
+                            <div class="meta-item">
+                                <span class="meta-icon">📅</span>
+                                <span>Posted 1 day ago</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">💬</span>
+                                <span>1 inquiry</span>
+                            </div>
+                        </div>
+                        <button class="btn-view">View</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="farmermarket.js"></script>
+</body>
+</html>

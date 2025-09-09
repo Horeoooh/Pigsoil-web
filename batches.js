@@ -109,8 +109,8 @@ function handleDeleteBatch(event) {
     }
 }
 
+// ✅ Fixed navigation to allow real page loads
 function handleNavigation(event) {
-    event.preventDefault();
     const target = event.currentTarget.getAttribute('href');
     
     // Remove active class from all nav items
@@ -121,26 +121,8 @@ function handleNavigation(event) {
     // Add active class to clicked item
     event.currentTarget.classList.add('active');
     
-    // Navigate based on target
-    switch(target) {
-        case '#dashboard':
-            alert('Navigating to Dashboard...');
-            break;
-        case '#batches':
-            alert('You are already on the Batches page');
-            break;
-        case '#market':
-            alert('Navigating to Market...');
-            break;
-        case '#guides':
-            alert('Navigating to Guides...');
-            break;
-        case '#manongbot':
-            alert('Navigating to ManongBot...');
-            break;
-        default:
-            console.log('Unknown navigation target:', target);
-    }
+    // Let the browser navigate to the link normally
+    // (no preventDefault, no alerts)
 }
 
 function handleCartClick() {
