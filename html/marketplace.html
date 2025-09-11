@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PigSoil+ - Farmer Marketplace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(103deg, #FFEED0 0%, #FFC7B8 170%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        /* Header - Matching Dashboard and Batches Exactly */
+        .header {
+            background: white;
+            padding: 16px 64px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 48px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+        }
+
+        .logo-text {
+            height: 40px;
+            width: 171px;
+            object-fit: contain;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 64px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #666;
+            font-size: 16px;
+            font-weight: 400;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            color: #4CAF50;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: #666;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            color: #4CAF50;
+        }
+
+        /* Cart badge for item count */
+        .cart-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 18px;
+        }
+
+        .cart-badge.hidden {
+            display: none;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            display: block;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('../images/pig.png');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 150px 20px;
+            margin-bottom: 40px;
+            min-height: 490px;
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Products Section */
+        .products-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px 40px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .product-image {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+
+        .sale-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #e74c3c;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .product-price {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #000000;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            color: #666;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1001;
+            background: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-body img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .modal-info {
+            padding: 30px;
+        }
+
+        .modal-info h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .modal-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        .modal-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 16px 24px;
+            }
+
+            .nav-menu {
+                gap: 32px;
+            }
+
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 16px;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+
+            .modal-body {
+                flex-direction: column;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* Success toast */
+        .toast {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Navigation - Matching Dashboard and Batches Exactly -->
+    <header class="header">
+        <nav class="nav-container">
+            <div class="logo">
+                <img src="../images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+                <img src="../images/pigsoil.png" alt="PigSoil+" class="logo-text">
+            </div>
+            
+            <ul class="nav-menu">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="batches.html">Batches</a></li>
+                <li><a href="marketplace.html" class="active">Market</a></li>
+                <li><a href="#guides">Guides</a></li>
+                <li><a href="#manongbot">Manong Bot</a></li>
+            </ul>
+            
+            <div class="user-section">
+                <button class="icon-btn" id="cartBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 22C9.55228 22 10 21.5523 10 21C10 20.4477 9.55228 20 9 20C8.44772 20 8 20.4477 8 21C8 21.5523 8.44772 22 9 22Z"></path>
+                        <path d="M20 22C20.5523 22 21 21.5523 21 21C21 20.4477 20.5523 20 20 20C19.4477 20 19 20.4477 19 21C19 21.5523 19.4477 22 20 22Z"></path>
+                        <path d="M1 1H5L7.68 14.39C7.77144 14.8504 8.02191 15.264 8.38755 15.5583C8.75318 15.8526 9.2107 16.009 9.68 16H19.4C19.8693 16.009 20.3268 15.8526 20.6925 15.5583C21.0581 15.264 21.3086 14.8504 21.4 14.39L23 6H6"></path>
+                    </svg>
+                    <span class="cart-badge hidden" id="cartBadge">0</span>
+                </button>
+                <button class="icon-btn" id="notificationBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </button>
+                <a href="setting acc.html" class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name">Juan Dela Cruz</span>
+                        <span class="user-role">Active Farmer</span>
+                    </div>
+                    <div class="user-avatar">JD</div>
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1>Farmer Market</h1>
+            <p>Connect with buyers and sellers in your local farming community</p>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-section">
+        <div class="products-grid" id="productsGrid">
+            <!-- Product Card 1 -->
+            <div class="product-card" data-product-id="1">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop" alt="Poo Small">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Poo Small</h3>
+                    <p class="product-price">₱119.00</p>
+                </div>
+            </div>
+
+            <!-- Product Card 2 -->
+            <div class="product-card" data-product-id="2">
+                <div class="product-image">
+                    <img src="https://plus.unsplash.com/premium_photo-1678548904724-8a7d6ef79eb7?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Bo Soft">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Bo Soft</h3>
+                    <p class="product-price">₱365.00</p>
+                </div>
+            </div>
+
+            <!-- Product Card 3 -->
+            <div class="product-card" data-product-id="3">
+                <div class="product-image">
+                    <img src="https://plus.unsplash.com/premium_photo-1680125265832-ffaf364a8aca?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Hobo Large">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Hobo Large</h3>
+                    <p class="product-price">₱615.00</p>
+                </div>
+            </div>
+
+            <!-- Product Card 4 -->
+            <div class="product-card" data-product-id="4">
+                <div class="product-image">
+                    <img src="https://plus.unsplash.com/premium_photo-1664527009212-73e907133b02?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Stormi">
+                    <span class="sale-badge">Sale</span>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Stormi</h3>
+                    <p class="product-price">₱195.00</p>
+                </div>
+            </div>
+
+            <!-- Product Card 5 -->
+            <div class="product-card" data-product-id="5">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1709633644385-e4e51e5646f1?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Garden Mix">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Premium Garden Mix</h3>
+                    <p class="product-price">₱450.00</p>
+                </div>
+            </div>
+
+            <!-- Product Card 6 -->
+            <div class="product-card" data-product-id="6">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1642952273588-ed6fa28870ac?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Organic Compost">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Organic Compost</h3>
+                    <p class="product-price">₱280.00</p>
+                </div>
+            </div>
+
+            <!-- Product Card 7 -->
+            <div class="product-card" data-product-id="7">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop" alt="Rich Soil">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Rich Soil Blend</h3>
+                    <p class="product-price">₱320.00</p>
+                </div>
+            </div>
+
+            <!-- Product Card 8 -->
+            <div class="product-card" data-product-id="8">
+                <div class="product-image">
+                    <img src="https://plus.unsplash.com/premium_photo-1678509112838-3412ba938a52?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Planting Mix">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Planting Mix Special</h3>
+                    <p class="product-price">₱185.00</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal for Product Details -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="">
+                <div class="modal-info">
+                    <h2 id="modalTitle"></h2>
+                    <p class="modal-price" id="modalPrice"></p>
+                    <p class="modal-description" id="modalDescription">High-quality organic fertilizer perfect for your garden. Made from premium composted materials, this product will help your plants grow healthier and stronger.</p>
+                    <div class="modal-actions">
+                        <button class="btn btn-primary" id="addToCartBtn">Add to Cart</button>
+                        <button class="btn btn-secondary" id="contactSellerBtn">Contact Seller</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div id="toast" class="toast">
+        <span id="toastMessage">Product added to cart!</span>
+    </div>
+
+    <script>
+        // Product data
+        const products = {
+            1: { title: "Poo Small", price: "₱119.00", image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop" },
+            2: { title: "Bo Soft", price: "₱365.00", image: "https://plus.unsplash.com/premium_photo-1678548904724-8a7d6ef79eb7?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            3: { title: "Hobo Large", price: "₱615.00", image: "https://plus.unsplash.com/premium_photo-1680125265832-ffaf364a8aca?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            4: { title: "Stormi", price: "₱195.00", image: "https://plus.unsplash.com/premium_photo-1664527009212-73e907133b02?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            5: { title: "Premium Garden Mix", price: "₱450.00", image: "https://images.unsplash.com/photo-1709633644385-e4e51e5646f1?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            6: { title: "Organic Compost", price: "₱280.00", image: "https://images.unsplash.com/photo-1642952273588-ed6fa28870ac?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            7: { title: "Rich Soil Blend", price: "₱320.00", image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop" },
+            8: { title: "Planting Mix Special", price: "₱185.00", image: "https://plus.unsplash.com/premium_photo-1678509112838-3412ba938a52?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
+        };
+
+        // Cart functionality
+        let cart = JSON.parse(localStorage.getItem('pigsoil_cart')) || [];
+
+        // Elements
+        const modal = document.getElementById('productModal');
+        const closeBtn = document.querySelector('.close-btn');
+        const cartBtn = document.getElementById('cartBtn');
+        const cartBadge = document.getElementById('cartBadge');
+        const toast = document.getElementById('toast');
+
+        // Initialize cart badge
+        updateCartBadge();
+
+        // Product card click events
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                const product = products[productId];
+                
+                document.getElementById('modalTitle').textContent = product.title;
+                document.getElementById('modalPrice').textContent = product.price;
+                document.getElementById('modalImage').src = product.image;
+                
+                modal.style.display = 'block';
+                modal.dataset.currentProduct = productId;
+            });
+        });
+
+        // Close modal
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Add to cart functionality
+        document.getElementById('addToCartBtn').addEventListener('click', function() {
+            const productId = modal.dataset.currentProduct;
+            const product = products[productId];
+            
+            // Add to cart
+            cart.push({
+                id: productId,
+                title: product.title,
+                price: product.price,
+                image: product.image,
+                quantity: 1
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('pigsoil_cart', JSON.stringify(cart));
+            
+            // Update cart badge
+            updateCartBadge();
+            
+            // Close modal
+            modal.style.display = 'none';
+            
+            // Show success toast
+            showToast('Product added to cart!');
+        });
+
+        // Cart button click - redirect to cart page
+        cartBtn.addEventListener('click', function() {
+            window.location.href = 'cart.html';
+        });
+
+        // Update cart badge
+        function updateCartBadge() {
+            const itemCount = cart.length;
+            if (itemCount > 0) {
+                cartBadge.textContent = itemCount;
+                cartBadge.classList.remove('hidden');
+            } else {
+                cartBadge.classList.add('hidden');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Contact seller functionality
+        document.getElementById('contactSellerBtn').addEventListener('click', function() {
+            const productId = modal.dataset.currentProduct;
+            const product = products[productId];
+            showToast(`Contacting seller about ${product.title}...`);
+            modal.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

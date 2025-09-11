@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PigSoil+</title>
+    <link rel="stylesheet" href="../css/location.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">🐷</div>
+            <span class="logo-text">PigSoil+</span>
+        </div>
+        
+        <nav class="nav">
+            <a href="#" class="nav-link">Dashboard</a>
+            <a href="#" class="nav-link">Batches</a>
+            <a href="#" class="nav-link active">Market</a>
+            <a href="#" class="nav-link">Guides</a>
+            <a href="#" class="nav-link">Manong Bot</a>
+        </nav>
+        
+        <div class="header-right">
+            <button class="notification-btn">🔔</button>
+            <div class="user-info">
+                <span class="user-name">Juan Dela Cruz</span>
+                <span class="user-role">Active Farmer</span>
+                <div class="user-avatar">JD</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3>User Setting</h3>
+                <ul class="sidebar-menu">
+                    <li><a href="#" class="sidebar-link active">My Address</a></li>
+                    <li><a href="#" class="sidebar-link">Account</a></li>
+                    <li><a href="#" class="sidebar-link">Notification</a></li>
+                    <li><a href="#" class="sidebar-link">Language</a></li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>Setting</h3>
+                <ul class="sidebar-menu">
+                    <li><a href="#" class="sidebar-link">Subscription</a></li>
+                    <li><a href="#" class="sidebar-link">Billing</a></li>
+                    <li><a href="#" class="sidebar-link">Appearance</a></li>
+                </ul>
+            </div>
+            
+            <button class="logout-btn">
+                <span>Log Out</span>
+                <span class="logout-icon">🚪</span>
+            </button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="location-card">
+                <div class="location-header">
+                    <div class="location-icon">📍</div>
+                    <div>
+                        <h2>What's your exact location?</h2>
+                        <p>Providing your location enables more accurate search</p>
+                    </div>
+                </div>
+                
+                <div class="map-container">
+                    <div class="map" id="map">
+                        <!-- Map will be rendered here -->
+                        <div class="map-marker" id="marker">📍</div>
+                    </div>
+                </div>
+                
+                <button class="save-btn" onclick="saveLocation()">Save Location</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/location.js"></script>
+</body>
+</html>
