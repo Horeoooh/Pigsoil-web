@@ -183,6 +183,8 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .btn-primary:hover {
@@ -431,6 +433,9 @@
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
 
         .btn-view:hover {
@@ -517,7 +522,7 @@
                     <p class="hero-subtitle">Connect with buyers and sellers in your local farming community</p>
                 </div>
                 <div class="hero-actions">
-                    <button class="btn-primary">Add a Listing</button>
+                    <a href="CreateListing.html" class="btn-primary">Add a Listing</a>
                     <button class="messages-btn">
                         Messages
                         <span class="message-count">2</span>
@@ -573,7 +578,7 @@
                                 <span>2 inquiries</span>
                             </div>
                         </div>
-                        <button class="btn-view">View</button>
+                        <a href="View.html" class="btn-view">View</a>
                     </div>
                 </div>
 
@@ -607,7 +612,7 @@
                                 <span>P 2,550 earned</span>
                             </div>
                         </div>
-                        <button class="btn-view">View</button>
+                        <a href="View.html" class="btn-view">View</a>
                     </div>
                 </div>
 
@@ -641,7 +646,7 @@
                                 <span>1 inquiry</span>
                             </div>
                         </div>
-                        <button class="btn-view">View</button>
+                        <a href="View.html" class="btn-view">View</a>
                     </div>
                 </div>
             </div>
@@ -673,19 +678,9 @@
             });
         });
 
-        // Button interactions
-        document.querySelector('.btn-primary').addEventListener('click', function() {
-            alert('Add a Listing functionality would be implemented here');
-        });
-
+        // Messages button functionality
         document.querySelector('.messages-btn').addEventListener('click', function() {
             alert('Messages functionality would be implemented here');
-        });
-
-        document.querySelectorAll('.btn-view').forEach(btn => {
-            btn.addEventListener('click', function() {
-                alert('View listing details functionality would be implemented here');
-            });
         });
     </script>
 </body>

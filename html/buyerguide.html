@@ -227,21 +227,18 @@
       transition: all 0.3s ease;
       width: 50px;
       height: 35px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background-image: url('Chevron down.png');
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 20px 20px;
     }
 
     .collapse-btn:hover {
       background-color: rgba(0,0,0,0.05);
     }
 
-    .collapse-btn svg {
-      transition: transform 0.3s ease;
-    }
-
-    .guide-card.collapsed .collapse-btn svg {
-      transform: rotate(180deg);
+    .guide-card.collapsed .collapse-btn {
+      background-image: url('Chevron Up.png');
     }
 
     .guide-description {
@@ -281,14 +278,6 @@
 
     .steps-preview {
       margin-bottom: 2rem;
-      transition: all 0.3s ease;
-      overflow: hidden;
-    }
-
-    .guide-card.collapsed .steps-preview {
-      max-height: 0;
-      margin-bottom: 0;
-      opacity: 0;
     }
 
     .steps-title {
@@ -334,8 +323,6 @@
       max-width: 200px;
       display: block;
       margin: 0 auto;
-      text-decoration: none;
-      text-align: center;
     }
 
     .view-guide-btn:hover {
@@ -395,10 +382,10 @@
       </div>
       
       <ul class="nav-menu">
-        <li><a href="dashboard.html">Dashboard</a></li>
-        <li><a href="batches.html">Batches</a></li>
-        <li><a href="farmermarket.html">Market</a></li>
-        <li><a href="#guides" class="active">Guides</a></li>
+        <li><a href="bdash.html">Dashboard</a></li>
+        <li><a href="BuyerBatches.html">Batches</a></li>
+        <li><a href="marketplace.html">Market</a></li>
+        <li><a href="guides" class="active">Guides</a></li>
         <li><a href="#manongbot">Manong Bot</a></li>
       </ul>
       
@@ -436,11 +423,7 @@
             <h2 class="guide-title">Basic Pig Manure Composting</h2>
             <p class="guide-description">Traditional aerobic composting using pig waste and plant matter</p>
           </div>
-          <button class="collapse-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6,9 12,15 18,9"></polyline>
-            </svg>
-          </button>
+          <button class="collapse-btn"></button>
         </div>
         
         <div class="tags">
@@ -459,7 +442,7 @@
         </div>
       </div>
 
-      <a href="fullguide.html" class="view-guide-btn">View Full Guide</a>
+      <button class="view-guide-btn">View Full Guide</button>
     </div>
 
     <!-- Hot Composting Method Guide -->
@@ -470,11 +453,7 @@
             <h2 class="guide-title">Hot Composting Method</h2>
             <p class="guide-description">Pathogen-free compost from pig manure through high-heat decomposition.</p>
           </div>
-          <button class="collapse-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6,9 12,15 18,9"></polyline>
-            </svg>
-          </button>
+          <button class="collapse-btn"></button>
         </div>
         
         <div class="tags">
@@ -493,34 +472,10 @@
         </div>
       </div>
 
-      <a href="fullguide.html" class="view-guide-btn">View Full Guide</a>
+      <button class="view-guide-btn">View Full Guide</button>
     </div>
   </main>
 
-  <script>
-    // Collapse/Expand functionality
-    document.querySelectorAll('.collapse-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const guideCard = this.closest('.guide-card');
-        guideCard.classList.toggle('collapsed');
-      });
-    });
-
-    // Notification button functionality
-    document.getElementById('notificationBtn').addEventListener('click', function() {
-      alert('Notifications functionality would be implemented here');
-    });
-
-    // Add smooth hover effects
-    document.querySelectorAll('.view-guide-btn').forEach(btn => {
-      btn.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-2px)';
-      });
-      
-      btn.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0)';
-      });
-    });
-  </script>
+  <script src="guides.js"></script>
 </body>
 </html>
