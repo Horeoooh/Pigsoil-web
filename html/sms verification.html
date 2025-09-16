@@ -24,6 +24,7 @@
     /* Header Styles - Consistent with login page */
     .header {
       background-color: rgba(255, 255, 255, 0.95); 
+         -webkit-backdrop-filter: blur(6px);
       backdrop-filter: blur(6px);
       border-bottom: 1px solid #ddd;
       position: sticky; 
@@ -377,116 +378,24 @@
   <div class="main-center">
     <!-- MAIN CONTAINER -->
     <div class="container">
-      <a href="#" class="back-link">← Back to signup</a>
+      <a href="html/signup.html" class="back-link">← Back to signup</a>
       <div class="center-content">
         <h2>Enter SMS Code Sent to</h2>
         <p>+63123456789</p>
-        <div class="inputs">
-          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*">
-          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*">
-          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*">
-          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*">
-          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*">
-          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*">
-        </div>
+      <div class="inputs">
+        <input type="text" id="code-1" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="First digit of verification code">
+        <input type="text" id="code-2" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Second digit of verification code">
+        <input type="text" id="code-3" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Third digit of verification code">
+        <input type="text" id="code-4" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Fourth digit of verification code">
+        <input type="text" id="code-5" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Fifth digit of verification code">
+        <input type="text" id="code-6" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Sixth digit of verification code">
+      </div>
         <div class="resend">Resend</div>
         <a href="Pigsoil+ dashboard.html" class="btn">Verify</a>
       </div>
     </div>
   </div>
 
-  <script>
-    const inputs = document.querySelectorAll(".inputs input");
-
-    inputs.forEach((input, index) => {
-      // Auto-focus next input when typing
-      input.addEventListener("input", (e) => {
-        // Only allow numbers
-        e.target.value = e.target.value.replace(/[^0-9]/g, '');
-        
-        // Add typing animation
-        e.target.classList.add('typing');
-        setTimeout(() => {
-          e.target.classList.remove('typing');
-        }, 300);
-
-        // Focus next input if current is filled
-        if (e.target.value && index < inputs.length - 1) {
-          inputs[index + 1].focus();
-        }
-      });
-
-      // Handle backspace
-      input.addEventListener("keydown", (e) => {
-        if (e.key === "Backspace" && !input.value && index > 0) {
-          inputs[index - 1].focus();
-        }
-      });
-
-      // Add focus animations
-      input.addEventListener('focus', function() {
-        this.style.transform = 'translateY(-2px) scale(1.02)';
-      });
-
-      input.addEventListener('blur', function() {
-        if (!this.value) {
-          this.style.transform = '';
-        }
-      });
-    });
-
-    // Add verification button functionality
-    const verifyBtn = document.querySelector('.btn');
-    const resendBtn = document.querySelector('.resend');
-
-    verifyBtn.addEventListener('click', function(e) {
-      // Check if all inputs are filled
-      const allFilled = Array.from(inputs).every(input => input.value.trim() !== '');
-      
-      if (!allFilled) {
-        e.preventDefault();
-        alert('Please enter the complete 6-digit verification code.');
-        inputs[0].focus();
-        return;
-      }
-
-      // Add loading effect
-      this.textContent = 'Verifying...';
-      this.style.pointerEvents = 'none';
-      
-      // Simulate verification process
-      setTimeout(() => {
-        this.textContent = 'Verified! ✓';
-        this.style.background = '#28a745';
-        
-        setTimeout(() => {
-          window.location.href = this.getAttribute('href');
-        }, 1000);
-      }, 1500);
-    });
-
-    // Add resend functionality
-    let resendTimer = 0;
-    resendBtn.addEventListener('click', function() {
-      if (resendTimer > 0) return;
-      
-      this.textContent = 'Code sent!';
-      this.style.color = '#28a745';
-      
-      // Start countdown
-      resendTimer = 30;
-      const countdown = setInterval(() => {
-        this.textContent = `Resend in ${resendTimer}s`;
-        resendTimer--;
-        
-        if (resendTimer < 0) {
-          clearInterval(countdown);
-          this.textContent = 'Resend';
-          this.style.color = '#4a6741';
-          resendTimer = 0;
-        }
-      }, 1000);
-    });
-  </script>
+ <script type="module" src="../src/js/auth/sms-verify.js"></script>
 </body>
 </html>

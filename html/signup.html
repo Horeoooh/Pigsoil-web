@@ -423,8 +423,8 @@
         <div class="nav-container">
             <div class="logo">
                 <!-- Fixed paths for html/signup.html structure -->
-                <img src="../images/pig logo.png" alt="PigSoil Logo" class="logo-img">
-                <img src="../images/pigsoil.png" alt="PigSoil+" class="logo-text">
+                <img src="/images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+                <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
             </div>
             
             <nav class="nav-links">
@@ -439,8 +439,8 @@
                     </svg>
                     English
                 </a>
-                <a href="signup.html" class="sign-up-btn">Sign Up</a>
-                <a href="login.html" class="sign-in-btn">Sign In</a>
+                <a href="html/signup.html" class="sign-up-btn">Sign Up</a>
+                <a href="src/pages/auth/login.html" class="sign-in-btn">Sign In</a>
             </div>
         </div>
     </header>
@@ -510,240 +510,15 @@
             </form>
 
             <div class="login-link">
-                Already have an account? <a href="../src/pages/login.html">Sign in here</a>
+                Already have an account? <a href="/src/pages/auth/login.html">Sign in here</a>
             </div>
         </div>
     </main>
 
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-        import { 
-            getAuth, 
-            createUserWithEmailAndPassword,
-            updateProfile,
-            sendEmailVerification
-        } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-        import { 
-            getFirestore, 
-            doc, 
-            setDoc 
-        } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    <!-- Hidden reCAPTCHA container -->
+        <div id="recaptcha-container"></div>
 
-        // Firebase configuration - Replace with your actual config
-        const firebaseConfig = {
-            apiKey: "your-api-key",
-            authDomain: "your-auth-domain",
-            projectId: "your-project-id",
-            storageBucket: "your-storage-bucket",
-            messagingSenderId: "your-messaging-sender-id",
-            appId: "your-app-id"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // DOM elements
-        const signupForm = document.getElementById('signupForm');
-        const signupButton = document.getElementById('signupButton');
-        const alertMessage = document.getElementById('alertMessage');
-        const inputs = document.querySelectorAll('.form-input');
-
-        // Helper functions
-        function showAlert(message, type = 'error') {
-            alertMessage.textContent = message;
-            alertMessage.className = `alert ${type}`;
-            alertMessage.style.display = 'block';
-            setTimeout(() => {
-                alertMessage.style.display = 'none';
-            }, 5000);
-        }
-
-        function setLoading(loading) {
-            if (loading) {
-                signupButton.classList.add('loading');
-                signupButton.innerHTML = '<span>Creating Account...</span>';
-                signupButton.disabled = true;
-            } else {
-                signupButton.classList.remove('loading');
-                signupButton.innerHTML = '<span>✏️</span><span>Create Account</span>';
-                signupButton.disabled = false;
-            }
-        }
-
-        function validateForm() {
-            const username = document.getElementById('username').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const userType = document.querySelector('input[name="userType"]:checked');
-
-            if (!username || !email || !phone || !password || !confirmPassword || !userType) {
-                showAlert('Please fill in all fields.', 'error');
-                return false;
-            }
-
-            if (username.length < 3) {
-                showAlert('Username must be at least 3 characters long.', 'error');
-                return false;
-            }
-
-            if (!/\S+@\S+\.\S+/.test(email)) {
-                showAlert('Please enter a valid email address.', 'error');
-                return false;
-            }
-
-            if (!/^\+?[\d\s\-\(\)]{10,}$/.test(phone)) {
-                showAlert('Please enter a valid phone number.', 'error');
-                return false;
-            }
-
-            if (password.length < 6) {
-                showAlert('Password must be at least 6 characters long.', 'error');
-                return false;
-            }
-
-            if (password !== confirmPassword) {
-                showAlert('Passwords do not match.', 'error');
-                return false;
-            }
-
-            return true;
-        }
-
-        // Input animations and interactions
-        inputs.forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.style.transform = 'scale(1.02)';
-                this.parentElement.style.transition = 'transform 0.3s ease';
-            });
-
-            input.addEventListener('blur', function() {
-                this.parentElement.style.transform = 'scale(1)';
-                if (this.value) {
-                    this.classList.add('has-value');
-                } else {
-                    this.classList.remove('has-value');
-                }
-            });
-
-            input.addEventListener('input', function() {
-                this.classList.add('typing');
-                setTimeout(() => {
-                    this.classList.remove('typing');
-                }, 300);
-                
-                if (this.value) {
-                    this.classList.add('has-value');
-                } else {
-                    this.classList.remove('has-value');
-                }
-            });
-
-            if (input.value) {
-                input.classList.add('has-value');
-            }
-        });
-
-        // Signup form submission
-        signupForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            if (!validateForm()) {
-                return;
-            }
-
-            const formData = new FormData(signupForm);
-            const userData = {
-                username: formData.get('username'),
-                email: formData.get('email'),
-                phone: formData.get('phone'),
-                password: formData.get('password'),
-                userType: formData.get('userType')
-            };
-
-            try {
-                setLoading(true);
-
-                // Create user with Firebase Auth
-                const userCredential = await createUserWithEmailAndPassword(
-                    auth, 
-                    userData.email, 
-                    userData.password
-                );
-
-                const user = userCredential.user;
-
-                // Update user profile
-                await updateProfile(user, {
-                    displayName: userData.username
-                });
-
-                // Save additional user data to Firestore
-                await setDoc(doc(db, 'users', user.uid), {
-                    username: userData.username,
-                    email: userData.email,
-                    phone: userData.phone,
-                    userType: userData.userType,
-                    createdAt: new Date().toISOString(),
-                    verified: false
-                });
-
-                // Send email verification
-                await sendEmailVerification(user);
-
-                showAlert('Account created successfully! Please check your email for verification.', 'success');
-                
-                // Redirect to SMS verification or login page after 2 seconds
-                setTimeout(() => {
-                    // Redirect to SMS verification page if it exists, otherwise to login
-                    const smsVerificationExists = true; // You can check if the file exists
-                    if (smsVerificationExists) {
-                        window.location.href = 'sms verification.html';
-                    } else {
-                        window.location.href = 'login.html';
-                    }
-                }, 2000);
-
-            } catch (error) {
-                console.error('Signup error:', error);
-                let errorMessage = 'Failed to create account. Please try again.';
-                
-                switch (error.code) {
-                    case 'auth/email-already-in-use':
-                        errorMessage = 'This email is already registered. Please use a different email or sign in.';
-                        break;
-                    case 'auth/weak-password':
-                        errorMessage = 'Password is too weak. Please choose a stronger password.';
-                        break;
-                    case 'auth/invalid-email':
-                        errorMessage = 'Invalid email address format.';
-                        break;
-                    default:
-                        errorMessage = error.message;
-                }
-                
-                showAlert(errorMessage, 'error');
-            } finally {
-                setLoading(false);
-            }
-        });
-
-        // Language selector interaction
-        const languageSelector = document.querySelector('.language-btn');
-        if (languageSelector) {
-            languageSelector.addEventListener('click', function(e) {
-                e.preventDefault();
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = '';
-                }, 150);
-                // Add language switching logic here
-            });
-        }
-    </script>
+        <!-- Remove the old script tag and replace with: -->
+        <script type="module" src="/src/js/auth/signup.js"></script>
 </body>
 </html>

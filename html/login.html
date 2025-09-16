@@ -23,6 +23,7 @@
         /* Header Styles */
         .header {
             background-color: rgba(255, 255, 255, 0.95); 
+            -webkit-backdrop-filter: blur(6px);
             backdrop-filter: blur(6px);
             border-bottom: 1px solid #ddd;
             position: sticky; 
@@ -61,7 +62,7 @@
             margin-left: 10px;
         }
 
-        /* Navigation Links Styles - FIXED */
+        /* Navigation Links Styles */
         nav {
             display: flex;
             gap: 64px;
@@ -204,6 +205,7 @@
             font-size: 1rem;
             transition: all 0.3s ease;
             background: #fafafa;
+            font-family: 'Poppins', sans-serif;
         }
 
         .form-input:focus {
@@ -292,6 +294,7 @@
             transition: all 0.3s ease;
             margin-bottom: 1.5rem;
             text-decoration: none;
+            font-family: 'Poppins', sans-serif;
         }
 
         .login-btn:hover {
@@ -319,6 +322,7 @@
             text-decoration: none;
             font-weight: 500;
             transition: all 0.3s ease;
+            display: block;
         }
 
         .signup-link:hover {
@@ -357,6 +361,27 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Alert styles for form validation */
+        .alert {
+            padding: 12px;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            display: none;
+            text-align: center;
+        }
+
+        .alert.error {
+            background-color: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .alert.success {
+            background-color: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .header {
@@ -378,6 +403,12 @@
             .welcome-title {
                 font-size: 1.5rem;
             }
+
+            .options-row {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
@@ -385,8 +416,9 @@
     <header class="header">
         <div class="nav-container">
             <div class="logo">
-                <img src="pig logo.png" alt="PigSoil Logo" class="logo-img">
-                <img src="pigsoil.png" alt="PigSoil+" class="logo-text">
+                <!-- Fixed paths for your project structure -->
+                <img src="/images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+                <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
             </div>
             
             <nav>
@@ -401,7 +433,7 @@
                     </svg>
                     English
                 </a>
-                <a href="signup.html" class="sign-up-btn">Sign Up</a>
+                <a href="/html/signup.html" class="sign-up-btn">Sign Up</a>
                 <a href="login.html" class="sign-in-btn">Sign In</a>
             </div>
         </div>
@@ -409,17 +441,20 @@
 
     <main class="main-content">
         <div class="login-container">
-            <h1 class="welcome-title">Welcome back</h1>
+            <h1 class="welcome-title">Welcome back to PigSoil+</h1>
+            
+            <div id="alertMessage" class="alert"></div>
             
             <form id="loginForm">
                 <div class="form-group">
-                    <label class="form-label" for="username">Username, Email or Phone</label>
+                    <label class="form-label" for="username">Email Address</label>
                     <input 
-                        type="text" 
+                        type="email" 
                         id="username" 
                         class="form-input" 
-                        value="colletewest@gmail.com"
+                        placeholder="Enter your email address"
                         required
+                        autocomplete="email"
                     >
                 </div>
 
@@ -429,163 +464,35 @@
                         type="password" 
                         id="password" 
                         class="form-input" 
-                        value="••••••••"
+                        placeholder="Enter your password"
                         required
+                        autocomplete="current-password"
+                        minlength="6"
                     >
                 </div>
 
                 <div class="options-row">
                     <label class="checkbox-container">
-                        <input type="checkbox" checked>
+                        <input type="checkbox" id="remember" checked>
                         <div class="custom-checkbox"></div>
                         <span>Remember me</span>
                     </label>
                     <a href="#forgot" class="forgot-password">Forgot password?</a>
                 </div>
 
-                <a href="dashboard.html" class="login-btn" id="loginButton">
+                <button type="submit" class="login-btn" id="loginButton">
                     <span>Log In</span>
-                </a>
+                </button>
             </form>
 
-            <a href="#signup" class="signup-link">Go to sign up</a>
+            <div style="text-align: center; margin-top: 1rem; color: #666;">
+                Don't have an account? 
+                <a href="../../html/signup.html" class="signup-link" style="display: inline;">Sign up here</a>
+            </div>
         </div>
     </main>
 
-    <script>
-        // Input animations and interactions
-        const inputs = document.querySelectorAll('.form-input');
-        const loginButton = document.getElementById('loginButton');
-        const loginForm = document.getElementById('loginForm');
-
-        inputs.forEach(input => {
-            // Focus animations
-            input.addEventListener('focus', function() {
-                this.parentElement.style.transform = 'scale(1.02)';
-                this.parentElement.style.transition = 'transform 0.3s ease';
-            });
-
-            input.addEventListener('blur', function() {
-                this.parentElement.style.transform = 'scale(1)';
-                if (this.value) {
-                    this.classList.add('has-value');
-                } else {
-                    this.classList.remove('has-value');
-                }
-            });
-
-            // Typing animation
-            input.addEventListener('input', function() {
-                this.classList.add('typing');
-                setTimeout(() => {
-                    this.classList.remove('typing');
-                }, 300);
-                
-                if (this.value) {
-                    this.classList.add('has-value');
-                } else {
-                    this.classList.remove('has-value');
-                }
-            });
-
-            // Check initial values
-            if (input.value) {
-                input.classList.add('has-value');
-            }
-        });
-
-        // Form submission with loading animation
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Add loading state
-            loginButton.classList.add('loading');
-            loginButton.innerHTML = '<span>Signing In...</span>';
-            
-            // Simulate login process
-            setTimeout(() => {
-                loginButton.classList.remove('loading');
-                loginButton.innerHTML = '<span>Success! ✓</span>';
-                loginButton.style.background = '#28a745';
-                
-                setTimeout(() => {
-                    loginButton.innerHTML = '<span>Log In</span>';
-                    loginButton.style.background = '#4a6741';
-                }, 2000);
-            }, 2000);
-        });
-
-        // Language selector interaction
-        const languageSelector = document.querySelector('.language-btn');
-        if (languageSelector) {
-            languageSelector.addEventListener('click', function() {
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = '';
-                }, 150);
-            });
-        }
-
-        // Add hover sound effect (visual feedback)
-        const interactiveElements = document.querySelectorAll('button, a, .checkbox-container, .language-btn');
-        
-        interactiveElements.forEach(element => {
-            element.addEventListener('mouseenter', function() {
-                this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-            });
-        });
-
-        // Checkbox animation
-        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const customCheckbox = this.nextElementSibling;
-                if (this.checked) {
-                    customCheckbox.style.animation = 'none';
-                    setTimeout(() => {
-                        customCheckbox.style.animation = 'bounce 0.6s ease';
-                    }, 10);
-                }
-            });
-        });
-
-        // Add floating particles effect
-        function createFloatingParticle() {
-            const particle = document.createElement('div');
-            particle.style.cssText = `
-                position: fixed;
-                width: 4px;
-                height: 4px;
-                background: rgba(74, 103, 65, 0.3);
-                border-radius: 50%;
-                pointer-events: none;
-                z-index: -1;
-                left: ${Math.random() * window.innerWidth}px;
-                top: ${window.innerHeight + 10}px;
-                animation: floatUp ${3 + Math.random() * 4}s linear forwards;
-            `;
-            
-            document.body.appendChild(particle);
-            
-            setTimeout(() => {
-                particle.remove();
-            }, 7000);
-        }
-
-        // Create floating particles periodically
-        setInterval(createFloatingParticle, 2000);
-
-        // Add floating animation keyframes
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes floatUp {
-                to {
-                    transform: translateY(-${window.innerHeight + 100}px) rotate(360deg);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
+    <!-- Import the login JavaScript with correct path for your structure -->
+    <script type="module" src="/js/auth/login.js"></script>
 </body>
 </html>
