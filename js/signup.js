@@ -1,11 +1,27 @@
-// Signup functionality for PigSoil+ - Backend API Version
-const API_BASE_URL = 'http://localhost:3000/api';
+// Signup functionality for PigSoil+ - Firebase Version
+import { auth, db } from './init.js';
+import { 
+    createUserWithEmailAndPassword,
+    signInWithPhoneNumber,
+    RecaptchaVerifier
+} from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
+import { 
+    doc, 
+    setDoc, 
+    collection, 
+    query, 
+    where, 
+    getDocs 
+} from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 
 // DOM elements
 const signupForm = document.getElementById('signupForm');
 const signupButton = document.getElementById('signupButton');
 const alertMessage = document.getElementById('alertMessage');
 const inputs = document.querySelectorAll('.form-input');
+
+let recaptchaVerifier = null;
+let confirmationResult = null;
 
 // Helper functions
 function showAlert(message, type = 'error') {
@@ -35,14 +51,58 @@ function setLoading(loading) {
 }
 
 function formatPhoneNumber(phone) {
-    let cleaned = phone.replace(/\D/g, '');
-    if (cleaned.startsWith('9')) {
-        cleaned = '63' + cleaned;
+    // For Firebase, convert 09XXXXXXXXX to +639XXXXXXXXX
+    if (phone.startsWith('09')) {
+        return '+63' + phone.substring(1);
     }
-    if (!cleaned.startsWith('63')) {
-        cleaned = '63' + cleaned;
+    return phone;
+}
+
+// Check if username exists in Firestore
+async function checkUsernameExists(username) {
+    try {
+        const q = query(collection(db, 'users'), where('userName', '==', username));
+        const querySnapshot = await getDocs(q);
+        return !querySnapshot.empty;
+    } catch (error) {
+        console.error('Username check failed:', error);
+        return false;
     }
-    return '+' + cleaned;
+}
+
+// Check if phone exists in Firestore
+async function checkPhoneExists(phone) {
+    try {
+        const q = query(collection(db, 'users'), where('userPhone', '==', phone));
+        const querySnapshot = await getDocs(q);
+        return !querySnapshot.empty;
+    } catch (error) {
+        console.error('Phone check failed:', error);
+        return false;
+    }
+}
+
+// Save user data to Firestore
+async function saveUserToFirestore(userData) {
+    try {
+        await setDoc(doc(db, 'users', userData.userID), {
+            userID: userData.userID,
+            userName: userData.userName,
+            userEmail: userData.userEmail,
+            userPhone: userData.userPhone,
+            userType: userData.userType,
+            userIsActive: true,
+            userPhoneVerified: false,
+            userCreatedAt: Date.now(),
+            userUpdatedAt: Date.now()
+        });
+        
+        console.log('User saved to Firestore');
+        return { success: true };
+    } catch (error) {
+        console.error('Save failed:', error);
+        return { success: false, error: error.message };
+    }
 }
 
 function validateForm() {
@@ -73,11 +133,12 @@ function validateForm() {
         return false;
     }
 
-    const formattedPhone = formatPhoneNumber(phone);
-    if (!formattedPhone.match(/^\+639\d{9}$/)) {
-        showAlert('Please enter a valid Philippine mobile number (e.g., 09XX XXX XXXX).', 'error');
-        return false;
-    }
+    // Simple Philippine phone validation - accepts 09XXXXXXXXX format
+   const phoneRegex = /^\+639\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+    showAlert('Please enter a valid Philippine mobile number (e.g., +639129731720).', 'error');
+    return false;
+}
 
     if (password.length < 6) {
         showAlert('Password must be at least 6 characters long.', 'error');
@@ -92,30 +153,40 @@ function validateForm() {
     return true;
 }
 
-// Main signup function that calls backend API
+// Main signup function using Firebase
 async function handleSignup(userData) {
     try {
         setLoading(true);
 
-        // Make API call to your backend
-        const response = await fetch(`${API_BASE_URL}/auth/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                userName: userData.username,
-                userEmail: userData.email,
-                userPhone: formatPhoneNumber(userData.phone),
-                userType: userData.userType === 'swine_farmer' ? 'Swine Farmer' : 'Organic Fertilizer Buyer',
-                password: userData.password
-            })
-        });
+        // Check if username already exists
+        const usernameExists = await checkUsernameExists(userData.username);
+        if (usernameExists) {
+            throw new Error('Username is already taken. Please choose another.');
+        }
 
-        const data = await response.json();
+        // Check if phone already exists
+        const phoneExists = await checkPhoneExists(formatPhoneNumber(userData.phone));
+        if (phoneExists) {
+            throw new Error('Phone number is already registered. Please use a different number.');
+        }
 
-        if (!response.ok) {
-            throw new Error(data.message || 'Registration failed');
+        // Create Firebase Auth user with email/password
+        const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
+        const user = userCredential.user;
+
+        // Prepare user data for Firestore
+        const firestoreUserData = {
+            userID: user.uid,
+            userName: userData.username,
+            userEmail: userData.email,
+            userPhone: formatPhoneNumber(userData.phone),
+            userType: userData.userType === 'swine_farmer' ? 'Swine Farmer' : 'Organic Fertilizer Buyer'
+        };
+
+        // Save user data to Firestore
+        const saveResult = await saveUserToFirestore(firestoreUserData);
+        if (!saveResult.success) {
+            throw new Error(saveResult.error);
         }
 
         // Registration successful
@@ -127,25 +198,90 @@ async function handleSignup(userData) {
             email: userData.email,
             username: userData.username,
             userType: userData.userType,
-            userId: data.user.uid
+            userId: user.uid
         }));
         
         // Redirect to SMS verification page
         setTimeout(() => {
-            window.location.href = '/html/sms verification.html';
+            window.location.href = '/html/sms-verification.html';
         }, 2000);
         
     } catch (error) {
         console.error('Signup error:', error);
         let errorMessage = 'Failed to create account. Please try again.';
         
-        if (error.message.includes('already registered') || error.message.includes('Email already')) {
-            errorMessage = 'This email is already registered. Please use a different email or sign in instead.';
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                errorMessage = 'This email is already registered. Please use a different email or sign in instead.';
+                break;
+            case 'auth/weak-password':
+                errorMessage = 'Password is too weak. Please use a stronger password.';
+                break;
+            case 'auth/invalid-email':
+                errorMessage = 'Invalid email address format.';
+                break;
+            default:
+                if (error.message.includes('already taken') || error.message.includes('already registered')) {
+                    errorMessage = error.message;
+                }
+                break;
         }
         
         showAlert(errorMessage, 'error');
     } finally {
         setLoading(false);
+    }
+}
+
+// Initialize reCAPTCHA for SMS verification
+function initializeRecaptcha() {
+    if (!recaptchaVerifier) {
+        recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible',
+            'callback': (response) => {
+                console.log('reCAPTCHA solved');
+            }
+        });
+    }
+    return recaptchaVerifier;
+}
+
+// Start phone verification for SMS
+async function startPhoneVerification(phoneNumber) {
+    try {
+        const recaptcha = initializeRecaptcha();
+        confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, recaptcha);
+        console.log('SMS sent for verification');
+        
+        showAlert('Verification code sent to your phone!', 'success');
+        return { success: true };
+    } catch (error) {
+        console.error('SMS failed:', error);
+        showAlert('Failed to send verification code. Please try again.', 'error');
+        return { success: false };
+    }
+}
+
+// Verify phone code (for SMS verification page)
+async function verifyPhoneCode(verificationCode) {
+    try {
+        if (!confirmationResult) {
+            throw new Error('No verification in progress. Please start over.');
+        }
+
+        const result = await confirmationResult.confirm(verificationCode);
+        console.log('Phone verified:', result.user.uid);
+        
+        // Update user's phone verification status in Firestore
+        await setDoc(doc(db, 'users', result.user.uid), {
+            userPhoneVerified: true,
+            userUpdatedAt: Date.now()
+        }, { merge: true });
+        
+        return { success: true, user: result.user };
+    } catch (error) {
+        console.error('Phone verification failed:', error);
+        return { success: false, error: error.message };
     }
 }
 
@@ -270,3 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 2000);
     }
 });
+
+// Export functions for SMS verification page
+window.startPhoneVerification = startPhoneVerification;
+window.verifyPhoneCode = verifyPhoneCode;

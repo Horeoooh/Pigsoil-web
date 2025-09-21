@@ -439,8 +439,8 @@
                     </svg>
                     English
                 </a>
-                <a href="html/signup.html" class="sign-up-btn">Sign Up</a>
-                <a href="src/pages/auth/login.html" class="sign-in-btn">Sign In</a>
+                <a href="/html/signup.html" class="sign-up-btn">Sign Up</a>
+                <a href="/html/login.html" class="sign-in-btn">Sign In</a>
             </div>
         </div>
     </header>
@@ -510,15 +510,46 @@
             </form>
 
             <div class="login-link">
-                Already have an account? <a href="/src/pages/auth/login.html">Sign in here</a>
+                Already have an account? <a href="/html/login.html">Sign in here</a>
             </div>
         </div>
     </main>
 
     <!-- Hidden reCAPTCHA container -->
         <div id="recaptcha-container"></div>
+        <script type="module" src="../js/signup.js"></script>
 
-        <!-- Remove the old script tag and replace with: -->
-        <script type="module" src="/src/js/auth/signup.js"></script>
+        <script>
+// Auto-format phone number from 09XXXXXXXXX to +639XXXXXXXXX
+document.getElementById('phone').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    
+    // If starts with 09 and has 11 digits total
+    if (value.startsWith('09') && value.length === 11) {
+        // Convert 09XXXXXXXXX to +639XXXXXXXXX
+        const formatted = '+63' + value.substring(1);
+        e.target.value = formatted;
+    }
+    // If starts with 63 and has 12 digits, add +
+    else if (value.startsWith('63') && value.length === 12) {
+        e.target.value = '+' + value;
+    }
+    // If already starts with +63, keep as is
+   else if (value.length <= 11) {
+    // Show the digits as user types (09123456...)
+    e.target.value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{3})/, '$1 $2 $3 $4').trim();
+}
+});
+
+// Also format on blur (when user leaves the field)
+document.getElementById('phone').addEventListener('blur', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    
+    if (value.startsWith('09') && value.length === 11) {
+        const formatted = '+63' + value.substring(1);
+        e.target.value = formatted;
+    }
+});
+</script>
 </body>
 </html>
