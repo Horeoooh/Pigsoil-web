@@ -392,20 +392,20 @@ if (languageSelector) {
 }
 
 // Check if user is already logged in (unchanged)
-document.addEventListener('DOMContentLoaded', function() {
-    const storedUser = localStorage.getItem('pigsoil_user');
-    if (storedUser) {
-        const userData = JSON.parse(storedUser);
-        showAlert('You are already signed in. Redirecting...', 'success');
-        setTimeout(() => {
-            if (userData.userType === 'Swine Farmer' || userData.userType === 'swine_farmer') {
-                window.location.href = '/html/dashboard.html';
-            } else if (userData.userType === 'Organic Fertilizer Buyer' || userData.userType === 'fertilizer_buyer') {
-                window.location.href = '/html/marketplace.html';
-            }
-        }, 2000);
-    }
-});
+//document.addEventListener('DOMContentLoaded', function() {
+  //  const storedUser = localStorage.getItem('pigsoil_user');
+    //if (storedUser) {
+      //  const userData = JSON.parse(storedUser);
+        //showAlert('You are already signed in. Redirecting...', 'success');
+       // setTimeout(() => {
+         //   if (userData.userType === 'Swine Farmer' || userData.userType === 'swine_farmer') {
+           //     window.location.href = '/html/dashboard.html';
+           // } else if (userData.userType === 'Organic Fertilizer Buyer' || userData.userType === 'fertilizer_buyer') {
+             //   window.location.href = '/html/marketplace.html';
+            //}
+      //  }, 2000);
+    //}
+//});
 
 // Export functions for SMS verification page
 window.startPhoneVerification = startPhoneVerification;

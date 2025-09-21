@@ -375,17 +375,17 @@ style.textContent = `
 document.head.appendChild(style);
 
 // Check if user is already logged in
-document.addEventListener('DOMContentLoaded', function() {
-    const storedUser = localStorage.getItem('pigsoil_user');
-    if (storedUser) {
-        const userData = JSON.parse(storedUser);
-        if (userData.userType === 'Swine Farmer' || userData.userType === 'swine_farmer') {
-            window.location.href = '/html/dashboard.html';
-        } else if (userData.userType === 'Organic Fertilizer Buyer' || userData.userType === 'fertilizer_buyer') {
-            window.location.href = '/html/marketplace.html';
-        }
-    }
-});
+//document.addEventListener('DOMContentLoaded', function() {
+  //  const storedUser = localStorage.getItem('pigsoil_user');
+    //if (storedUser) {
+      //  const userData = JSON.parse(storedUser);
+        //if (userData.userType === 'Swine Farmer' || userData.userType === 'swine_farmer') {
+          //  window.location.href = '/html/dashboard.html';
+        //} else if (userData.userType === 'Organic Fertilizer Buyer' || userData.userType === 'fertilizer_buyer') {
+         //   window.location.href = '/html/marketplace.html';
+        //}
+   // }
+//});
 
 // Listen to auth state changes
 auth.onAuthStateChanged((user) => {

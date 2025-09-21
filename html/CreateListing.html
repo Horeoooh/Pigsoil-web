@@ -404,7 +404,6 @@
                 <li><a href="../html/batches.html">Batches</a></li>
                 <li><a href="../html/farmermarket.html" class="active">Market</a></li>
                 <li><a href="../html/guides.html">Guides</a></li>
-    
             </ul>
             
             <div class="user-section">
@@ -487,7 +486,7 @@
                     <div class="location-container">
                         <div class="location-map">
                             <div style="text-align: center; color: #999;">
-                                📍 Avida Towers Riala
+                                Avida Towers Riala
                             </div>
                         </div>
                         <div class="location-info">
@@ -513,135 +512,121 @@
         </section>
     </main>
 
+    <!-- Simple inline JavaScript to ensure photo upload works -->
     <script>
-        // Photo upload functionality
-        const photoUploads = document.querySelectorAll('.photo-upload');
-        const photoInputs = document.querySelectorAll('.photo-input');
-
-        photoUploads.forEach((upload, index) => {
-            const input = upload.querySelector('.photo-input');
-            const removeBtn = upload.querySelector('.photo-remove');
+        console.log('Starting photo upload setup...');
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, setting up photo upload...');
             
-            // Click to upload
-            upload.addEventListener('click', (e) => {
-                if (e.target !== removeBtn) {
+            const photoUploads = document.querySelectorAll('.photo-upload');
+            console.log('Found photo upload areas:', photoUploads.length);
+            
+            photoUploads.forEach((upload, index) => {
+                const input = upload.querySelector('.photo-input');
+                const removeBtn = upload.querySelector('.photo-remove');
+                
+                console.log(`Setting up upload area ${index}`);
+                
+                // Click handler for the upload area
+                upload.addEventListener('click', function(e) {
+                    console.log(`Upload area ${index} clicked!`);
+                    
+                    // Don't trigger if clicking remove button
+                    if (e.target === removeBtn || e.target.closest('.photo-remove')) {
+                        console.log('Remove button clicked, not opening file browser');
+                        return;
+                    }
+                    
+                    // Trigger the file input to open file browser
+                    console.log('Triggering file input click...');
                     input.click();
-                }
-            });
-
-            // Handle file selection
-            input.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.classList.add('photo-preview');
+                });
+                
+                // File selection handler
+                input.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    console.log('File input changed, file:', file ? file.name : 'none');
+                    
+                    if (file) {
+                        console.log('Processing file:', file.name, file.type, file.size);
                         
-                        // Clear existing content and add image
-                        upload.innerHTML = '';
-                        upload.appendChild(img);
-                        upload.appendChild(input);
-                        upload.appendChild(removeBtn);
-                        upload.classList.add('has-image');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            // Remove photo
-            removeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                upload.classList.remove('has-image');
-                upload.innerHTML = `
-                    <span class="photo-upload-icon">+</span>
-                    <input type="file" class="photo-input" accept="image/*" data-index="${index}">
-                    <button type="button" class="photo-remove">&times;</button>
-                `;
+                        // Validate file type
+                        if (!file.type.startsWith('image/')) {
+                            alert('Please select an image file (JPG, PNG, GIF)');
+                            return;
+                        }
+                        
+                        // Validate file size (max 5MB)
+                        if (file.size > 5 * 1024 * 1024) {
+                            alert('Image size should be less than 5MB');
+                            return;
+                        }
+                        
+                        // Read and display the image
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            console.log('File read successfully, creating preview...');
+                            
+                            // Create image element
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'photo-preview';
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+                            
+                            // Clear the upload area and add the image
+                            upload.innerHTML = '';
+                            upload.appendChild(img);
+                            upload.appendChild(input);
+                            upload.appendChild(removeBtn);
+                            upload.classList.add('has-image');
+                            
+                            console.log('Image preview added successfully');
+                        };
+                        
+                        reader.onerror = function() {
+                            console.error('Error reading file');
+                            alert('Error reading the image file');
+                        };
+                        
+                        reader.readAsDataURL(file);
+                    }
+                });
                 
-                // Re-attach event listeners
-                const newInput = upload.querySelector('.photo-input');
-                const newRemoveBtn = upload.querySelector('.photo-remove');
-                
-                newInput.addEventListener('change', input.onchange);
-                newRemoveBtn.addEventListener('click', removeBtn.onclick);
-            });
-        });
-
-        // Location change functionality
-        document.querySelector('.change-location').addEventListener('click', () => {
-            alert('Location change functionality would be implemented here (e.g., map picker)');
-        });
-
-        // Form submission
-        document.getElementById('createListingForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            // Get form data
-            const formData = new FormData();
-            const title = document.getElementById('productTitle').value;
-            const quantity = document.getElementById('quantity').value;
-            const price = document.getElementById('price').value;
-            const description = document.getElementById('description').value;
-            
-            // Validate required fields
-            if (!title || !quantity || !price) {
-                alert('Please fill in all required fields');
-                return;
-            }
-            
-            // Check if at least one photo is uploaded
-            const hasPhotos = Array.from(photoInputs).some(input => input.files.length > 0);
-            if (!hasPhotos) {
-                alert('Please upload at least one product photo');
-                return;
-            }
-            
-            // Collect all data
-            formData.append('title', title);
-            formData.append('quantity', quantity);
-            formData.append('price', price);
-            formData.append('description', description);
-            formData.append('location', 'Avida Towers Riala');
-            
-            // Add photos
-            photoInputs.forEach((input, index) => {
-                if (input.files[0]) {
-                    formData.append(`photo_${index}`, input.files[0]);
-                }
+                // Remove button handler
+                removeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    console.log(`Remove button clicked for area ${index}`);
+                    
+                    // Reset the upload area
+                    upload.classList.remove('has-image');
+                    upload.innerHTML = `
+                        <span class="photo-upload-icon">+</span>
+                        <input type="file" class="photo-input" accept="image/*" data-index="${index}">
+                        <button type="button" class="photo-remove">&times;</button>
+                    `;
+                    
+                    console.log('Upload area reset');
+                });
             });
             
-            // Simulate successful submission
-            const submitBtn = document.querySelector('.submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Posting...';
-            
-            setTimeout(() => {
-                alert('✅ Listing posted successfully!');
-                // In a real app, you would redirect to the marketplace
-                window.location.href = 'farmermarket.html';
-            }, 2000);
+            console.log('Photo upload setup complete!');
         });
+    </script>
 
-        // Real-time price formatting
-        document.getElementById('price').addEventListener('input', (e) => {
-            const value = e.target.value;
-            if (value) {
-                // You could add formatting here if needed
-            }
-        });
-
-        // Character counter for description
-        const description = document.getElementById('description');
-        description.addEventListener('input', () => {
-            const maxLength = 500;
-            const currentLength = description.value.length;
-            
-            if (currentLength > maxLength) {
-                description.value = description.value.substring(0, maxLength);
-            }
-        });
+    <!-- Load Firebase modules with correct paths -->
+    <script type="module">
+        // Import Firebase modules from js/ folder
+        try {
+            // Use absolute path from your website root
+            await import('../js/CreateListing.js');
+            console.log('Firebase CreateListing.js loaded successfully');
+        } catch (error) {
+            console.log('Firebase module loading failed (using fallback):', error);
+            console.error('Error details:', error);
+        }
     </script>
 </body>
 </html>
