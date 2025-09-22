@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PigSoil+ - Create Listing</title>
+    <title>PigSoil+ - Create Swine Compost Listing</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -169,6 +169,7 @@
 
         .form-group {
             margin-bottom: 24px;
+            position: relative;
         }
 
         .form-label {
@@ -194,9 +195,48 @@
             border-color: #4CAF50;
         }
 
+        .form-input.error {
+            border-color: #e74c3c;
+            background-color: #fdf2f2;
+        }
+
+        .form-input.success {
+            border-color: #4CAF50;
+            background-color: #f0f8f4;
+        }
+
         .form-textarea {
             resize: vertical;
             min-height: 100px;
+        }
+
+        /* Error Message Styling */
+        .error-message {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .error-message::before {
+            content: "⚠️";
+            font-size: 10px;
+        }
+
+        .success-message {
+            color: #4CAF50;
+            font-size: 12px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .success-message::before {
+            content: "✓";
+            font-size: 12px;
         }
 
         /* Photo Upload Section */
@@ -228,6 +268,11 @@
         .photo-upload.has-image {
             border-style: solid;
             border-color: #4CAF50;
+        }
+
+        .photo-upload.error {
+            border-color: #e74c3c;
+            background: #fdf2f2;
         }
 
         .photo-upload-icon {
@@ -270,11 +315,72 @@
             color: #666;
         }
 
+        .photo-error {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .photo-error::before {
+            content: "📷";
+            font-size: 12px;
+        }
+
         /* Form Row */
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+        }
+
+        /* Compost Technique Section */
+        .technique-section {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            background: #f9f9f9;
+        }
+
+        .technique-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .technique-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .technique-option:hover {
+            border-color: #4CAF50;
+            background: #f0f8f4;
+        }
+
+        .technique-option.selected {
+            border-color: #4CAF50;
+            background: #f0f8f4;
+        }
+
+        .technique-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .technique-description {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
         }
 
         /* Location Section */
@@ -283,6 +389,12 @@
             border-radius: 12px;
             padding: 16px;
             background: #f9f9f9;
+            transition: border-color 0.3s;
+        }
+
+        .location-container.active {
+            border-color: #4CAF50;
+            background: #f0f8f4;
         }
 
         .location-map {
@@ -333,6 +445,11 @@
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .change-location:hover {
+            color: #45a049;
         }
 
         /* Submit Button */
@@ -348,22 +465,151 @@
             cursor: pointer;
             transition: all 0.3s;
             margin-top: 24px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .submit-btn:hover {
+        .submit-btn:hover:not(:disabled) {
             background: #45a049;
             transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
         }
 
         .submit-btn:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
+        }
+
+        .submit-btn.loading {
+            background: #95a5a6;
+        }
+
+        .submit-btn.loading::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Hidden file inputs */
         .photo-input {
             display: none;
+        }
+
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1001;
+            font-weight: 600;
+            max-width: 350px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .notification.error {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .notification.info {
+            background: #2196F3;
+            color: white;
+        }
+
+        .notification.warning {
+            background: #ff9800;
+            color: white;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-content {
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        .loading-text {
+            color: #333;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        /* Progress Indicator */
+        .progress-indicator {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #4CAF50;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            width: 0%;
         }
 
         /* Responsive */
@@ -387,10 +633,36 @@
             .form-row {
                 grid-template-columns: 1fr;
             }
+
+            .technique-options {
+                grid-template-columns: 1fr;
+            }
+
+            .notification {
+                right: 16px;
+                left: 16px;
+                transform: translateY(-100%);
+                max-width: none;
+            }
+
+            .notification.show {
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loadingText">Preparing your swine compost listing...</div>
+            <div class="progress-indicator" id="progressIndicator">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="header">
         <nav class="nav-container">
@@ -416,7 +688,7 @@
                 <a href="../html/setting-acc.html" class="user-profile">
                     <div class="user-info">
                         <span class="user-name">Juan Dela Cruz</span>
-                        <span class="user-role">Active Farmer</span>
+                        <span class="user-role">Swine Farmer</span>
                     </div>
                     <div class="user-avatar">JD</div>
                 </a>
@@ -427,17 +699,17 @@
     <main class="main-content">
         <!-- Page Header -->
         <section class="page-header">
-            <h1 class="page-title">Create Listing</h1>
-            <p class="page-subtitle">Add your compost to marketplace</p>
+            <h1 class="page-title">Create Swine Compost Listing</h1>
+            <p class="page-subtitle">Add your premium swine compost to the marketplace and connect with organic fertilizer buyers</p>
         </section>
 
         <!-- Create Listing Form -->
         <section class="form-section">
-            <form id="createListingForm">
+            <form id="createListingForm" novalidate>
                 <!-- Product Photos -->
                 <div class="form-group">
-                    <label class="form-label">Product Photos</label>
-                    <div class="photo-upload-grid">
+                    <label class="form-label">Compost Photos *</label>
+                    <div class="photo-upload-grid" id="photoUploadGrid">
                         <div class="photo-upload" data-index="0">
                             <span class="photo-upload-icon">+</span>
                             <input type="file" class="photo-input" accept="image/*" data-index="0">
@@ -459,173 +731,792 @@
                             <button type="button" class="photo-remove">&times;</button>
                         </div>
                     </div>
-                    <p class="photo-hint">Upload at least one photo • The first photo is cover</p>
+                    <p class="photo-hint">Upload at least one photo of your swine compost • The first photo will be the main display image</p>
+                    <div id="photoError" class="photo-error" style="display: none;"></div>
                 </div>
 
                 <!-- Product Title -->
                 <div class="form-group">
-                    <label class="form-label" for="productTitle">Product Title</label>
-                    <input type="text" id="productTitle" class="form-input" placeholder="Enter Product Title" required>
+                    <label class="form-label" for="productTitle">Compost Title *</label>
+                    <input 
+                        type="text" 
+                        id="productTitle" 
+                        class="form-input" 
+                        placeholder="e.g., Premium Organic Swine Compost - Ready to Use" 
+                        required 
+                        maxlength="100"
+                        autocomplete="off"
+                    >
                 </div>
 
                 <!-- Quantity and Price Row -->
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" for="quantity">Quantity (kg)</label>
-                        <input type="number" id="quantity" class="form-input" placeholder="Enter Quantity" min="1" required>
+                        <label class="form-label" for="quantity">Quantity (kg) *</label>
+                        <input 
+                            type="number" 
+                            id="quantity" 
+                            class="form-input" 
+                            placeholder="e.g., 100" 
+                            min="1" 
+                            max="10000" 
+                            required
+                            autocomplete="off"
+                        >
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="price">Price per kg (₱)</label>
-                        <input type="number" id="price" class="form-input" placeholder="Enter Price" min="1" step="0.01" required>
+                        <label class="form-label" for="price">Price per kg (₱) *</label>
+                        <input 
+                            type="number" 
+                            id="price" 
+                            class="form-input" 
+                            placeholder="e.g., 15.00" 
+                            min="1" 
+                            max="5000" 
+                            step="0.01" 
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+                </div>
+
+                <!-- Composting Technique Selection -->
+                <div class="form-group">
+                    <label class="form-label">Composting Technique Used *</label>
+                    <div class="technique-section">
+                        <p style="font-size: 14px; color: #666; margin-bottom: 8px;">Select the composting method you used for this batch:</p>
+                        <div class="technique-options">
+                            <div class="technique-option selected" data-technique="basic_swine_manure">
+                                <div class="technique-title">Basic Swine Manure</div>
+                                <div class="technique-description">Traditional composting method using swine manure with natural decomposition process</div>
+                            </div>
+                            <div class="technique-option" data-technique="hot_composting">
+                                <div class="technique-title">Hot Composting Method</div>
+                                <div class="technique-description">Advanced composting with temperature monitoring and controlled decomposition</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="compostTechnique" value="basic_swine_manure">
                     </div>
                 </div>
 
                 <!-- Location -->
                 <div class="form-group">
-                    <label class="form-label">Location</label>
-                    <div class="location-container">
+                    <label class="form-label">Pickup/Meetup Location</label>
+                    <div class="location-container" id="locationContainer">
                         <div class="location-map">
                             <div style="text-align: center; color: #999;">
-                                Avida Towers Riala
+                                🗺️ Cebu Swine Farm Area<br>
+                                <small>Your swine farm location</small>
                             </div>
                         </div>
                         <div class="location-info">
                             <span class="location-pin">📍</span>
                             <div class="location-details">
-                                <div class="location-name">Avida Towers Riala</div>
-                                <div class="location-address">This is the meetup location</div>
+                                <div class="location-name">Cebu Swine Farm Area</div>
+                                <div class="location-address">Default meetup location for swine farmers</div>
                             </div>
-                            <span class="change-location">Change</span>
+                            <span class="change-location" id="changeLocationBtn">Change</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Description -->
                 <div class="form-group">
-                    <label class="form-label" for="description">Description</label>
-                    <textarea id="description" class="form-input form-textarea" placeholder="Describe your compost quality, age, and any special features..."></textarea>
+                    <label class="form-label" for="description">Compost Description</label>
+                    <textarea 
+                        id="description" 
+                        class="form-input form-textarea" 
+                        placeholder="Describe your swine compost: composting technique used, age of compost, quality, and any special features. Example: 'High-quality organic compost made from swine manure using basic composting method. Aged for 3 months, rich in nutrients, perfect for vegetable gardens and organic farming. Direct communication preferred for pickup arrangements.'"
+                        maxlength="500"
+                    ></textarea>
+                    <div id="descriptionCounter" style="font-size: 12px; color: #666; text-align: right; margin-top: 4px;">0/500 characters</div>
+                </div>
+
+                <!-- Payment Note -->
+                <div style="background: #e8f5e8; border: 2px solid #4CAF50; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                    <div style="display: flex; align-items: start; gap: 12px;">
+                        <span style="font-size: 20px;">💡</span>
+                        <div>
+                            <div style="font-weight: 600; color: #2e7d32; margin-bottom: 8px;">Direct Communication & Payment</div>
+                            <p style="font-size: 14px; color: #2e7d32; line-height: 1.5; margin: 0;">
+                                PigSoil+ connects swine farmers with organic fertilizer buyers through direct messaging. Payment arrangements (cash, installments, barter) are handled privately between you and the buyer during face-to-face meetings. This approach respects traditional Filipino agricultural community practices.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Submit Button -->
-                <button type="submit" class="submit-btn">Post Listing</button>
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    Post Swine Compost Listing
+                </button>
             </form>
         </section>
     </main>
 
-    <!-- Simple inline JavaScript to ensure photo upload works -->
+    <!-- Fixed JavaScript for Better Error Handling -->
     <script>
-        console.log('Starting photo upload setup...');
+        console.log('Starting PigSoil+ photo upload with fixed validation...');
+        
+        // Global variables for better error handling
+        let uploadedPhotos = [];
+        let isFormSubmitting = false;
+        let selectedTechnique = 'basic_swine_manure';
         
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, setting up photo upload...');
+            console.log('DOM loaded, initializing form...');
             
+            setupEnhancedPhotoUpload();
+            setupFormValidation();
+            setupCharacterCounters();
+            setupLocationHandler();
+            setupCompostTechnique();
+            
+            console.log('Form initialization complete!');
+        });
+
+        // Setup composting technique selection
+        function setupCompostTechnique() {
+            const techniqueOptions = document.querySelectorAll('.technique-option');
+            const hiddenInput = document.getElementById('compostTechnique');
+            
+            techniqueOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove selected class from all options
+                    techniqueOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // Add selected class to clicked option
+                    this.classList.add('selected');
+                    
+                    // Update the technique value
+                    selectedTechnique = this.getAttribute('data-technique');
+                    hiddenInput.value = selectedTechnique;
+                    
+                    console.log('Selected technique:', selectedTechnique);
+                });
+            });
+        }
+
+        // Enhanced photo upload with FIXED validation
+        function setupEnhancedPhotoUpload() {
             const photoUploads = document.querySelectorAll('.photo-upload');
-            console.log('Found photo upload areas:', photoUploads.length);
+            console.log('Setting up photo upload for', photoUploads.length, 'areas');
             
             photoUploads.forEach((upload, index) => {
                 const input = upload.querySelector('.photo-input');
                 const removeBtn = upload.querySelector('.photo-remove');
                 
-                console.log(`Setting up upload area ${index}`);
-                
-                // Click handler for the upload area
+                // Click handler
                 upload.addEventListener('click', function(e) {
-                    console.log(`Upload area ${index} clicked!`);
-                    
-                    // Don't trigger if clicking remove button
                     if (e.target === removeBtn || e.target.closest('.photo-remove')) {
-                        console.log('Remove button clicked, not opening file browser');
                         return;
                     }
-                    
-                    // Trigger the file input to open file browser
-                    console.log('Triggering file input click...');
                     input.click();
                 });
                 
-                // File selection handler
+                // File selection handler - FIXED VERSION
                 input.addEventListener('change', function(e) {
                     const file = e.target.files[0];
-                    console.log('File input changed, file:', file ? file.name : 'none');
-                    
                     if (file) {
-                        console.log('Processing file:', file.name, file.type, file.size);
-                        
-                        // Validate file type
-                        if (!file.type.startsWith('image/')) {
-                            alert('Please select an image file (JPG, PNG, GIF)');
-                            return;
-                        }
-                        
-                        // Validate file size (max 5MB)
-                        if (file.size > 5 * 1024 * 1024) {
-                            alert('Image size should be less than 5MB');
-                            return;
-                        }
-                        
-                        // Read and display the image
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            console.log('File read successfully, creating preview...');
-                            
-                            // Create image element
-                            const img = document.createElement('img');
-                            img.src = e.target.result;
-                            img.className = 'photo-preview';
-                            img.style.width = '100%';
-                            img.style.height = '100%';
-                            img.style.objectFit = 'cover';
-                            
-                            // Clear the upload area and add the image
-                            upload.innerHTML = '';
-                            upload.appendChild(img);
-                            upload.appendChild(input);
-                            upload.appendChild(removeBtn);
-                            upload.classList.add('has-image');
-                            
-                            console.log('Image preview added successfully');
-                        };
-                        
-                        reader.onerror = function() {
-                            console.error('Error reading file');
-                            alert('Error reading the image file');
-                        };
-                        
-                        reader.readAsDataURL(file);
+                        handleEnhancedPhotoSelection(file, upload, index, input);
                     }
                 });
                 
                 // Remove button handler
                 removeBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    console.log(`Remove button clicked for area ${index}`);
-                    
-                    // Reset the upload area
-                    upload.classList.remove('has-image');
-                    upload.innerHTML = `
-                        <span class="photo-upload-icon">+</span>
-                        <input type="file" class="photo-input" accept="image/*" data-index="${index}">
-                        <button type="button" class="photo-remove">&times;</button>
-                    `;
-                    
-                    console.log('Upload area reset');
+                    removeEnhancedPhoto(upload, index);
                 });
             });
+        }
+
+        // FIXED photo selection handler
+        function handleEnhancedPhotoSelection(file, upload, index, input) {
+            console.log('Processing photo with FIXED validation:', file.name);
             
-            console.log('Photo upload setup complete!');
-        });
+            // Clear any previous errors
+            clearPhotoErrors();
+            
+            // Basic validation first (synchronous)
+            const basicValidation = validatePhotoFileBasic(file);
+            if (!basicValidation.isValid) {
+                showPhotoError(basicValidation.message);
+                input.value = ''; // Clear the input
+                return;
+            }
+            
+            // Show loading state
+            upload.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                    <div style="font-size: 24px; animation: spin 1s linear infinite;">⏳</div>
+                    <div style="font-size: 12px; margin-top: 8px; color: #666;">Processing...</div>
+                </div>
+            `;
+            
+            // Advanced validation (asynchronous)
+            validateImageDimensions(file).then((dimensionValidation) => {
+                if (!dimensionValidation.isValid) {
+                    showPhotoError(dimensionValidation.message);
+                    input.value = '';
+                    resetPhotoUpload(upload, index);
+                    return;
+                }
+                
+                // Proceed with file reading if all validations pass
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        createPhotoPreview(e.target.result, upload, index, file);
+                        uploadedPhotos[index] = file;
+                        showNotification('Photo uploaded successfully!', 'success');
+                        validatePhotos(); // Revalidate all photos
+                    } catch (error) {
+                        console.error('Error creating photo preview:', error);
+                        showPhotoError('Failed to process image. Please try again.');
+                        resetPhotoUpload(upload, index);
+                    }
+                };
+                
+                reader.onerror = function() {
+                    console.error('Error reading file');
+                    showPhotoError('Error reading image file. Please try a different file.');
+                    resetPhotoUpload(upload, index);
+                };
+                
+                reader.readAsDataURL(file);
+            }).catch((error) => {
+                console.error('Validation error:', error);
+                showPhotoError('Error validating image. Please try again.');
+                resetPhotoUpload(upload, index);
+            });
+        }
+
+        // Basic file validation (synchronous)
+        function validatePhotoFileBasic(file) {
+            // Check file type
+            if (!file.type.startsWith('image/')) {
+                return {
+                    isValid: false,
+                    message: 'Please select a valid image file (JPG, PNG, GIF, WebP)'
+                };
+            }
+            
+            // Check file size (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                return {
+                    isValid: false,
+                    message: 'Image size must be less than 5MB. Please compress your image or choose a smaller file.'
+                };
+            }
+            
+            return { isValid: true };
+        }
+
+        // Image dimension validation (asynchronous)
+        function validateImageDimensions(file) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = function() {
+                    if (this.width < 200 || this.height < 200) {
+                        resolve({
+                            isValid: false,
+                            message: 'Image should be at least 200x200 pixels for better quality display.'
+                        });
+                    } else {
+                        resolve({ isValid: true });
+                    }
+                    // Clean up the object URL
+                    URL.revokeObjectURL(this.src);
+                };
+                img.onerror = function() {
+                    resolve({
+                        isValid: false,
+                        message: 'Invalid image file. Please try a different image.'
+                    });
+                    // Clean up the object URL
+                    URL.revokeObjectURL(this.src);
+                };
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        function createPhotoPreview(imageSrc, upload, index, file) {
+            const img = document.createElement('img');
+            img.src = imageSrc;
+            img.className = 'photo-preview';
+            img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+            
+            const newInput = document.createElement('input');
+            newInput.type = 'file';
+            newInput.className = 'photo-input';
+            newInput.accept = 'image/*';
+            newInput.setAttribute('data-index', index);
+            newInput.style.display = 'none';
+            newInput.uploadFile = file; // Store file reference
+            
+            const newRemoveBtn = document.createElement('button');
+            newRemoveBtn.type = 'button';
+            newRemoveBtn.className = 'photo-remove';
+            newRemoveBtn.innerHTML = '&times;';
+            newRemoveBtn.style.cssText = `
+                position: absolute; top: 4px; right: 4px; background: #e74c3c;
+                color: white; border: none; border-radius: 50%; width: 24px; height: 24px;
+                cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center;
+                transition: background 0.3s;
+            `;
+            
+            upload.innerHTML = '';
+            upload.appendChild(img);
+            upload.appendChild(newInput);
+            upload.appendChild(newRemoveBtn);
+            upload.classList.add('has-image');
+            
+            // Re-attach event listeners
+            newInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    handleEnhancedPhotoSelection(file, upload, index, newInput);
+                }
+            });
+            
+            newRemoveBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                removeEnhancedPhoto(upload, index);
+            });
+            
+            upload.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (e.target !== newRemoveBtn && !e.target.closest('.photo-remove')) {
+                    newInput.click();
+                }
+            });
+        }
+
+        function removeEnhancedPhoto(upload, index) {
+            uploadedPhotos[index] = null;
+            resetPhotoUpload(upload, index);
+            validatePhotos();
+            showNotification('Photo removed', 'info');
+        }
+
+        function resetPhotoUpload(upload, index) {
+            upload.classList.remove('has-image');
+            upload.innerHTML = `
+                <span class="photo-upload-icon">+</span>
+                <input type="file" class="photo-input" accept="image/*" data-index="${index}">
+                <button type="button" class="photo-remove">&times;</button>
+            `;
+            
+            const input = upload.querySelector('.photo-input');
+            const removeBtn = upload.querySelector('.photo-remove');
+            
+            input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    handleEnhancedPhotoSelection(file, upload, index, input);
+                }
+            });
+            
+            removeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                removeEnhancedPhoto(upload, index);
+            });
+            
+            upload.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (e.target !== removeBtn && !e.target.closest('.photo-remove')) {
+                    input.click();
+                }
+            });
+        }
+
+        function validatePhotos() {
+            const hasPhotos = uploadedPhotos.some(photo => photo !== null && photo !== undefined);
+            
+            if (!hasPhotos) {
+                showPhotoError('Please upload at least one photo of your swine compost');
+                return false;
+            }
+            
+            clearPhotoErrors();
+            return true;
+        }
+
+        function showPhotoError(message) {
+            const photoError = document.getElementById('photoError');
+            const photoGrid = document.getElementById('photoUploadGrid');
+            
+            photoError.textContent = message;
+            photoError.style.display = 'flex';
+            photoGrid.classList.add('error');
+        }
+
+        function clearPhotoErrors() {
+            const photoError = document.getElementById('photoError');
+            const photoGrid = document.getElementById('photoUploadGrid');
+            
+            photoError.style.display = 'none';
+            photoGrid.classList.remove('error');
+        }
+
+        // Enhanced form validation
+        function setupFormValidation() {
+            const fields = [
+                { id: 'productTitle', validator: validateProductTitle },
+                { id: 'quantity', validator: validateQuantity },
+                { id: 'price', validator: validatePrice },
+                { id: 'description', validator: validateDescription }
+            ];
+            
+            fields.forEach(field => {
+                const element = document.getElementById(field.id);
+                if (element) {
+                    element.addEventListener('input', field.validator);
+                    element.addEventListener('blur', field.validator);
+                }
+            });
+
+            // Form submission handler
+            document.getElementById('createListingForm').addEventListener('submit', handleFormSubmission);
+        }
+
+        function validateProductTitle() {
+            const field = document.getElementById('productTitle');
+            const value = field.value.trim();
+            
+            if (value.length === 0) {
+                setFieldError(field, 'Product title is required');
+                return false;
+            }
+            
+            if (value.length < 3) {
+                setFieldError(field, 'Product title must be at least 3 characters');
+                return false;
+            }
+            
+            if (value.length > 100) {
+                setFieldError(field, 'Product title must be less than 100 characters');
+                return false;
+            }
+            
+            setFieldSuccess(field);
+            return true;
+        }
+
+        function validateQuantity() {
+            const field = document.getElementById('quantity');
+            const value = parseFloat(field.value);
+            
+            if (!field.value || isNaN(value)) {
+                setFieldError(field, 'Quantity is required');
+                return false;
+            }
+            
+            if (value <= 0) {
+                setFieldError(field, 'Quantity must be greater than 0');
+                return false;
+            }
+            
+            if (value > 10000) {
+                setFieldError(field, 'Quantity seems too large. Maximum is 10,000 kg');
+                return false;
+            }
+            
+            setFieldSuccess(field);
+            return true;
+        }
+
+        function validatePrice() {
+            const field = document.getElementById('price');
+            const value = parseFloat(field.value);
+            
+            if (!field.value || isNaN(value)) {
+                setFieldError(field, 'Price is required');
+                return false;
+            }
+            
+            if (value <= 0) {
+                setFieldError(field, 'Price must be greater than 0');
+                return false;
+            }
+            
+            if (value > 5000) {
+                setFieldError(field, 'Price seems too high. Maximum is ₱5,000 per kg');
+                return false;
+            }
+            
+            setFieldSuccess(field);
+            return true;
+        }
+
+        function validateDescription() {
+            const field = document.getElementById('description');
+            const value = field.value.trim();
+            
+            if (value.length > 500) {
+                setFieldError(field, 'Description must be less than 500 characters');
+                return false;
+            }
+            
+            clearFieldError(field);
+            return true;
+        }
+
+        function setFieldError(field, message) {
+            field.classList.remove('success');
+            field.classList.add('error');
+            
+            const existingMessage = field.parentNode.querySelector('.error-message, .success-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            field.parentNode.appendChild(errorDiv);
+        }
+
+        function setFieldSuccess(field) {
+            field.classList.remove('error');
+            field.classList.add('success');
+            clearFieldError(field);
+        }
+
+        function clearFieldError(field) {
+            field.classList.remove('error');
+            
+            const existingMessage = field.parentNode.querySelector('.error-message, .success-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+        }
+
+        // Character counters
+        function setupCharacterCounters() {
+            const description = document.getElementById('description');
+            const counter = document.getElementById('descriptionCounter');
+            
+            if (description && counter) {
+                description.addEventListener('input', () => {
+                    const length = description.value.length;
+                    counter.textContent = `${length}/500 characters`;
+                    
+                    if (length > 450) {
+                        counter.style.color = '#e74c3c';
+                    } else if (length > 400) {
+                        counter.style.color = '#ff9800';
+                    } else {
+                        counter.style.color = '#666';
+                    }
+                });
+            }
+        }
+
+        // Location handler
+        function setupLocationHandler() {
+            const changeLocationBtn = document.getElementById('changeLocationBtn');
+            const locationContainer = document.getElementById('locationContainer');
+            
+            if (changeLocationBtn) {
+                changeLocationBtn.addEventListener('click', () => {
+                    locationContainer.classList.add('active');
+                    showNotification('Location picker opened! (Feature coming soon)', 'info');
+                    
+                    setTimeout(() => {
+                        locationContainer.classList.remove('active');
+                    }, 2000);
+                });
+            }
+        }
+
+        // Enhanced form submission
+        function handleFormSubmission(e) {
+            e.preventDefault();
+            
+            if (isFormSubmitting) {
+                return;
+            }
+            
+            console.log('Starting form submission...');
+            
+            // Validate all fields
+            const isValidTitle = validateProductTitle();
+            const isValidQuantity = validateQuantity();
+            const isValidPrice = validatePrice();
+            const isValidDescription = validateDescription();
+            const isValidPhotos = validatePhotos();
+            
+            if (!isValidTitle || !isValidQuantity || !isValidPrice || !isValidPhotos) {
+                showNotification('Please fix all errors before submitting', 'error');
+                
+                // Scroll to first error
+                const firstError = document.querySelector('.form-input.error, .photo-upload-grid.error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
+            
+            isFormSubmitting = true;
+            showLoadingOverlay('Preparing your swine compost listing...');
+            
+            // Simulate the submission process that Firebase will handle
+            simulateSubmission();
+        }
+
+        // Simulate submission process for demonstration
+        function simulateSubmission() {
+            const steps = [
+                { message: 'Validating compost photos...', duration: 1000 },
+                { message: 'Uploading images to Firebase storage...', duration: 2000 },
+                { message: 'Creating listing in Firebase database...', duration: 1500 },
+                { message: 'Finalizing your swine compost listing...', duration: 1000 }
+            ];
+            
+            let currentStep = 0;
+            const progressBar = document.getElementById('progressBar');
+            const loadingText = document.getElementById('loadingText');
+            const progressIndicator = document.getElementById('progressIndicator');
+            
+            progressIndicator.style.display = 'block';
+            
+            function processStep() {
+                if (currentStep < steps.length) {
+                    const step = steps[currentStep];
+                    loadingText.textContent = step.message;
+                    progressBar.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
+                    
+                    setTimeout(() => {
+                        currentStep++;
+                        processStep();
+                    }, step.duration);
+                } else {
+                    // Success!
+                    hideLoadingOverlay();
+                    showNotification('Swine compost listing created successfully!', 'success');
+                    isFormSubmitting = false;
+                    
+                    // Reset form or redirect
+                    setTimeout(() => {
+                        showNotification('Redirecting to marketplace...', 'info');
+                        window.location.href = '../html/farmermarket.html';
+                    }, 2000);
+                }
+            }
+            
+            processStep();
+        }
+
+        // Utility functions
+        function showLoadingOverlay(message) {
+            const overlay = document.getElementById('loadingOverlay');
+            const text = document.getElementById('loadingText');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            text.textContent = message;
+            overlay.classList.add('show');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            overlay.classList.remove('show');
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+        }
+
+        function showNotification(message, type = 'info') {
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Show notification
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Hide notification
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 4000);
+        }
+        
+        console.log('PigSoil+ CreateListing setup complete with FIXED photo upload!');
     </script>
 
-    <!-- Load Firebase modules with correct paths -->
+    <!-- Load Firebase modules with enhanced error handling -->
     <script type="module">
-        // Import Firebase modules from js/ folder
+        console.log('Loading PigSoil+ Firebase modules...');
+        
         try {
-            // Use absolute path from your website root
+            // Import the integrated CreateListing.js module
             await import('../js/CreateListing.js');
-            console.log('Firebase CreateListing.js loaded successfully');
+            console.log('✅ Firebase CreateListing.js loaded successfully');
+            
+            // Remove loading overlay if it was shown
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay && overlay.classList.contains('show')) {
+                overlay.classList.remove('show');
+            }
+            
         } catch (error) {
-            console.log('Firebase module loading failed (using fallback):', error);
-            console.error('Error details:', error);
+            console.error('❌ Firebase module loading failed:', error);
+            
+            // Show detailed error to user
+            const errorMessage = error.message || 'Unknown error occurred';
+            const notification = document.createElement('div');
+            notification.className = 'notification error';
+            notification.innerHTML = `
+                <strong>Firebase Connection Error</strong><br>
+                ${errorMessage}<br>
+                <small>Please check your setup and try again.</small>
+            `;
+            notification.style.maxWidth = '400px';
+            notification.style.whiteSpace = 'normal';
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Keep error visible longer
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 8000);
+            
+            // Hide loading overlay
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('show');
+            }
+            
+            // Disable submit button
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Firebase Error - Cannot Submit';
+                submitBtn.style.background = '#e74c3c';
+            }
         }
     </script>
 </body>
