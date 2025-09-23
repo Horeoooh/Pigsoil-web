@@ -854,670 +854,692 @@
     </main>
 
     <!-- Fixed JavaScript for Better Error Handling -->
-    <script>
-        console.log('Starting PigSoil+ photo upload with fixed validation...');
+    <script type="module">
+    // Import Firebase modules
+    import { auth, db, storage } from '../js/init.js';
+    import { 
+        collection, 
+        addDoc, 
+        serverTimestamp, 
+        query, 
+        where, 
+        getDocs,
+        doc,
+        setDoc,
+        getDoc
+    } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
+    import { ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-storage.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
+
+    // Collection names matching your Firebase structure
+    const COLLECTIONS = {
+        PRODUCT_LISTINGS: 'product_listings',
+        USERS: 'users'
+    };
+
+    // Global variables
+    let uploadedPhotos = [];
+    let isFormSubmitting = false;
+    let selectedTechnique = 'basic_swine_manure';
+    let currentUser = null;
+    let currentUserData = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('PigSoil+ Create Listing loaded with Firebase integration');
         
-        // Global variables for better error handling
-        let uploadedPhotos = [];
-        let isFormSubmitting = false;
-        let selectedTechnique = 'basic_swine_manure';
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing form...');
-            
-            setupEnhancedPhotoUpload();
-            setupFormValidation();
-            setupCharacterCounters();
-            setupLocationHandler();
-            setupCompostTechnique();
-            
-            console.log('Form initialization complete!');
-        });
+        checkAuthState();
+        setupPhotoUpload();
+        setupFormValidation();
+        setupCharacterCounters();
+        setupLocationHandler();
+        setupCompostTechnique();
+    });
 
-        // Setup composting technique selection
-        function setupCompostTechnique() {
-            const techniqueOptions = document.querySelectorAll('.technique-option');
-            const hiddenInput = document.getElementById('compostTechnique');
-            
-            techniqueOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    // Remove selected class from all options
-                    techniqueOptions.forEach(opt => opt.classList.remove('selected'));
-                    
-                    // Add selected class to clicked option
-                    this.classList.add('selected');
-                    
-                    // Update the technique value
-                    selectedTechnique = this.getAttribute('data-technique');
-                    hiddenInput.value = selectedTechnique;
-                    
-                    console.log('Selected technique:', selectedTechnique);
-                });
-            });
-        }
-
-        // Enhanced photo upload with FIXED validation
-        function setupEnhancedPhotoUpload() {
-            const photoUploads = document.querySelectorAll('.photo-upload');
-            console.log('Setting up photo upload for', photoUploads.length, 'areas');
-            
-            photoUploads.forEach((upload, index) => {
-                const input = upload.querySelector('.photo-input');
-                const removeBtn = upload.querySelector('.photo-remove');
-                
-                // Click handler
-                upload.addEventListener('click', function(e) {
-                    if (e.target === removeBtn || e.target.closest('.photo-remove')) {
-                        return;
-                    }
-                    input.click();
-                });
-                
-                // File selection handler - FIXED VERSION
-                input.addEventListener('change', function(e) {
-                    const file = e.target.files[0];
-                    if (file) {
-                        handleEnhancedPhotoSelection(file, upload, index, input);
-                    }
-                });
-                
-                // Remove button handler
-                removeBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    removeEnhancedPhoto(upload, index);
-                });
-            });
-        }
-
-        // FIXED photo selection handler
-        function handleEnhancedPhotoSelection(file, upload, index, input) {
-            console.log('Processing photo with FIXED validation:', file.name);
-            
-            // Clear any previous errors
-            clearPhotoErrors();
-            
-            // Basic validation first (synchronous)
-            const basicValidation = validatePhotoFileBasic(file);
-            if (!basicValidation.isValid) {
-                showPhotoError(basicValidation.message);
-                input.value = ''; // Clear the input
+    // Check authentication
+    function checkAuthState() {
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                showNotification('Please sign in to create a listing', 'error');
+                setTimeout(() => {
+                    window.location.href = '../html/login.html';
+                }, 2000);
                 return;
             }
             
-            // Show loading state
-            upload.innerHTML = `
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
-                    <div style="font-size: 24px; animation: spin 1s linear infinite;">⏳</div>
-                    <div style="font-size: 12px; margin-top: 8px; color: #666;">Processing...</div>
-                </div>
-            `;
+            currentUser = user;
             
-            // Advanced validation (asynchronous)
-            validateImageDimensions(file).then((dimensionValidation) => {
-                if (!dimensionValidation.isValid) {
-                    showPhotoError(dimensionValidation.message);
-                    input.value = '';
-                    resetPhotoUpload(upload, index);
-                    return;
+            try {
+                currentUserData = await getUserData(user.uid);
+                
+                if (currentUserData.userType !== 'swine_farmer' && currentUserData.userType !== 'Swine Farmer') {
+                    showNotification('Only swine farmers can create listings', 'error');
+                    setTimeout(() => {
+                        window.location.href = '../html/marketplace.html';
+                    }, 2000);
                 }
-                
-                // Proceed with file reading if all validations pass
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    try {
-                        createPhotoPreview(e.target.result, upload, index, file);
-                        uploadedPhotos[index] = file;
-                        showNotification('Photo uploaded successfully!', 'success');
-                        validatePhotos(); // Revalidate all photos
-                    } catch (error) {
-                        console.error('Error creating photo preview:', error);
-                        showPhotoError('Failed to process image. Please try again.');
-                        resetPhotoUpload(upload, index);
-                    }
-                };
-                
-                reader.onerror = function() {
-                    console.error('Error reading file');
-                    showPhotoError('Error reading image file. Please try a different file.');
-                    resetPhotoUpload(upload, index);
-                };
-                
-                reader.readAsDataURL(file);
-            }).catch((error) => {
-                console.error('Validation error:', error);
-                showPhotoError('Error validating image. Please try again.');
-                resetPhotoUpload(upload, index);
-            });
-        }
-
-        // Basic file validation (synchronous)
-        function validatePhotoFileBasic(file) {
-            // Check file type
-            if (!file.type.startsWith('image/')) {
-                return {
-                    isValid: false,
-                    message: 'Please select a valid image file (JPG, PNG, GIF, WebP)'
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                currentUserData = {
+                    userType: 'swine_farmer',
+                    userName: user.displayName || 'Swine Farmer',
+                    userEmail: user.email
                 };
             }
+        });
+    }
+
+    // Get user data from Firestore
+    async function getUserData(uid) {
+        try {
+            const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, uid));
             
-            // Check file size (5MB limit)
-            if (file.size > 5 * 1024 * 1024) {
-                return {
-                    isValid: false,
-                    message: 'Image size must be less than 5MB. Please compress your image or choose a smaller file.'
-                };
+            if (userDoc.exists()) {
+                return userDoc.data();
             }
             
-            return { isValid: true };
+            // Create default user data if not found
+            const defaultUserData = {
+                userCreatedAt: serverTimestamp(),
+                userEmail: currentUser.email,
+                userIsActive: true,
+                userName: currentUser.displayName || 'Swine Farmer',
+                userPhone: '+639123456789',
+                userType: 'swine_farmer',
+                userUpdatedAt: serverTimestamp()
+            };
+            
+            await setDoc(doc(db, COLLECTIONS.USERS, uid), defaultUserData);
+            return defaultUserData;
+            
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            throw error;
         }
+    }
 
-        // Image dimension validation (asynchronous)
-        function validateImageDimensions(file) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = function() {
-                    if (this.width < 200 || this.height < 200) {
-                        resolve({
-                            isValid: false,
-                            message: 'Image should be at least 200x200 pixels for better quality display.'
-                        });
-                    } else {
-                        resolve({ isValid: true });
-                    }
-                    // Clean up the object URL
-                    URL.revokeObjectURL(this.src);
-                };
-                img.onerror = function() {
-                    resolve({
-                        isValid: false,
-                        message: 'Invalid image file. Please try a different image.'
-                    });
-                    // Clean up the object URL
-                    URL.revokeObjectURL(this.src);
-                };
-                img.src = URL.createObjectURL(file);
+    // Setup composting technique selection
+    function setupCompostTechnique() {
+        const techniqueOptions = document.querySelectorAll('.technique-option');
+        const hiddenInput = document.getElementById('compostTechnique');
+        
+        techniqueOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                techniqueOptions.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedTechnique = this.getAttribute('data-technique');
+                hiddenInput.value = selectedTechnique;
             });
-        }
+        });
+    }
 
-        function createPhotoPreview(imageSrc, upload, index, file) {
-            const img = document.createElement('img');
-            img.src = imageSrc;
-            img.className = 'photo-preview';
-            img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
-            
-            const newInput = document.createElement('input');
-            newInput.type = 'file';
-            newInput.className = 'photo-input';
-            newInput.accept = 'image/*';
-            newInput.setAttribute('data-index', index);
-            newInput.style.display = 'none';
-            newInput.uploadFile = file; // Store file reference
-            
-            const newRemoveBtn = document.createElement('button');
-            newRemoveBtn.type = 'button';
-            newRemoveBtn.className = 'photo-remove';
-            newRemoveBtn.innerHTML = '&times;';
-            newRemoveBtn.style.cssText = `
-                position: absolute; top: 4px; right: 4px; background: #e74c3c;
-                color: white; border: none; border-radius: 50%; width: 24px; height: 24px;
-                cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center;
-                transition: background 0.3s;
-            `;
-            
-            upload.innerHTML = '';
-            upload.appendChild(img);
-            upload.appendChild(newInput);
-            upload.appendChild(newRemoveBtn);
-            upload.classList.add('has-image');
-            
-            // Re-attach event listeners
-            newInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    handleEnhancedPhotoSelection(file, upload, index, newInput);
-                }
-            });
-            
-            newRemoveBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                removeEnhancedPhoto(upload, index);
-            });
-            
-            upload.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (e.target !== newRemoveBtn && !e.target.closest('.photo-remove')) {
-                    newInput.click();
-                }
-            });
-        }
-
-        function removeEnhancedPhoto(upload, index) {
-            uploadedPhotos[index] = null;
-            resetPhotoUpload(upload, index);
-            validatePhotos();
-            showNotification('Photo removed', 'info');
-        }
-
-        function resetPhotoUpload(upload, index) {
-            upload.classList.remove('has-image');
-            upload.innerHTML = `
-                <span class="photo-upload-icon">+</span>
-                <input type="file" class="photo-input" accept="image/*" data-index="${index}">
-                <button type="button" class="photo-remove">&times;</button>
-            `;
-            
+    // Setup photo upload
+    function setupPhotoUpload() {
+        const photoUploads = document.querySelectorAll('.photo-upload');
+        
+        photoUploads.forEach((upload, index) => {
             const input = upload.querySelector('.photo-input');
             const removeBtn = upload.querySelector('.photo-remove');
             
-            input.addEventListener('change', (e) => {
+            upload.addEventListener('click', function(e) {
+                if (e.target === removeBtn || e.target.closest('.photo-remove')) {
+                    return;
+                }
+                input.click();
+            });
+            
+            input.addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (file) {
-                    handleEnhancedPhotoSelection(file, upload, index, input);
+                    handlePhotoSelection(file, upload, index, input);
                 }
             });
             
-            removeBtn.addEventListener('click', (e) => {
-                e.preventDefault();
+            removeBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                removeEnhancedPhoto(upload, index);
+                removePhoto(upload, index);
             });
-            
-            upload.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (e.target !== removeBtn && !e.target.closest('.photo-remove')) {
-                    input.click();
-                }
-            });
+        });
+    }
+
+    // Handle photo selection
+    function handlePhotoSelection(file, upload, index, input) {
+        clearPhotoErrors();
+        
+        if (!validatePhotoFile(file)) {
+            input.value = '';
+            return;
         }
+        
+        upload.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                <div style="font-size: 24px; animation: spin 1s linear infinite;">⏳</div>
+                <div style="font-size: 12px; margin-top: 8px; color: #666;">Processing...</div>
+            </div>
+        `;
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            createPhotoPreview(e.target.result, upload, index, file);
+            uploadedPhotos[index] = file;
+            showNotification('Photo ready for upload!', 'success');
+            validatePhotos();
+        };
+        
+        reader.onerror = function() {
+            showPhotoError('Error reading image file');
+            resetPhotoUpload(upload, index);
+        };
+        
+        reader.readAsDataURL(file);
+    }
 
-        function validatePhotos() {
-            const hasPhotos = uploadedPhotos.some(photo => photo !== null && photo !== undefined);
-            
-            if (!hasPhotos) {
-                showPhotoError('Please upload at least one photo of your swine compost');
-                return false;
-            }
-            
-            clearPhotoErrors();
-            return true;
+    // Validate photo file
+    function validatePhotoFile(file) {
+        if (!file.type.startsWith('image/')) {
+            showPhotoError('Please select a valid image file (JPG, PNG, GIF, WebP)');
+            return false;
         }
-
-        function showPhotoError(message) {
-            const photoError = document.getElementById('photoError');
-            const photoGrid = document.getElementById('photoUploadGrid');
-            
-            photoError.textContent = message;
-            photoError.style.display = 'flex';
-            photoGrid.classList.add('error');
+        
+        if (file.size > 5 * 1024 * 1024) {
+            showPhotoError('Image size must be less than 5MB');
+            return false;
         }
+        
+        return true;
+    }
 
-        function clearPhotoErrors() {
-            const photoError = document.getElementById('photoError');
-            const photoGrid = document.getElementById('photoUploadGrid');
-            
-            photoError.style.display = 'none';
-            photoGrid.classList.remove('error');
-        }
-
-        // Enhanced form validation
-        function setupFormValidation() {
-            const fields = [
-                { id: 'productTitle', validator: validateProductTitle },
-                { id: 'quantity', validator: validateQuantity },
-                { id: 'price', validator: validatePrice },
-                { id: 'description', validator: validateDescription }
-            ];
-            
-            fields.forEach(field => {
-                const element = document.getElementById(field.id);
-                if (element) {
-                    element.addEventListener('input', field.validator);
-                    element.addEventListener('blur', field.validator);
-                }
-            });
-
-            // Form submission handler
-            document.getElementById('createListingForm').addEventListener('submit', handleFormSubmission);
-        }
-
-        function validateProductTitle() {
-            const field = document.getElementById('productTitle');
-            const value = field.value.trim();
-            
-            if (value.length === 0) {
-                setFieldError(field, 'Product title is required');
-                return false;
+    // Create photo preview
+    function createPhotoPreview(imageSrc, upload, index, file) {
+        const img = document.createElement('img');
+        img.src = imageSrc;
+        img.className = 'photo-preview';
+        img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+        
+        const newInput = document.createElement('input');
+        newInput.type = 'file';
+        newInput.className = 'photo-input';
+        newInput.accept = 'image/*';
+        newInput.setAttribute('data-index', index);
+        newInput.style.display = 'none';
+        
+        const newRemoveBtn = document.createElement('button');
+        newRemoveBtn.type = 'button';
+        newRemoveBtn.className = 'photo-remove';
+        newRemoveBtn.innerHTML = '&times;';
+        newRemoveBtn.style.cssText = `
+            position: absolute; top: 4px; right: 4px; background: #e74c3c;
+            color: white; border: none; border-radius: 50%; width: 24px; height: 24px;
+            cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center;
+        `;
+        
+        upload.innerHTML = '';
+        upload.appendChild(img);
+        upload.appendChild(newInput);
+        upload.appendChild(newRemoveBtn);
+        upload.classList.add('has-image');
+        
+        // Re-attach event listeners
+        newInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handlePhotoSelection(file, upload, index, newInput);
             }
-            
-            if (value.length < 3) {
-                setFieldError(field, 'Product title must be at least 3 characters');
-                return false;
-            }
-            
-            if (value.length > 100) {
-                setFieldError(field, 'Product title must be less than 100 characters');
-                return false;
-            }
-            
-            setFieldSuccess(field);
-            return true;
-        }
-
-        function validateQuantity() {
-            const field = document.getElementById('quantity');
-            const value = parseFloat(field.value);
-            
-            if (!field.value || isNaN(value)) {
-                setFieldError(field, 'Quantity is required');
-                return false;
-            }
-            
-            if (value <= 0) {
-                setFieldError(field, 'Quantity must be greater than 0');
-                return false;
-            }
-            
-            if (value > 10000) {
-                setFieldError(field, 'Quantity seems too large. Maximum is 10,000 kg');
-                return false;
-            }
-            
-            setFieldSuccess(field);
-            return true;
-        }
-
-        function validatePrice() {
-            const field = document.getElementById('price');
-            const value = parseFloat(field.value);
-            
-            if (!field.value || isNaN(value)) {
-                setFieldError(field, 'Price is required');
-                return false;
-            }
-            
-            if (value <= 0) {
-                setFieldError(field, 'Price must be greater than 0');
-                return false;
-            }
-            
-            if (value > 5000) {
-                setFieldError(field, 'Price seems too high. Maximum is ₱5,000 per kg');
-                return false;
-            }
-            
-            setFieldSuccess(field);
-            return true;
-        }
-
-        function validateDescription() {
-            const field = document.getElementById('description');
-            const value = field.value.trim();
-            
-            if (value.length > 500) {
-                setFieldError(field, 'Description must be less than 500 characters');
-                return false;
-            }
-            
-            clearFieldError(field);
-            return true;
-        }
-
-        function setFieldError(field, message) {
-            field.classList.remove('success');
-            field.classList.add('error');
-            
-            const existingMessage = field.parentNode.querySelector('.error-message, .success-message');
-            if (existingMessage) {
-                existingMessage.remove();
-            }
-            
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
-            errorDiv.textContent = message;
-            field.parentNode.appendChild(errorDiv);
-        }
-
-        function setFieldSuccess(field) {
-            field.classList.remove('error');
-            field.classList.add('success');
-            clearFieldError(field);
-        }
-
-        function clearFieldError(field) {
-            field.classList.remove('error');
-            
-            const existingMessage = field.parentNode.querySelector('.error-message, .success-message');
-            if (existingMessage) {
-                existingMessage.remove();
-            }
-        }
-
-        // Character counters
-        function setupCharacterCounters() {
-            const description = document.getElementById('description');
-            const counter = document.getElementById('descriptionCounter');
-            
-            if (description && counter) {
-                description.addEventListener('input', () => {
-                    const length = description.value.length;
-                    counter.textContent = `${length}/500 characters`;
-                    
-                    if (length > 450) {
-                        counter.style.color = '#e74c3c';
-                    } else if (length > 400) {
-                        counter.style.color = '#ff9800';
-                    } else {
-                        counter.style.color = '#666';
-                    }
-                });
-            }
-        }
-
-        // Location handler
-        function setupLocationHandler() {
-            const changeLocationBtn = document.getElementById('changeLocationBtn');
-            const locationContainer = document.getElementById('locationContainer');
-            
-            if (changeLocationBtn) {
-                changeLocationBtn.addEventListener('click', () => {
-                    locationContainer.classList.add('active');
-                    showNotification('Location picker opened! (Feature coming soon)', 'info');
-                    
-                    setTimeout(() => {
-                        locationContainer.classList.remove('active');
-                    }, 2000);
-                });
-            }
-        }
-
-        // Enhanced form submission
-        function handleFormSubmission(e) {
+        });
+        
+        newRemoveBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            if (isFormSubmitting) {
-                return;
+            e.stopPropagation();
+            removePhoto(upload, index);
+        });
+        
+        upload.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (e.target !== newRemoveBtn && !e.target.closest('.photo-remove')) {
+                newInput.click();
             }
+        });
+    }
+
+    // Remove photo
+    function removePhoto(upload, index) {
+        uploadedPhotos[index] = null;
+        resetPhotoUpload(upload, index);
+        validatePhotos();
+        showNotification('Photo removed', 'info');
+    }
+
+    // Reset photo upload
+    function resetPhotoUpload(upload, index) {
+        upload.classList.remove('has-image');
+        upload.innerHTML = `
+            <span class="photo-upload-icon">+</span>
+            <input type="file" class="photo-input" accept="image/*" data-index="${index}">
+            <button type="button" class="photo-remove">&times;</button>
+        `;
+        
+        const input = upload.querySelector('.photo-input');
+        const removeBtn = upload.querySelector('.photo-remove');
+        
+        input.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handlePhotoSelection(file, upload, index, input);
+            }
+        });
+        
+        removeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            removePhoto(upload, index);
+        });
+        
+        upload.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (e.target !== removeBtn && !e.target.closest('.photo-remove')) {
+                input.click();
+            }
+        });
+    }
+
+    // Validate photos
+    function validatePhotos() {
+        const hasPhotos = uploadedPhotos.some(photo => photo !== null && photo !== undefined);
+        
+        if (!hasPhotos) {
+            showPhotoError('Please upload at least one photo of your swine compost');
+            return false;
+        }
+        
+        clearPhotoErrors();
+        return true;
+    }
+
+    // Photo error handling
+    function showPhotoError(message) {
+        const photoError = document.getElementById('photoError');
+        const photoGrid = document.getElementById('photoUploadGrid');
+        
+        photoError.textContent = message;
+        photoError.style.display = 'flex';
+        photoGrid.classList.add('error');
+    }
+
+    function clearPhotoErrors() {
+        const photoError = document.getElementById('photoError');
+        const photoGrid = document.getElementById('photoUploadGrid');
+        
+        photoError.style.display = 'none';
+        photoGrid.classList.remove('error');
+    }
+
+    // Setup form validation
+    function setupFormValidation() {
+        const fields = [
+            { id: 'productTitle', validator: validateProductTitle },
+            { id: 'quantity', validator: validateQuantity },
+            { id: 'price', validator: validatePrice },
+            { id: 'description', validator: validateDescription }
+        ];
+        
+        fields.forEach(field => {
+            const element = document.getElementById(field.id);
+            if (element) {
+                element.addEventListener('input', field.validator);
+                element.addEventListener('blur', field.validator);
+            }
+        });
+
+        document.getElementById('createListingForm').addEventListener('submit', handleFormSubmission);
+    }
+
+    // Form submission handler
+    function handleFormSubmission(e) {
+        e.preventDefault();
+        
+        if (isFormSubmitting) {
+            return;
+        }
+        
+        const isValidTitle = validateProductTitle();
+        const isValidQuantity = validateQuantity();
+        const isValidPrice = validatePrice();
+        const isValidDescription = validateDescription();
+        const isValidPhotos = validatePhotos();
+        
+        if (!isValidTitle || !isValidQuantity || !isValidPrice || !isValidPhotos) {
+            showNotification('Please fix all errors before submitting', 'error');
             
-            console.log('Starting form submission...');
+            const firstError = document.querySelector('.form-input.error, .photo-upload-grid.error');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
+        
+        isFormSubmitting = true;
+        showLoadingOverlay('Preparing your swine compost listing...');
+        
+        const formData = collectFormData();
+        submitListingToFirebase(formData);
+    }
+
+    // Collect form data
+    function collectFormData() {
+        const title = document.getElementById('productTitle').value.trim();
+        const quantity = document.getElementById('quantity').value;
+        const price = document.getElementById('price').value;
+        const description = document.getElementById('description').value.trim();
+        const technique = document.getElementById('compostTechnique').value;
+        
+        const photos = [];
+        uploadedPhotos.forEach((file, index) => {
+            if (file) {
+                photos.push({
+                    index: index,
+                    file: file,
+                    fileName: `swine_compost_${Date.now()}_${index}.${file.name.split('.').pop()}`
+                });
+            }
+        });
+        
+        return {
+            title,
+            quantity: parseFloat(quantity),
+            price: parseFloat(price),
+            description,
+            technique,
+            photos,
+            sellerId: currentUser?.uid,
+            sellerName: currentUserData?.userName || currentUser?.displayName || 'Swine Farmer'
+        };
+    }
+
+    // Submit listing to Firebase
+    async function submitListingToFirebase(formData) {
+        try {
+            // Upload photos
+            updateProgress('Uploading compost photos...', 25);
+            const photoUrls = await uploadPhotosToFirebase(formData.photos);
             
-            // Validate all fields
-            const isValidTitle = validateProductTitle();
-            const isValidQuantity = validateQuantity();
-            const isValidPrice = validatePrice();
-            const isValidDescription = validateDescription();
-            const isValidPhotos = validatePhotos();
+            // Create listing data
+            updateProgress('Creating swine compost listing...', 50);
+            const listingData = {
+                listingAddressId: 'default_address',
+                listingBatchID: 'batch_' + Date.now(),
+                listingCreatedAt: serverTimestamp(),
+                listingDescription: formData.description,
+                listingIsAvailable: true,
+                listingPricePerKG: formData.price.toString(),
+                listingProductImages: photoUrls.map(photo => photo.url),
+                listingProductName: formData.title,
+                listingQuantityKG: formData.quantity.toString(),
+                listingSellerID: formData.sellerId,
+                listingTotalPrice: formData.quantity * formData.price,
+                listingUpdatedAt: serverTimestamp()
+            };
             
-            if (!isValidTitle || !isValidQuantity || !isValidPrice || !isValidPhotos) {
-                showNotification('Please fix all errors before submitting', 'error');
+            // Save to Firestore
+            updateProgress('Saving to database...', 75);
+            const docRef = await addDoc(collection(db, COLLECTIONS.PRODUCT_LISTINGS), listingData);
+            
+            updateProgress('Listing created successfully!', 100);
+            
+            setTimeout(() => {
+                hideLoadingOverlay();
+                showNotification('Swine compost listing posted successfully!', 'success');
                 
-                // Scroll to first error
-                const firstError = document.querySelector('.form-input.error, .photo-upload-grid.error');
-                if (firstError) {
-                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-                return;
-            }
+                setTimeout(() => {
+                    window.location.href = 'farmermarket.html';
+                }, 2000);
+            }, 1000);
             
-            isFormSubmitting = true;
-            showLoadingOverlay('Preparing your swine compost listing...');
-            
-            // Simulate the submission process that Firebase will handle
-            simulateSubmission();
+        } catch (error) {
+            console.error('Error creating listing:', error);
+            hideLoadingOverlay();
+            showNotification('Error creating listing: ' + error.message, 'error');
+            isFormSubmitting = false;
         }
+    }
 
-        // Simulate submission process for demonstration
-        function simulateSubmission() {
-            const steps = [
-                { message: 'Validating compost photos...', duration: 1000 },
-                { message: 'Uploading images to Firebase storage...', duration: 2000 },
-                { message: 'Creating listing in Firebase database...', duration: 1500 },
-                { message: 'Finalizing your swine compost listing...', duration: 1000 }
-            ];
+    // Upload photos to Firebase Storage
+    async function uploadPhotosToFirebase(photos) {
+        const photoUrls = [];
+        
+        for (let i = 0; i < photos.length; i++) {
+            const photo = photos[i];
             
-            let currentStep = 0;
-            const progressBar = document.getElementById('progressBar');
-            const loadingText = document.getElementById('loadingText');
-            const progressIndicator = document.getElementById('progressIndicator');
+            const storageRef = ref(storage, `swine-compost-listings/${photo.fileName}`);
+            const snapshot = await uploadBytes(storageRef, photo.file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
             
-            progressIndicator.style.display = 'block';
-            
-            function processStep() {
-                if (currentStep < steps.length) {
-                    const step = steps[currentStep];
-                    loadingText.textContent = step.message;
-                    progressBar.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
-                    
-                    setTimeout(() => {
-                        currentStep++;
-                        processStep();
-                    }, step.duration);
+            photoUrls.push({
+                url: downloadURL,
+                fileName: photo.fileName,
+                index: photo.index
+            });
+        }
+        
+        return photoUrls;
+    }
+
+    // Form validation functions
+    function validateProductTitle() {
+        const field = document.getElementById('productTitle');
+        const value = field.value.trim();
+        
+        if (value.length === 0) {
+            setFieldError(field, 'Product title is required');
+            return false;
+        }
+        
+        if (value.length < 3) {
+            setFieldError(field, 'Product title must be at least 3 characters');
+            return false;
+        }
+        
+        if (value.length > 100) {
+            setFieldError(field, 'Product title must be less than 100 characters');
+            return false;
+        }
+        
+        setFieldSuccess(field);
+        return true;
+    }
+
+    function validateQuantity() {
+        const field = document.getElementById('quantity');
+        const value = parseFloat(field.value);
+        
+        if (!field.value || isNaN(value)) {
+            setFieldError(field, 'Quantity is required');
+            return false;
+        }
+        
+        if (value <= 0) {
+            setFieldError(field, 'Quantity must be greater than 0');
+            return false;
+        }
+        
+        if (value > 10000) {
+            setFieldError(field, 'Quantity seems too large. Maximum is 10,000 kg');
+            return false;
+        }
+        
+        setFieldSuccess(field);
+        return true;
+    }
+
+    function validatePrice() {
+        const field = document.getElementById('price');
+        const value = parseFloat(field.value);
+        
+        if (!field.value || isNaN(value)) {
+            setFieldError(field, 'Price is required');
+            return false;
+        }
+        
+        if (value <= 0) {
+            setFieldError(field, 'Price must be greater than 0');
+            return false;
+        }
+        
+        if (value > 5000) {
+            setFieldError(field, 'Price seems too high. Maximum is ₱5,000 per kg');
+            return false;
+        }
+        
+        setFieldSuccess(field);
+        return true;
+    }
+
+    function validateDescription() {
+        const field = document.getElementById('description');
+        const value = field.value.trim();
+        
+        if (value.length > 500) {
+            setFieldError(field, 'Description must be less than 500 characters');
+            return false;
+        }
+        
+        clearFieldError(field);
+        return true;
+    }
+
+    function setFieldError(field, message) {
+        field.classList.remove('success');
+        field.classList.add('error');
+        
+        const existingMessage = field.parentNode.querySelector('.error-message, .success-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = message;
+        field.parentNode.appendChild(errorDiv);
+    }
+
+    function setFieldSuccess(field) {
+        field.classList.remove('error');
+        field.classList.add('success');
+        clearFieldError(field);
+    }
+
+    function clearFieldError(field) {
+        field.classList.remove('error');
+        
+        const existingMessage = field.parentNode.querySelector('.error-message, .success-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+    }
+
+    // Character counters
+    function setupCharacterCounters() {
+        const description = document.getElementById('description');
+        const counter = document.getElementById('descriptionCounter');
+        
+        if (description && counter) {
+            description.addEventListener('input', () => {
+                const length = description.value.length;
+                counter.textContent = `${length}/500 characters`;
+                
+                if (length > 450) {
+                    counter.style.color = '#e74c3c';
+                } else if (length > 400) {
+                    counter.style.color = '#ff9800';
                 } else {
-                    // Success!
-                    hideLoadingOverlay();
-                    showNotification('Swine compost listing created successfully!', 'success');
-                    isFormSubmitting = false;
-                    
-                    // Reset form or redirect
-                    setTimeout(() => {
-                        showNotification('Redirecting to marketplace...', 'info');
-                        window.location.href = '../html/farmermarket.html';
-                    }, 2000);
+                    counter.style.color = '#666';
                 }
-            }
-            
-            processStep();
+            });
         }
+    }
 
-        // Utility functions
-        function showLoadingOverlay(message) {
-            const overlay = document.getElementById('loadingOverlay');
-            const text = document.getElementById('loadingText');
-            const submitBtn = document.getElementById('submitBtn');
-            
-            text.textContent = message;
-            overlay.classList.add('show');
+    // Location handler
+    function setupLocationHandler() {
+        const changeLocationBtn = document.getElementById('changeLocationBtn');
+        const locationContainer = document.getElementById('locationContainer');
+        
+        if (changeLocationBtn) {
+            changeLocationBtn.addEventListener('click', () => {
+                locationContainer.classList.add('active');
+                showNotification('Location picker opened! (Feature coming soon)', 'info');
+                
+                setTimeout(() => {
+                    locationContainer.classList.remove('active');
+                }, 2000);
+            });
+        }
+    }
+
+    // Utility functions
+    function updateProgress(message, percent) {
+        const loadingText = document.getElementById('loadingText');
+        const progressBar = document.getElementById('progressBar');
+        const progressIndicator = document.getElementById('progressIndicator');
+        
+        if (loadingText) loadingText.textContent = message;
+        if (progressBar) progressBar.style.width = `${percent}%`;
+        if (progressIndicator) progressIndicator.style.display = 'block';
+    }
+
+    function showLoadingOverlay(message) {
+        const overlay = document.getElementById('loadingOverlay');
+        const text = document.getElementById('loadingText');
+        const submitBtn = document.getElementById('submitBtn');
+        const progressIndicator = document.getElementById('progressIndicator');
+        const progressBar = document.getElementById('progressBar');
+        
+        if (text) text.textContent = message;
+        if (overlay) overlay.classList.add('show');
+        if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.classList.add('loading');
         }
+        if (progressIndicator) progressIndicator.style.display = 'block';
+        if (progressBar) progressBar.style.width = '0%';
+    }
 
-        function hideLoadingOverlay() {
-            const overlay = document.getElementById('loadingOverlay');
-            const submitBtn = document.getElementById('submitBtn');
-            
-            overlay.classList.remove('show');
+    function hideLoadingOverlay() {
+        const overlay = document.getElementById('loadingOverlay');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        if (overlay) overlay.classList.remove('show');
+        if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.classList.remove('loading');
         }
+        
+        isFormSubmitting = false;
+    }
 
-        function showNotification(message, type = 'info') {
-            const existingNotification = document.querySelector('.notification');
-            if (existingNotification) {
-                existingNotification.remove();
-            }
-            
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            // Show notification
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 100);
-            
-            // Hide notification
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.remove();
-                    }
-                }, 300);
-            }, 4000);
+    function showNotification(message, type = 'info') {
+        const existingNotification = document.querySelector('.notification');
+        if (existingNotification) {
+            existingNotification.remove();
         }
         
-        console.log('PigSoil+ CreateListing setup complete with FIXED photo upload!');
-    </script>
-
-    <!-- Load Firebase modules with enhanced error handling -->
-    <script type="module">
-        console.log('Loading PigSoil+ Firebase modules...');
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
         
-        try {
-            // Import the integrated CreateListing.js module
-            await import('../js/CreateListing.js');
-            console.log('✅ Firebase CreateListing.js loaded successfully');
-            
-            // Remove loading overlay if it was shown
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay && overlay.classList.contains('show')) {
-                overlay.classList.remove('show');
-            }
-            
-        } catch (error) {
-            console.error('❌ Firebase module loading failed:', error);
-            
-            // Show detailed error to user
-            const errorMessage = error.message || 'Unknown error occurred';
-            const notification = document.createElement('div');
-            notification.className = 'notification error';
-            notification.innerHTML = `
-                <strong>Firebase Connection Error</strong><br>
-                ${errorMessage}<br>
-                <small>Please check your setup and try again.</small>
-            `;
-            notification.style.maxWidth = '400px';
-            notification.style.whiteSpace = 'normal';
-            
-            document.body.appendChild(notification);
-            
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
             setTimeout(() => {
-                notification.classList.add('show');
-            }, 100);
-            
-            // Keep error visible longer
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => notification.remove(), 300);
-            }, 8000);
-            
-            // Hide loading overlay
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                overlay.classList.remove('show');
-            }
-            
-            // Disable submit button
-            const submitBtn = document.getElementById('submitBtn');
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Firebase Error - Cannot Submit';
-                submitBtn.style.background = '#e74c3c';
-            }
-        }
-    </script>
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }, 4000);
+    }
+</script>
 </body>
 </html>
