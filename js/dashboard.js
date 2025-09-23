@@ -1,6 +1,13 @@
-// PigSoil+ Dashboard JavaScript
-// Author: Your Name
-// Description: Interactive functionality for the PigSoil+ farming dashboard
+// Updated PigSoil+ Dashboard JavaScript with Shared User Manager
+import '../js/shared-user-manager.js';
+
+import { 
+    initializeSharedUserManager, 
+    getCurrentUser, 
+    getCurrentUserData,
+    onUserDataChange,
+    isSwineFarmer 
+} from '../js/shared-user-manager.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all components
@@ -9,9 +16,55 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeQuickActions();
     initializeBatchManagement();
     initializeNotifications();
-    initializeUserProfile();
     startRealTimeUpdates();
+    
+    // Listen for user data changes
+    setupUserDataListener();
 });
+
+// Listen for user data changes from the shared manager
+function setupUserDataListener() {
+    onUserDataChange((userInfo) => {
+        const { user, userData } = userInfo;
+        
+        if (user && userData) {
+            console.log('Dashboard: User data updated', userData);
+            
+            // Update any dashboard-specific user elements
+            updateDashboardUserInfo(userData);
+            
+            // Check if user should have access to farmer features
+            if (!isSwineFarmer()) {
+                console.log('Redirecting non-farmer to marketplace');
+                setTimeout(() => {
+                    window.location.href = '../html/marketplace.html';
+                }, 1000);
+            }
+        }
+    });
+}
+
+// Update dashboard-specific user information
+function updateDashboardUserInfo(userData) {
+    // Update welcome message if it exists
+    const welcomeMessage = document.querySelector('.welcome-message, .hero-title');
+    if (welcomeMessage && userData.userName) {
+        welcomeMessage.textContent = `Welcome back, ${userData.userName}!`;
+    }
+    
+    // Update any farmer-specific stats or info
+    const farmerStats = document.querySelector('.farmer-stats');
+    if (farmerStats) {
+        // Update farmer statistics based on user data
+        updateFarmerStats(userData);
+    }
+}
+
+// Update farmer statistics
+function updateFarmerStats(userData) {
+    // This would typically fetch and display farmer-specific data
+    console.log('Updating farmer stats for:', userData.userName);
+}
 
 // Navigation Management
 function initializeNavigation() {
@@ -322,17 +375,6 @@ function initializeNotifications() {
     if (notificationBtn) {
         notificationBtn.addEventListener('click', function() {
             showNotification('No new notifications', 'info');
-        });
-    }
-}
-
-// User Profile Management
-function initializeUserProfile() {
-    const userProfile = document.querySelector('.user-profile');
-    if (userProfile) {
-        userProfile.addEventListener('click', function(e) {
-            // This would handle profile menu
-            console.log('User profile clicked');
         });
     }
 }

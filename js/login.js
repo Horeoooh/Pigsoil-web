@@ -1,14 +1,26 @@
-// Login functionality for PigSoil+ - Firebase Version
+// Enhanced Login functionality for PigSoil+ - Firebase Version with Auth Integration
 import { auth, db } from './init.js';
 import { 
     signInWithEmailAndPassword,
     signInWithPhoneNumber,
-    RecaptchaVerifier
+    RecaptchaVerifier,
+    onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     doc, 
-    getDoc 
+    getDoc,
+    setDoc,
+    serverTimestamp,
+    collection,
+    query,
+    where,
+    getDocs
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
+
+// Collection names
+const COLLECTIONS = {
+    USERS: 'users'
+};
 
 // DOM elements
 const loginForm = document.getElementById('loginForm');
@@ -51,22 +63,98 @@ function setLoading(loading) {
     }
 }
 
-// Get user data from Firestore
+// Enhanced user data retrieval with fallback creation
 async function getUserData(userId) {
     try {
-        const userDoc = await getDoc(doc(db, 'users', userId));
+        console.log('🔍 Looking up user data for:', userId);
+        
+        // Try to get user by document ID (UID)
+        const userDocRef = doc(db, COLLECTIONS.USERS, userId);
+        const userDoc = await getDoc(userDocRef);
+        
         if (userDoc.exists()) {
-            return userDoc.data();
-        } else {
-            throw new Error('User data not found');
+            const userData = userDoc.data();
+            console.log('✅ User data found by UID:', userData);
+            return userData;
         }
+        
+        // If not found by UID, try to find by email
+        const currentUser = auth.currentUser;
+        if (currentUser?.email) {
+            console.log('🔍 Searching for user by email:', currentUser.email);
+            
+            const usersRef = collection(db, COLLECTIONS.USERS);
+            const emailQuery = query(usersRef, where('userEmail', '==', currentUser.email));
+            const emailSnapshot = await getDocs(emailQuery);
+            
+            if (!emailSnapshot.empty) {
+                const userData = emailSnapshot.docs[0].data();
+                console.log('✅ User data found by email:', userData);
+                
+                // Update the document with the correct UID as document ID
+                await setDoc(userDocRef, {
+                    ...userData,
+                    userUpdatedAt: serverTimestamp()
+                });
+                
+                return userData;
+            }
+        }
+        
+        // If no user data found, create default entry for authenticated user
+        console.log('📝 Creating default user data for authenticated user');
+        const defaultUserData = {
+            userCreatedAt: serverTimestamp(),
+            userEmail: currentUser?.email || 'unknown@email.com',
+            userIsActive: true,
+            userName: currentUser?.displayName || 'Swine Farmer',
+            userPhone: currentUser?.phoneNumber || '+639123456789',
+            userPhoneVerified: false,
+            userType: 'swine_farmer', // Default to swine farmer
+            userUpdatedAt: serverTimestamp()
+        };
+        
+        await setDoc(userDocRef, defaultUserData);
+        console.log('✅ Default user data created');
+        return defaultUserData;
+        
     } catch (error) {
-        console.error('Error getting user data:', error);
+        console.error('❌ Error getting user data:', error);
         throw error;
     }
 }
 
-// Firebase email login
+// Enhanced redirection logic
+function redirectToAppropriateScreen(userData) {
+    const userType = userData.userType;
+    
+    console.log('🔄 Redirecting user based on type:', userType);
+    
+    // Store user data in localStorage for quick access
+    localStorage.setItem('pigsoil_user', JSON.stringify({
+        uid: auth.currentUser?.uid,
+        email: auth.currentUser?.email,
+        phoneNumber: auth.currentUser?.phoneNumber,
+        ...userData
+    }));
+    
+    // Redirect based on user type
+    setTimeout(() => {
+        if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
+            console.log('🐷 Redirecting swine farmer to dashboard');
+            window.location.href = '../html/dashboard.html';
+        } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+            console.log('🌱 Redirecting fertilizer buyer to marketplace');
+            window.location.href = '../html/marketplace.html';
+        } else {
+            // Default to dashboard for unknown user types
+            console.log('❓ Unknown user type, redirecting to dashboard');
+            window.location.href = '../html/dashboard.html';
+        }
+    }, 1500);
+}
+
+// Enhanced Firebase email login with better error handling
 async function handleEmailLogin(email, password) {
     try {
         setLoading(true);
@@ -75,41 +163,30 @@ async function handleEmailLogin(email, password) {
             throw new Error('Please use your email address to sign in.');
         }
 
+        console.log('🔐 Attempting to sign in user:', email);
+
         // Sign in with Firebase Auth
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+        
+        console.log('✅ Firebase authentication successful for:', user.uid);
 
-        // Get user data from Firestore
+        // Get user data from Firestore with enhanced fallback
         const userData = await getUserData(user.uid);
 
         // Login successful
         showAlert('Login successful! Redirecting...', 'success');
         
-        // Store user data
-        localStorage.setItem('pigsoil_user', JSON.stringify({
-            uid: user.uid,
-            email: user.email,
-            ...userData
-        }));
-        
-        // Redirect based on user type
-        setTimeout(() => {
-            if (userData.userType === 'Swine Farmer' || userData.userType === 'swine_farmer') {
-                window.location.href = '/html/dashboard.html';
-            } else if (userData.userType === 'Organic Fertilizer Buyer' || userData.userType === 'fertilizer_buyer') {
-                window.location.href = '/html/marketplace.html';
-            } else {
-                window.location.href = '/html/dashboard.html';
-            }
-        }, 1500);
+        // Redirect with user data
+        redirectToAppropriateScreen(userData);
 
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('❌ Login error:', error);
         let errorMessage = 'Login failed. Please try again.';
         
         switch (error.code) {
             case 'auth/user-not-found':
-                errorMessage = 'No account found with this email address.';
+                errorMessage = 'No account found with this email address. Please sign up first.';
                 break;
             case 'auth/wrong-password':
                 errorMessage = 'Incorrect password. Please try again.';
@@ -118,7 +195,7 @@ async function handleEmailLogin(email, password) {
                 errorMessage = 'Invalid email address format.';
                 break;
             case 'auth/user-disabled':
-                errorMessage = 'This account has been disabled.';
+                errorMessage = 'This account has been disabled. Please contact support.';
                 break;
             case 'auth/too-many-requests':
                 errorMessage = 'Too many failed attempts. Please try again later.';
@@ -126,6 +203,11 @@ async function handleEmailLogin(email, password) {
             case 'auth/invalid-credential':
                 errorMessage = 'Invalid email or password. Please check your credentials.';
                 break;
+            case 'auth/network-request-failed':
+                errorMessage = 'Network error. Please check your internet connection.';
+                break;
+            default:
+                errorMessage = `Login failed: ${error.message}`;
         }
         
         showAlert(errorMessage, 'error');
@@ -140,10 +222,10 @@ function initializeRecaptcha() {
         recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
             'size': 'invisible',
             'callback': (response) => {
-                console.log('reCAPTCHA solved');
+                console.log('✅ reCAPTCHA solved');
             },
             'expired-callback': () => {
-                console.log('reCAPTCHA expired');
+                console.log('❌ reCAPTCHA expired');
                 showAlert('reCAPTCHA expired. Please try again.');
             }
         });
@@ -154,12 +236,16 @@ function initializeRecaptcha() {
 // Firebase phone login - start verification
 async function startPhoneLogin(phoneNumber) {
     try {
+        setLoading(true);
+        
+        console.log('📱 Starting phone authentication for:', phoneNumber);
+        
         // Initialize reCAPTCHA
         const recaptcha = initializeRecaptcha();
         
         // Send verification code
         confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, recaptcha);
-        console.log('SMS sent');
+        console.log('📤 SMS sent successfully');
         
         showAlert('Verification code sent to your phone!', 'success');
         
@@ -171,76 +257,77 @@ async function startPhoneLogin(phoneNumber) {
         
         return { success: true };
     } catch (error) {
-        console.error('Phone login failed:', error);
+        console.error('❌ Phone login failed:', error);
         let errorMessage = 'Failed to send verification code. Please try again.';
         
         switch (error.code) {
             case 'auth/invalid-phone-number':
-                errorMessage = 'Invalid phone number format.';
+                errorMessage = 'Invalid phone number format. Please use international format (+639XXXXXXXXX).';
                 break;
             case 'auth/too-many-requests':
                 errorMessage = 'Too many requests. Please try again later.';
+                break;
+            case 'auth/captcha-check-failed':
+                errorMessage = 'reCAPTCHA verification failed. Please try again.';
                 break;
         }
         
         showAlert(errorMessage, 'error');
         return { success: false };
+    } finally {
+        setLoading(false);
     }
 }
 
 // Verify phone code and login
 async function verifyPhoneCode(verificationCode) {
     try {
+        setLoading(true);
+        
         if (!confirmationResult) {
             throw new Error('No verification in progress. Please start over.');
         }
 
+        console.log('🔢 Verifying phone code...');
+        
         const result = await confirmationResult.confirm(verificationCode);
         const user = result.user;
+        
+        console.log('✅ Phone verification successful for:', user.uid);
 
         // Get user data from Firestore
         const userData = await getUserData(user.uid);
         
         showAlert('Phone login successful! Redirecting...', 'success');
         
-        // Store user data
-        localStorage.setItem('pigsoil_user', JSON.stringify({
-            uid: user.uid,
-            phoneNumber: user.phoneNumber,
-            ...userData
-        }));
-        
-        // Redirect based on user type
-        setTimeout(() => {
-            if (userData.userType === 'Swine Farmer' || userData.userType === 'swine_farmer') {
-                window.location.href = '/html/dashboard.html';
-            } else if (userData.userType === 'Organic Fertilizer Buyer' || userData.userType === 'fertilizer_buyer') {
-                window.location.href = '/html/marketplace.html';
-            } else {
-                window.location.href = '/html/dashboard.html';
-            }
-        }, 1500);
+        // Redirect with user data
+        redirectToAppropriateScreen(userData);
         
         return { success: true };
     } catch (error) {
-        console.error('Phone verification failed:', error);
+        console.error('❌ Phone verification failed:', error);
         let errorMessage = 'Invalid verification code. Please try again.';
         
         switch (error.code) {
             case 'auth/invalid-verification-code':
-                errorMessage = 'Invalid verification code.';
+                errorMessage = 'Invalid verification code. Please check and try again.';
                 break;
             case 'auth/code-expired':
                 errorMessage = 'Verification code has expired. Please request a new one.';
+                break;
+            case 'auth/session-expired':
+                errorMessage = 'Session expired. Please start the verification process again.';
                 break;
         }
         
         showAlert(errorMessage, 'error');
         return { success: false };
+    } finally {
+        setLoading(false);
     }
 }
 
-// Form submission handler
+// Enhanced form submission handler
 if (loginForm) {
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -266,6 +353,24 @@ if (loginForm) {
         handleEmailLogin(email, password);
     });
 }
+
+// Enhanced auth state listener (no auto-login)
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        console.log('👤 User is signed in:', user.uid);
+    } else {
+        console.log('👤 User is signed out');
+        localStorage.removeItem('pigsoil_user');
+    }
+});
+
+// Initialize page without auto-login
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Login page initialized');
+    
+    // Clear any existing sessions to force fresh login
+    localStorage.removeItem('pigsoil_user');
+});
 
 // Keep all your existing input animations and interactions (unchanged)
 if (inputs.length > 0) {
@@ -374,25 +479,13 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Check if user is already logged in
-//document.addEventListener('DOMContentLoaded', function() {
-  //  const storedUser = localStorage.getItem('pigsoil_user');
-    //if (storedUser) {
-      //  const userData = JSON.parse(storedUser);
-        //if (userData.userType === 'Swine Farmer' || userData.userType === 'swine_farmer') {
-          //  window.location.href = '/html/dashboard.html';
-        //} else if (userData.userType === 'Organic Fertilizer Buyer' || userData.userType === 'fertilizer_buyer') {
-         //   window.location.href = '/html/marketplace.html';
-        //}
-   // }
-//});
+// Export functions for potential use in other modules
+window.PigSoilLogin = {
+    handleEmailLogin,
+    startPhoneLogin,
+    verifyPhoneCode,
+    getUserData,
+    redirectToAppropriateScreen
+};
 
-// Listen to auth state changes
-auth.onAuthStateChanged((user) => {
-    if (user) {
-        console.log('User is signed in:', user.uid);
-    } else {
-        console.log('User is signed out');
-        localStorage.removeItem('pigsoil_user');
-    }
-});
+console.log('🐷 PigSoil+ Enhanced Login with Authentication Integration loaded!');

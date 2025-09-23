@@ -338,6 +338,45 @@
             color: white;
         }
 
+        /* Loading state */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Success/Error messages */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
         /* Screen reader only class */
         .sr-only {
             position: absolute;
@@ -381,15 +420,14 @@
             </div>
             
             <ul class="nav-menu">
-                <li><a href="dashboard.html">Dashboard</a></li>
-                <li><a href="batches.html">Batches</a></li>
-                <li><a href="marketplace.html">Market</a></li>
-                <li><a href="#guides">Guides</a></li>
-                <li><a href="#manongbot">ManongBot</a></li>
+                <li><a href="../html/dashboard.html">Dashboard</a></li>
+                <li><a href="../html/batches.html">Batches</a></li>
+                <li><a href="../html/marketplace.html">Market</a></li>
+                <li><a href="../html/guides.html">Guides</a></li>
             </ul>
             
             <div class="user-section">
-                <a href="cart.html" class="icon-btn" id="cartBtn" title="Shopping Cart" aria-label="View shopping cart">
+                <a href="../html/cart.html" class="icon-btn" id="cartBtn" title="Shopping Cart" aria-label="View shopping cart">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 22C9.55228 22 10 21.5523 10 21C10 20.4477 9.55228 20 9 20C8.44772 20 8 20.4477 8 21C8 21.5523 8.44772 22 9 22Z"></path>
                         <path d="M20 22C20.5523 22 21 21.5523 21 21C21 20.4477 20.5523 20 20 20C19.4477 20 19 20.4477 19 21C19 21.5523 19.4477 22 20 22Z"></path>
@@ -404,10 +442,10 @@
                 </button>
                 <a href="../html/setting-acc.html" class="user-profile" title="User Profile" aria-label="View user profile settings">
                     <div>
-                        <span class="user-name">Juan Dela Cruz</span>
-                        <span class="user-role">Swine Farmer</span>
+                        <span class="user-name" id="headerUserName">Loading...</span>
+                        <span class="user-role" id="headerUserRole">Loading...</span>
                     </div>
-                    <div class="user-avatar">JD</div>
+                    <div class="user-avatar" id="headerUserAvatar">?</div>
                 </a>
             </div>
         </nav>
@@ -428,43 +466,52 @@
                     <button class="sidebar-item" title="Appearance Settings" aria-label="Manage appearance settings">Appearance</button>
                 </div>
 
-                <a href="../html/login.html" class="logout-btn" title="Log Out" aria-label="Log out of your account">
+                <button class="logout-btn" id="logoutBtn" title="Log Out" aria-label="Log out of your account">
                     🚪 Log Out
-                </a>
+                </button>
             </aside>
 
             <div class="content">
                 <div class="profile-header">
-                    <div class="profile-avatar" aria-label="Profile Avatar">JD</div>
+                    <div class="profile-avatar" id="profileAvatar" aria-label="Profile Avatar">?</div>
+                    <div>
+                        <h2 id="profileUserName">Loading...</h2>
+                        <p id="profileUserRole">Loading...</p>
+                    </div>
                 </div>
 
-                <form>
+                <div id="alertMessage" class="alert"></div>
+
+                <form id="profileForm">
                     <div class="form-group">
                         <label for="username" class="form-label">Username</label>
-                        <input type="text" id="username" class="form-input" value="Juan Dela Cruz" readonly 
-                               title="Username" placeholder="Enter username" aria-label="Username">
+                        <input type="text" id="username" class="form-input" placeholder="Loading..."
+                               title="Username" aria-label="Username">
                     </div>
 
                     <div class="form-group">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" id="email" class="form-input" value="cruzjuandela@gmail.com"
-                               title="Email Address" placeholder="Enter email address" aria-label="Email address">
+                        <input type="email" id="email" class="form-input" placeholder="Loading..."
+                               title="Email Address" aria-label="Email address">
                     </div>
 
                     <div class="form-group">
                         <label for="phone" class="form-label">Phone</label>
-                        <input type="tel" id="phone" class="form-input" value="+639123456789"
-                               title="Phone Number" placeholder="Enter phone number" aria-label="Phone number">
+                        <input type="tel" id="phone" class="form-input" placeholder="Loading..."
+                               title="Phone Number" aria-label="Phone number">
                     </div>
 
                     <div class="form-group">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" id="password" class="form-input" value="••••••••"
-                               title="Password" placeholder="Enter password" aria-label="Password">
+                        <label for="userType" class="form-label">User Type</label>
+                        <input type="text" id="userType" class="form-input" readonly
+                               title="User Type" aria-label="User type">
                     </div>
 
                     <div class="button-group">
-                        <button type="submit" class="btn btn-danger" title="Save Changes" aria-label="Save account changes">Save Changes</button>
+                        <button type="submit" class="btn btn-danger" id="saveBtn" 
+                                title="Save Changes" aria-label="Save account changes">
+                            Save Changes
+                        </button>
                     </div>
                 </form>
 
@@ -472,88 +519,15 @@
                     <h3>Account Management</h3>
                     <p>Manage your PigSoil+ account. Disabling temporarily suspends your account, while deletion permanently removes all data.</p>
                     <div class="button-group">
-                        <button class="btn btn-danger" title="Disable Account" aria-label="Temporarily disable your account">Disable Account</button>
-                        <button class="btn btn-outline" title="Delete Account" aria-label="Permanently delete your account">Delete Account</button>
+                        <button class="btn btn-danger" id="disableBtn" title="Disable Account" aria-label="Temporarily disable your account">Disable Account</button>
+                        <button class="btn btn-outline" id="deleteBtn" title="Delete Account" aria-label="Permanently delete your account">Delete Account</button>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <script>
-        // Form interaction handlers
-        document.addEventListener('DOMContentLoaded', function() {
-            // Sidebar navigation
-            const sidebarItems = document.querySelectorAll('.sidebar-item');
-            
-            sidebarItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    // Remove active class from all items
-                    sidebarItems.forEach(i => i.classList.remove('active'));
-                    // Add active class to clicked item
-                    this.classList.add('active');
-                });
-            });
-
-            // Form validation
-            const form = document.querySelector('form');
-            const emailInput = document.getElementById('email');
-            const phoneInput = document.getElementById('phone');
-
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Basic email validation
-                const emailValue = emailInput.value;
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                
-                if (!emailRegex.test(emailValue)) {
-                    alert('Please enter a valid email address.');
-                    emailInput.focus();
-                    return;
-                }
-
-                // Basic phone validation
-                const phoneValue = phoneInput.value;
-                const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
-                
-                if (!phoneRegex.test(phoneValue)) {
-                    alert('Please enter a valid phone number.');
-                    phoneInput.focus();
-                    return;
-                }
-
-                alert('Account settings updated successfully!');
-            });
-
-            // Account management buttons
-            document.querySelector('.btn-danger[title="Disable Account"]').addEventListener('click', function() {
-                if (confirm('Are you sure you want to disable your account? You can reactivate it later.')) {
-                    alert('Account disabled successfully. You can reactivate it by logging in again.');
-                }
-            });
-
-            document.querySelector('.btn-outline').addEventListener('click', function() {
-                if (confirm('Are you sure you want to permanently delete your account? This action cannot be undone.')) {
-                    if (confirm('This will permanently delete all your data. Are you absolutely sure?')) {
-                        alert('Account deletion initiated. You will receive a confirmation email.');
-                    }
-                }
-            });
-
-            // Input focus enhancement
-            const inputs = document.querySelectorAll('.form-input');
-            inputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    this.parentElement.style.transform = 'scale(1.02)';
-                    this.parentElement.style.transition = 'transform 0.3s ease';
-                });
-
-                input.addEventListener('blur', function() {
-                    this.parentElement.style.transform = 'scale(1)';
-                });
-            });
-        });
-    </script>
+    <!-- Firebase and settings integration script -->
+    <script type="module" src="../js/profile-settings.js"></script>
 </body>
 </html>

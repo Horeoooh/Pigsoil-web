@@ -652,36 +652,7 @@
             </div>
         </section>
     </main>
-
-    <script>
-        // Tab functionality
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-
-        // Search functionality
-        const searchInput = document.querySelector('.search-input');
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const listings = document.querySelectorAll('.listing-card');
-            
-            listings.forEach(listing => {
-                const title = listing.querySelector('.listing-title').textContent.toLowerCase();
-                if (title.includes(searchTerm)) {
-                    listing.style.display = 'block';
-                } else {
-                    listing.style.display = 'none';
-                }
-            });
-        });
-
-        // Messages button functionality
-        document.querySelector('.messages-btn').addEventListener('click', function() {
-            alert('Messages functionality would be implemented here');
-        });
-    </script>
+    <script type="module" src="../js/farmermarket.js"></script>
+    <script type="module" src="../js/shared-user-manager.js"></script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 // PigSoil+ Batches Page JavaScript
 
+import '../js/shared-user-manager.js';
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize the page
     initializePage();

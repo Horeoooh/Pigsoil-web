@@ -1,4 +1,5 @@
 // DOM Content Loaded Event
+import '../js/shared-user-manager.js';
 document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize all functionality
