@@ -1,113 +1,73 @@
-// DOM Content Loaded Event
+// Composting Guides JavaScript for PigSoil+
 import '../js/shared-user-manager.js';
+
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('PigSoil+ Composting Guides loaded successfully!');
     
     // Initialize all functionality
-    initCollapseButtons();
-    initViewGuideButtons();
+    initMethodSelector();
     initNotificationButton();
     initNavigation();
     initScrollAnimations();
-    
-    console.log('PigSoil+ Guides loaded successfully!');
+    initProgressIndicator();
 });
 
-// Collapse/Expand Guide Cards
-function initCollapseButtons() {
-    const collapseButtons = document.querySelectorAll('.collapse-btn');
+// Method Selector Functionality
+function initMethodSelector() {
+    const methodButtons = document.querySelectorAll('.method-btn');
+    const guideMethods = document.querySelectorAll('.guide-method');
+    const progressIndicator = document.getElementById('progressIndicator');
     
-    collapseButtons.forEach(button => {
+    methodButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const guideCard = this.closest('.guide-card');
-            const guideContent = guideCard.querySelector('.guide-content');
-            const stepsPreview = guideContent.querySelector('.steps-preview');
-            const tags = guideContent.querySelector('.tags');
+            const method = this.getAttribute('data-method');
             
-            // Toggle collapsed state
-            const isCollapsed = guideCard.classList.contains('collapsed');
+            // Remove active class from all buttons and methods
+            methodButtons.forEach(btn => btn.classList.remove('active'));
+            guideMethods.forEach(guide => guide.classList.remove('active'));
             
-            if (isCollapsed) {
-                // Expand
-                guideCard.classList.remove('collapsed');
-                
-                // Show elements immediately
-                stepsPreview.style.display = 'block';
-                tags.style.display = 'flex';
-                
-                // Use requestAnimationFrame for smooth animation
-                requestAnimationFrame(() => {
-                    stepsPreview.style.opacity = '1';
-                    stepsPreview.style.transform = 'translateY(0)';
-                    tags.style.opacity = '1';
-                    tags.style.transform = 'translateY(0)';
-                });
-                
-            } else {
-                // Collapse
-                guideCard.classList.add('collapsed');
-                
-                // Start collapse animation
-                stepsPreview.style.opacity = '0';
-                stepsPreview.style.transform = 'translateY(-10px)';
-                tags.style.opacity = '0';
-                tags.style.transform = 'translateY(-10px)';
-                
-                // Hide after transition completes
-                setTimeout(() => {
-                    if (guideCard.classList.contains('collapsed')) {
-                        stepsPreview.style.display = 'none';
-                        tags.style.display = 'none';
-                    }
-                }, 250);
-            }
+            // Add active class to clicked button and corresponding method
+            this.classList.add('active');
+            document.getElementById(method + '-method').classList.add('active');
+            
+            // Update progress indicator
+            updateProgressIndicator(method);
+            
+            // Add click animation
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+            
+            // Show notification
+            const methodName = method === 'basic' ? 'Basic Swine Manure Composting' : 'Hot Composting Method';
+            showNotification(`Switched to ${methodName}`, 'success');
+            
+            // Smooth scroll to top of guide
+            document.querySelector('.container').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
         });
-        
-        // Initialize transition styles
-        const guideCard = button.closest('.guide-card');
-        const guideContent = guideCard.querySelector('.guide-content');
-        const stepsPreview = guideContent.querySelector('.steps-preview');
-        const tags = guideContent.querySelector('.tags');
-        
-        // Add smooth transitions
-        stepsPreview.style.transition = 'opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
-        tags.style.transition = 'opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
-        button.style.transition = 'background-image 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
     });
 }
 
-// View Guide Button Functionality
-function initViewGuideButtons() {
-    const viewButtons = document.querySelectorAll('.view-guide-btn');
+// Update Progress Indicator
+function updateProgressIndicator(method) {
+    const progressIndicator = document.getElementById('progressIndicator');
     
-    viewButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const guideCard = this.closest('.guide-card');
-            const guideTitle = guideCard.querySelector('.guide-title').textContent;
-            
-            // Add loading state
-            const originalText = this.textContent;
-            this.textContent = 'Loading...';
-            this.disabled = true;
-            
-            // Simulate loading (replace with actual navigation)
-            setTimeout(() => {
-                // Reset button
-                this.textContent = originalText;
-                this.disabled = false;
-                
-                // Show success message or navigate
-                showNotification(`Opening ${guideTitle}...`, 'success');
-                
-                // Here you would typically navigate to the full guide page
-                // window.location.href = `guide-detail.html?guide=${encodeURIComponent(guideTitle)}`;
-            }, 1500);
-        });
-    });
+    if (method === 'basic') {
+        progressIndicator.textContent = 'Day 1-21 Guide';
+        progressIndicator.classList.remove('hot');
+    } else {
+        progressIndicator.innerHTML = 'Hot Method<br>Day 1-18 Guide';
+        progressIndicator.classList.add('hot');
+    }
 }
 
 // Notification Button
 function initNotificationButton() {
-    const notificationBtn = document.querySelector('.notification');
+    const notificationBtn = document.getElementById('notificationBtn');
     
     if (notificationBtn) {
         notificationBtn.addEventListener('click', function() {
@@ -118,18 +78,13 @@ function initNotificationButton() {
 
 // Navigation Enhancement
 function initNavigation() {
-    const navLinks = document.querySelectorAll('.nav-links a');
+    const navLinks = document.querySelectorAll('.nav-menu a');
     
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            // Remove active class from all links
-            navLinks.forEach(l => l.classList.remove('active'));
-            
-            // Add active class to clicked link
-            this.classList.add('active');
-            
-            // If it's not the guides page, show coming soon message
-            if (!this.getAttribute('href').includes('guides')) {
+            // If it's not an actual page link, show coming soon
+            const href = this.getAttribute('href');
+            if (href && href.includes('#')) {
                 e.preventDefault();
                 showNotification('Coming Soon!', 'info');
             }
@@ -153,18 +108,168 @@ function initScrollAnimations() {
         });
     }, observerOptions);
     
-    // Observe guide cards
-    const guideCards = document.querySelectorAll('.guide-card');
-    guideCards.forEach(card => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        observer.observe(card);
+    // Observe day containers
+    const dayContainers = document.querySelectorAll('.day-container');
+    dayContainers.forEach(container => {
+        container.style.opacity = '0';
+        container.style.transform = 'translateY(20px)';
+        container.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(container);
+    });
+    
+    // Observe material items
+    const materialItems = document.querySelectorAll('.material-item');
+    materialItems.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(10px)';
+        item.style.transition = `opacity 0.4s ease ${index * 0.1}s, transform 0.4s ease ${index * 0.1}s`;
+        observer.observe(item);
     });
 }
 
-// Notification System
+// Progress Indicator Auto-Update on Scroll
+function initProgressIndicator() {
+    const progressIndicator = document.getElementById('progressIndicator');
+    let currentDayVisible = '';
+    
+    const dayContainers = document.querySelectorAll('.day-container');
+    
+    const updateProgress = debounce(() => {
+        const activeMethod = document.querySelector('.guide-method.active');
+        if (!activeMethod) return;
+        
+        const methodType = activeMethod.id === 'basic-method' ? 'basic' : 'hot';
+        const activeDayContainers = activeMethod.querySelectorAll('.day-container');
+        
+        let nearestDay = '';
+        let minDistance = Infinity;
+        
+        activeDayContainers.forEach(container => {
+            const rect = container.getBoundingClientRect();
+            const distance = Math.abs(rect.top - window.innerHeight / 2);
+            
+            if (distance < minDistance && rect.bottom > 0 && rect.top < window.innerHeight) {
+                minDistance = distance;
+                const dayNumber = container.querySelector('.day-number').textContent;
+                nearestDay = `Day ${dayNumber}`;
+            }
+        });
+        
+        if (nearestDay && nearestDay !== currentDayVisible) {
+            currentDayVisible = nearestDay;
+            
+            if (methodType === 'basic') {
+                progressIndicator.innerHTML = `${nearestDay}<br>Basic Method`;
+            } else {
+                progressIndicator.innerHTML = `${nearestDay}<br>Hot Method`;
+            }
+            
+            // Add pulse animation
+            progressIndicator.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                progressIndicator.style.transform = '';
+            }, 200);
+        }
+    }, 100);
+    
+    window.addEventListener('scroll', updateProgress);
+    
+    // Add smooth transition
+    progressIndicator.style.transition = 'all 0.3s ease';
+}
+
+// Enhanced Material Item Interactions
+function initMaterialInteractions() {
+    const materialItems = document.querySelectorAll('.material-item');
+    
+    materialItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px) scale(1.02)';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = '';
+        });
+        
+        item.addEventListener('click', function() {
+            // Add ripple effect
+            const ripple = document.createElement('div');
+            ripple.style.cssText = `
+                position: absolute;
+                background: rgba(76, 175, 80, 0.3);
+                border-radius: 50%;
+                transform: scale(0);
+                animation: ripple 0.6s linear;
+                pointer-events: none;
+            `;
+            
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (rect.width - size) / 2 + 'px';
+            ripple.style.top = (rect.height - size) / 2 + 'px';
+            
+            this.style.position = 'relative';
+            this.style.overflow = 'hidden';
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                if (ripple.parentNode) {
+                    ripple.parentNode.removeChild(ripple);
+                }
+            }, 600);
+        });
+    });
+    
+    // Add ripple keyframes
+    if (!document.querySelector('#ripple-styles')) {
+        const style = document.createElement('style');
+        style.id = 'ripple-styles';
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// Day Container Click Interactions
+function initDayContainerInteractions() {
+    const dayContainers = document.querySelectorAll('.day-container');
+    
+    dayContainers.forEach(container => {
+        container.addEventListener('click', function(e) {
+            // Don't trigger if clicking on tip/warning boxes
+            if (e.target.closest('.tip-box, .warning-box, .temperature-box')) {
+                return;
+            }
+            
+            // Add subtle click feedback
+            this.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+            
+            // Get day info
+            const dayNumber = this.querySelector('.day-number').textContent;
+            const dayTitle = this.querySelector('.day-title').textContent;
+            const methodType = this.classList.contains('basic') ? 'Basic' : 'Hot';
+            
+            showNotification(`Day ${dayNumber}: ${dayTitle}`, 'info');
+        });
+    });
+}
+
+// Notification System (Enhanced)
 function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification-toast');
+    existingNotifications.forEach(n => n.remove());
+    
     // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification-toast ${type}`;
@@ -179,17 +284,40 @@ function showNotification(message, type = 'info') {
     // Add styles for notification
     notification.style.cssText = `
         position: fixed;
-        top: 100px;
+        top: 120px;
         right: 20px;
         background: ${getNotificationColor(type)};
         color: white;
         padding: 1rem 1.5rem;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 1000;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        z-index: 1001;
         transform: translateX(400px);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        max-width: 300px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        max-width: 320px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        border-left: 4px solid rgba(255,255,255,0.3);
+    `;
+    
+    const content = notification.querySelector('.notification-content');
+    content.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    `;
+    
+    const closeBtn = notification.querySelector('.notification-close');
+    closeBtn.style.cssText = `
+        background: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 0;
+        margin-left: auto;
+        opacity: 0.8;
+        transition: opacity 0.2s;
     `;
     
     // Add notification to body
@@ -201,7 +329,6 @@ function showNotification(message, type = 'info') {
     });
     
     // Close button functionality
-    const closeBtn = notification.querySelector('.notification-close');
     closeBtn.addEventListener('click', () => {
         removeNotification(notification);
     });
@@ -214,11 +341,12 @@ function showNotification(message, type = 'info') {
 
 function removeNotification(notification) {
     notification.style.transform = 'translateX(400px)';
+    notification.style.opacity = '0';
     setTimeout(() => {
         if (notification.parentNode) {
             notification.parentNode.removeChild(notification);
         }
-    }, 300);
+    }, 400);
 }
 
 function getNotificationIcon(type) {
@@ -241,7 +369,20 @@ function getNotificationColor(type) {
     return colors[type] || colors.info;
 }
 
-// Smooth Scrolling for Internal Links
+// Utility Functions
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Smooth Scrolling Enhancement
 function smoothScroll(target, duration = 800) {
     const targetElement = document.querySelector(target);
     if (!targetElement) return;
@@ -269,21 +410,39 @@ function smoothScroll(target, duration = 800) {
     requestAnimationFrame(animation);
 }
 
-// Utility Functions
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
+// Keyboard Navigation Support
+function initKeyboardNavigation() {
+    document.addEventListener('keydown', function(e) {
+        // Tab between methods with 1 and 2 keys
+        if (e.key === '1') {
+            document.querySelector('[data-method="basic"]').click();
+        } else if (e.key === '2') {
+            document.querySelector('[data-method="hot"]').click();
+        }
+        
+        // Scroll to top with Home key
+        if (e.key === 'Home') {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Scroll to bottom with End key
+        if (e.key === 'End') {
+            e.preventDefault();
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    });
 }
 
+// Initialize all enhanced interactions
+setTimeout(() => {
+    initMaterialInteractions();
+    initDayContainerInteractions();
+    initKeyboardNavigation();
+}, 1000);
+
 // Export functions for potential use in other files
-window.PigSoilGuides = {
+window.PigSoilCompostGuides = {
     showNotification,
     smoothScroll,
     debounce

@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PigSoil+ Guides</title>
+  <title>Complete Composting Guides - PigSoil+</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* General */
     * {
       margin: 0;
       padding: 0;
@@ -20,7 +19,7 @@
       min-height: 100vh;
     }
 
-    /* Header - Matching Dashboard Exactly */
+    /* Header - Same as Dashboard */
     .header {
       background: white;
       padding: 16px 64px;
@@ -132,219 +131,320 @@
       font-size: 14px;
     }
 
-    /* Page Header */
-    .page-header {
-      background: #fff;
-      margin: 2rem auto;
-      padding: 2.5rem;
-      width: 90%;
+    /* Method Selector */
+    .method-selector {
+      background: white;
+      margin: 20px auto;
       max-width: 1200px;
       border-radius: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-
-    .page-header h1 {
-      font-size: 32px;
-      font-weight: 700;
-      color: #2B4727;
-      margin-bottom: 0.5rem;
-    }
-
-    .page-header p {
-      font-size: 18px;
-      color: #666;
-      font-weight: 400;
-    }
-
-    /* Guides Container */
-    .guides-container {
-      width: 90%;
-      max-width: 1200px;
-      margin: 0 auto 2rem auto;
-      background: #fff;
-      border-radius: 20px;
-      padding: 2rem;
-      box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-      border: 1px solid rgba(0,0,0,0.05);
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-    }
-
-    /* Guide Cards */
-    .guide-card {
-      background: transparent;
-      border-radius: 0;
-      padding: 0;
-      box-shadow: none;
-      position: relative;
-      border: none;
-      border-bottom: 1px solid rgba(0,0,0,0.1);
-      padding-bottom: 2rem;
-    }
-
-    .guide-card:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
-    }
-
-    .guide-content {
-      background: linear-gradient(135deg, #f0f8f0 0%, #e8f5e8 100%);
-      border-radius: 16px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      position: relative;
-    }
-
-    .guide-content.basic {
-      background: linear-gradient(135deg, #f0f8f0 0%, #e8f5e8 100%);
-    }
-
-    .guide-content.hot {
-      background: linear-gradient(135deg, #fdf5f0 0%, #f5e8e0 100%);
-    }
-
-    .guide-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1rem;
-    }
-
-    .guide-title {
-      font-size: 22px;
-      font-weight: 600;
-      color: #2B4727;
-      margin-bottom: 0.5rem;
-    }
-
-    .collapse-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.5rem;
-      border-radius: 50%;
-      transition: all 0.3s ease;
-      width: 50px;
-      height: 35px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .collapse-btn:hover {
-      background-color: rgba(0,0,0,0.05);
-    }
-
-    .collapse-btn svg {
-      transition: transform 0.3s ease;
-    }
-
-    .guide-card.collapsed .collapse-btn svg {
-      transform: rotate(180deg);
-    }
-
-    .guide-description {
-      color: #888;
-      font-size: 16px;
-      margin-bottom: 1.5rem;
-      line-height: 1.5;
-    }
-
-    .tags {
-      display: flex;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 1px solid rgba(0,0,0,0.15);
-    }
-
-    .tag {
-      padding: 0.4rem 1rem;
-      border-radius: 25px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #fff;
-    }
-
-    .tag.beginner {
-      background: #4CAF50;
-    }
-
-    .tag.medium {
-      background: #FF8A65;
-    }
-
-    .tag.duration {
-      background: #757575;
-    }
-
-    .steps-preview {
-      margin-bottom: 2rem;
-      transition: all 0.3s ease;
-      overflow: hidden;
-    }
-
-    .guide-card.collapsed .steps-preview {
-      max-height: 0;
-      margin-bottom: 0;
-      opacity: 0;
-    }
-
-    .steps-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #2B4727;
-      margin-bottom: 1rem;
-    }
-
-    .steps-list {
-      list-style: none;
-      padding: 0;
-    }
-
-    .steps-list li {
-      padding: 0.5rem 0;
-      color: #555;
-      font-size: 15px;
-      position: relative;
-      padding-left: 1.5rem;
-    }
-
-    .steps-list li::before {
-      content: "•";
-      color: #4CAF50;
-      font-weight: bold;
-      position: absolute;
-      left: 0;
-      font-size: 18px;
-    }
-
-    .view-guide-btn {
-      background: #4CAF50;
-      color: #fff;
-      border: none;
-      padding: 0.8rem 2rem;
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      width: 100%;
-      max-width: 200px;
-      display: block;
-      margin: 0 auto;
-      text-decoration: none;
+      padding: 30px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
       text-align: center;
     }
 
-    .view-guide-btn:hover {
-      background: #45a049;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    .method-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 20px;
     }
 
-    /* Responsive Design */
+    .method-btn {
+      padding: 15px 30px;
+      border: 2px solid #ddd;
+      border-radius: 25px;
+      background: white;
+      color: #666;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      min-width: 200px;
+    }
+
+    .method-btn.active {
+      border-color: #4CAF50;
+      background: #4CAF50;
+      color: white;
+    }
+
+    .method-btn.hot.active {
+      border-color: #FF8A65;
+      background: #FF8A65;
+    }
+
+    .method-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Guide Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .guide-method {
+      display: none;
+    }
+
+    .guide-method.active {
+      display: block;
+    }
+
+    .header-section {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .title {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .title.basic {
+      color: #2B4727;
+    }
+
+    .title.hot {
+      color: #8B4513;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .heat-indicator {
+      background: linear-gradient(90deg, #FF6B6B, #FF8A65);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+      margin: 10px 0;
+    }
+
+    .overview-box {
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 40px;
+      border: 2px solid;
+    }
+
+    .overview-box.basic {
+      background: linear-gradient(135deg, #E8F5E8, #F0FFF0);
+      border-color: #C8E6C8;
+    }
+
+    .overview-box.hot {
+      background: linear-gradient(135deg, #FDF5F0, #F5E8E0);
+      border-color: #DEB887;
+    }
+
+    .materials-section {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 40px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .materials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .material-item {
+      border: 2px solid;
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .material-item.basic {
+      background: #f8f9fa;
+      border-color: #e9ecef;
+      color: #555;
+    }
+
+    .material-item.basic:hover {
+      border-color: #4CAF50;
+      background: #f0f8e8;
+    }
+
+    .material-item.hot {
+      background: #fdf5f0;
+      border-color: #f5e8e0;
+      color: #8B4513;
+    }
+
+    .material-item.hot:hover {
+      border-color: #FF8A65;
+      background: #ffeee6;
+    }
+
+    .day-container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      border-left: 6px solid;
+    }
+
+    .day-container.basic {
+      border-left-color: #4CAF50;
+    }
+
+    .day-container.hot {
+      border-left-color: #FF8A65;
+    }
+
+    .day-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .day-number {
+      color: white;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .day-number.basic {
+      background: #4CAF50;
+    }
+
+    .day-number.hot {
+      background: #FF8A65;
+    }
+
+    .day-title {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .day-title.basic {
+      color: #2B4727;
+    }
+
+    .day-title.hot {
+      color: #8B4513;
+    }
+
+    .day-description {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .tip-box {
+      background: #FFF3CD;
+      border: 1px solid #FFEAA7;
+      border-radius: 12px;
+      padding: 15px 20px;
+      margin-top: 15px;
+    }
+
+    .tip-label {
+      font-weight: 600;
+      color: #856404;
+      margin-bottom: 5px;
+    }
+
+    .tip-text {
+      color: #856404;
+      font-size: 14px;
+    }
+
+    .temperature-box {
+      background: #FFE5E5;
+      border: 2px solid #FF6B6B;
+      border-radius: 12px;
+      padding: 15px 20px;
+      margin-top: 15px;
+    }
+
+    .temp-label {
+      font-weight: 600;
+      color: #D63031;
+      margin-bottom: 5px;
+    }
+
+    .temp-text {
+      color: #D63031;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .warning-box {
+      background: #FFF0F0;
+      border: 1px solid #FFD6D6;
+      border-radius: 12px;
+      padding: 15px 20px;
+      margin-top: 15px;
+    }
+
+    .warning-label {
+      font-weight: 600;
+      color: #D63031;
+      margin-bottom: 5px;
+    }
+
+    .warning-text {
+      color: #D63031;
+      font-size: 14px;
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .section-title.basic {
+      color: #2B4727;
+    }
+
+    .section-title.hot {
+      color: #8B4513;
+    }
+
+    .progress-indicator {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      font-size: 14px;
+      font-weight: 500;
+      border-left: 4px solid #4CAF50;
+    }
+
+    .progress-indicator.hot {
+      border-left-color: #FF8A65;
+    }
+
     @media (max-width: 768px) {
       .header {
         padding: 16px 24px;
@@ -354,39 +454,37 @@
         gap: 32px;
       }
 
-      .page-header {
-        padding: 2rem 1.5rem;
-        margin: 1rem;
-        width: calc(100% - 2rem);
+      .user-info {
+        display: none;
+      }
+      
+      .container {
+        padding: 0 10px;
       }
 
-      .page-header h1 {
+      .method-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .title {
         font-size: 28px;
       }
-
-      .guides-container {
-        width: calc(100% - 2rem);
-        margin: 0 1rem 2rem 1rem;
-        padding: 1.5rem;
+      
+      .day-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
       }
-
-      .guide-card {
-        padding: 0;
-        padding-bottom: 1.5rem;
-      }
-
-      .guide-card:last-child {
-        padding-bottom: 0;
-      }
-
-      .user-info {
+      
+      .progress-indicator {
         display: none;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Header - Matching Dashboard Exactly -->
+  <!-- Header -->
   <header class="header">
     <nav class="nav-container">
       <div class="logo">
@@ -399,11 +497,10 @@
         <li><a href="../html/batches.html">Batches</a></li>
         <li><a href="../html/farmermarket.html">Market</a></li>
         <li><a href="../html/guides.html" class="active">Guides</a></li>
-    
       </ul>
       
       <div class="user-section">
-        <button class="icon-btn" id="notificationBtn" aria-label="View Notification">
+        <button class="icon-btn" id="notificationBtn" aria-label="View notifications">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -420,82 +517,279 @@
     </nav>
   </header>
 
-  <!-- Page Header -->
-  <header class="page-header">
-    <h1>Composting Guides</h1>
-    <p>Create and track your composting journey with expert guidance</p>
-  </header>
+  <!-- Method Selector -->
+  <div class="method-selector">
+    <h1>Complete Composting Guides</h1>
+    <p>Choose your composting method for detailed day-by-day instructions</p>
+    <div class="method-buttons">
+      <button class="method-btn active" data-method="basic">
+        Basic Swine Manure<br>
+        <small>(21 Days - Beginner)</small>
+      </button>
+      <button class="method-btn hot" data-method="hot">
+        Hot Composting Method<br>
+        <small>(18 Days - Advanced)</small>
+      </button>
+    </div>
+  </div>
 
-  <!-- Guides Container -->
-  <main class="guides-container">
-    <!-- Basic Pig Manure Composting Guide -->
-    <div class="guide-card">
-      <div class="guide-content basic">
-        <div class="guide-header">
-          <div>
-            <h2 class="guide-title">Basic Pig Manure Composting</h2>
-            <p class="guide-description">Traditional aerobic composting using pig waste and plant matter</p>
-          </div>
-          <button class="collapse-btn" aria-label="Collapse">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6,9 12,15 18,9"></polyline>
-            </svg>
-          </button>
-        </div>
-        
-        <div class="tags">
-          <span class="tag beginner">Beginner</span>
-          <span class="tag duration">21 days</span>
-        </div>
+  <div class="progress-indicator" id="progressIndicator">
+    Day 1-21 Guide
+  </div>
 
-        <div class="steps-preview">
-          <h3 class="steps-title">Quick Steps Preview:</h3>
-          <ul class="steps-list">
-            <li>Day 1 - Layer pig manure & plant matter</li>
-            <li>Day 7 - Turn Pile</li>
-            <li>Day 14 - Add dry carbon materials</li>
-            <li>Day 21 - Final turn & screen compost</li>
-          </ul>
+  <div class="container">
+    <!-- Basic Swine Manure Method -->
+    <div class="guide-method active" id="basic-method">
+      <div class="header-section">
+        <h1 class="title basic">Basic Swine Manure Composting</h1>
+        <p class="subtitle">Complete 21-Day Step-by-Step Guide for Beginners</p>
+      </div>
+
+      <div class="overview-box basic">
+        <h2 class="section-title basic">About This Method</h2>
+        <p>Traditional aerobic composting using swine waste and plant matter. This beginner-friendly method creates high-quality organic fertilizer through natural decomposition processes. Perfect for small to medium-scale swine farms with minimal equipment requirements.</p>
+      </div>
+
+      <div class="materials-section">
+        <h2 class="section-title basic">Materials Needed</h2>
+        <div class="materials-grid">
+          <div class="material-item basic">Fresh swine manure (100-200 kg)</div>
+          <div class="material-item basic">Dry plant matter/leaves</div>
+          <div class="material-item basic">Rice hulls or sawdust</div>
+          <div class="material-item basic">Shovel or pitchfork</div>
+          <div class="material-item basic">Water source/hose</div>
+          <div class="material-item basic">Tarpaulin cover</div>
+          <div class="material-item basic">Thermometer (optional)</div>
+          <div class="material-item basic">pH test kit (optional)</div>
         </div>
       </div>
 
-      <a href="../html/fullguide.html" class="view-guide-btn">View Full Guide</a>
-    </div>
-
-    <!-- Hot Composting Method Guide -->
-    <div class="guide-card">
-      <div class="guide-content hot">
-        <div class="guide-header">
-          <div>
-            <h2 class="guide-title">Hot Composting Method</h2>
-            <p class="guide-description">Pathogen-free compost from pig manure through high-heat decomposition.</p>
-          </div>
-          <button class="collapse-btn" aria-label="Collapse">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6,9 12,15 18,9"></polyline>
-            </svg>
-          </button>
+      <!-- Basic Method Days -->
+      <div class="day-container basic">
+        <div class="day-header">
+          <div class="day-number basic">1</div>
+          <div class="day-title basic">Initial Setup & Layering</div>
         </div>
-        
-        <div class="tags">
-          <span class="tag medium">Medium</span>
-          <span class="tag duration">18 days</span>
+        <div class="day-description">
+          <strong>Task:</strong> Layer swine manure & plant matter<br>
+          <strong>Time Required:</strong> 2-3 hours<br><br>
+          
+          Start by selecting a well-drained area away from water sources and living areas. Create alternating layers of materials:
+          <br><br>
+          1. Start with a 6-inch layer of coarse plant material (corn stalks, rice straw)<br>
+          2. Add 4 inches of fresh swine manure<br>
+          3. Sprinkle 2 inches of dry materials (rice hulls, sawdust)<br>
+          4. Repeat layering 3-4 times until pile reaches 1.2-1.5 meters high<br>
+          5. Water each layer lightly as you build
         </div>
-
-        <div class="steps-preview">
-          <h3 class="steps-title">Key Features:</h3>
-          <ul class="steps-list">
-            <li>Turn every 3–4 days for optimal breakdown</li>
-            <li>High heat speeds up decomposition</li>
-            <li>Faster than basic composting</li>
-            <li>Better pathogen elimination</li>
-          </ul>
+        <div class="tip-box">
+          <div class="tip-label">Pro Tip:</div>
+          <div class="tip-text">Maintain a 3:1 ratio of brown materials (carbon-rich) to green materials (nitrogen-rich manure). The pile should feel like a wrung-out sponge - moist but not dripping.</div>
         </div>
       </div>
 
-      <a href="../html/fullguide.html" class="view-guide-btn">View Full Guide</a>
+      <div class="day-container basic">
+        <div class="day-header">
+          <div class="day-number basic">7</div>
+          <div class="day-title basic">First Turning</div>
+        </div>
+        <div class="day-description">
+          <strong>Task:</strong> Turn pile for aeration<br>
+          <strong>Time Required:</strong> 1-2 hours<br><br>
+          
+          The first turning is crucial for maintaining proper oxygen levels:
+          <br><br>
+          1. Using a pitchfork or shovel, turn the entire pile<br>
+          2. Move outside materials to the center and center materials to the outside<br>
+          3. Break up any large clumps<br>
+          4. Check moisture levels throughout the pile<br>
+          5. Add water if needed to maintain proper moisture<br>
+          6. Rebuild pile in same location
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">Pro Tip:</div>
+          <div class="tip-text">After turning, the pile temperature will drop temporarily but should rise again within 24-48 hours, indicating continued active decomposition.</div>
+        </div>
+      </div>
+
+      <div class="day-container basic">
+        <div class="day-header">
+          <div class="day-number basic">14</div>
+          <div class="day-title basic">Add Dry Carbon Materials</div>
+        </div>
+        <div class="day-description">
+          <strong>Task:</strong> Second turning and carbon addition<br>
+          <strong>Time Required:</strong> 1.5-2 hours<br><br>
+          
+          Mid-process adjustment to balance the compost:
+          <br><br>
+          1. Turn the pile completely as done on day 7<br>
+          2. Add additional dry carbon materials (rice hulls, dried leaves, sawdust)<br>
+          3. Mix thoroughly to ensure even distribution<br>
+          4. Adjust moisture if necessary<br>
+          5. Check for proper brown-to-green ratio<br>
+          6. Rebuild pile
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">Pro Tip:</div>
+          <div class="tip-text">This is a good time to adjust the carbon-nitrogen ratio if the pile has been too wet or smelly. Add more brown materials to balance excess nitrogen.</div>
+        </div>
+      </div>
+
+      <div class="day-container basic">
+        <div class="day-header">
+          <div class="day-number basic">21</div>
+          <div class="day-title basic">Final Turn & Screen Compost</div>
+        </div>
+        <div class="day-description">
+          <strong>Task:</strong> Final processing and screening<br>
+          <strong>Time Required:</strong> 2-3 hours<br><br>
+          
+          Complete the composting process:
+          <br><br>
+          1. Perform final turning of the pile<br>
+          2. Screen compost through 1/2 inch mesh to remove large particles<br>
+          3. Return large particles to a new compost pile<br>
+          4. Test pH (should be 6.5-7.5 for optimal use)<br>
+          5. Check for proper moisture and crumbly texture<br>
+          6. Package or store finished compost<br>
+          7. Allow 1-2 weeks additional curing if needed
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">Final Quality Check:</div>
+          <div class="tip-text">Good compost should be dark brown, crumbly, have an earthy smell, and feel cool to the touch. If it's still warm or has strong odors, allow additional curing time.</div>
+        </div>
+      </div>
     </div>
-  </main>
- <script type="module" src="../js/shared-user-manager.js"></script>
+
+    <!-- Hot Composting Method -->
+    <div class="guide-method" id="hot-method">
+      <div class="header-section">
+        <h1 class="title hot">Hot Composting Method</h1>
+        <p class="subtitle">Complete 18-Day High-Temperature Composting Guide</p>
+        <div class="heat-indicator">THERMOPHILIC PROCESS (55-70°C)</div>
+      </div>
+
+      <div class="overview-box hot">
+        <h2 class="section-title hot">About This Method</h2>
+        <p>Advanced thermophilic composting that uses controlled high-temperature processes to rapidly decompose swine manure while ensuring complete pathogen elimination and weed seed destruction. This method maintains internal temperatures between 55-70°C for 15+ consecutive days, creating premium-quality, pathogen-free organic fertilizer in just 18 days.</p>
+        <br>
+        <p><strong>Key Benefits:</strong> Faster processing, superior pathogen control, better nutrient retention, reduced odors, and professional-grade results.</p>
+      </div>
+
+      <div class="materials-section">
+        <h2 class="section-title hot">Materials Needed</h2>
+        <div class="materials-grid">
+          <div class="material-item hot">Fresh swine manure (150-250 kg)</div>
+          <div class="material-item hot">High-carbon materials (sawdust, paper)</div>
+          <div class="material-item hot">Compost thermometer (essential)</div>
+          <div class="material-item hot">Pitchfork or aerator tool</div>
+          <div class="material-item hot">Water source</div>
+          <div class="material-item hot">Insulating cover/tarp</div>
+          <div class="material-item hot">pH testing kit</div>
+          <div class="material-item hot">Moisture meter (optional)</div>
+        </div>
+      </div>
+
+      <!-- Hot Method Days -->
+      <div class="day-container hot">
+        <div class="day-header">
+          <div class="day-number hot">1</div>
+          <div class="day-title hot">High-Energy Initial Build</div>
+        </div>
+        <div class="day-description">
+          <strong>Task:</strong> Create optimal thermophilic conditions<br>
+          <strong>Time Required:</strong> 3-4 hours<br><br>
+          
+          Build the pile for maximum heat generation:
+          <br><br>
+          1. Choose a sheltered location with good drainage<br>
+          2. Create a base layer of coarse materials (3 inches)<br>
+          3. Mix fresh swine manure with high-carbon materials (2:1 ratio)<br>
+          4. Build pile rapidly to minimum 1.5m x 1.5m x 1.5m (critical mass)<br>
+          5. Ensure moisture content is 55-65% throughout<br>
+          6. Insert thermometer into center of pile<br>
+          7. Cover with insulating material
+        </div>
+        <div class="temperature-box">
+          <div class="temp-label">Target Temperature:</div>
+          <div class="temp-text">Expect pile to reach 40-50°C within 24-48 hours. Proper size and moisture are critical for heat generation.</div>
+        </div>
+      </div>
+
+      <div class="day-container hot">
+        <div class="day-header">
+          <div class="day-number hot">4</div>
+          <div class="day-title hot">First Hot Turn</div>
+        </div>
+        <div class="day-description">
+          <strong>Task:</strong> Turn pile for optimal heat distribution<br>
+          <strong>Time Required:</strong> 1.5-2 hours<br><br>
+          
+          Critical first turning for even heating:
+          <br><br>
+          1. Record temperature before turning<br>
+          2. Turn entire pile, moving outer materials to center<br>
+          3. Ensure all materials reach thermophilic zone<br>
+          4. Check moisture throughout and adjust as needed<br>
+          5. Rebuild pile maintaining same dimensions<br>
+          6. Re-insert thermometer in new center<br>
+          7. Cover immediately to retain heat
+        </div>
+        <div class="warning-box">
+          <div class="warning-label">Critical Point:</div>
+          <div class="warning-text">This turn is essential for pathogen kill. Every part of the materials must experience the high-heat zone. Temperature will drop temporarily but should recover within 24 hours.</div>
+        </div>
+      </div>
+
+      <div class="day-container hot">
+        <div class="day-header">
+          <div class="day-number hot">11</div>
+          <div class="day-title hot">Third Turn & Assessment</div>
+        </div>
+        <div class="day-description">
+          <strong>Task:</strong> Turn and assess decomposition progress<br>
+          <strong>Time Required:</strong> 1.5-2 hours<br><br>
+          
+          Mid-process assessment and turning:
+          <br><br>
+          1. Document temperature before turning<br>
+          2. Perform complete turn of all materials<br>
+          3. Assess decomposition progress - materials should be darker<br>
+          4. Check for proper texture (less fibrous, more uniform)<br>
+          5. Test pH levels (should be approaching 6.5-7.5)<br>
+          6. Adjust moisture if needed<br>
+          7. Rebuild pile maintaining heat-retention structure
+        </div>
+      </div>
+
+      <div class="day-container hot">
+        <div class="day-header">
+          <div class="day-number hot">18</div>
+          <div class="day-title hot">Harvest & Screen Final Product</div>
+        </div>
+        <div class="day-description">
+          <strong>Task:</strong> Final processing and harvest<br>
+          <strong>Time Required:</strong> 2-3 hours<br><br>
+          
+          Complete the hot composting process:
+          <br><br>
+          1. Screen compost through 1/2 inch mesh<br>
+          2. Remove any remaining large particles<br>
+          3. Test final pH and moisture content<br>
+          4. Package finished compost for storage or use<br>
+          5. Return oversized materials to new compost batch<br>
+          6. Document final yield and quality<br>
+          7. Store in dry, ventilated area
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">Success Indicators:</div>
+          <div class="tip-text">Perfect hot compost is dark brown, crumbly, smells earthy, feels cool, and has uniform texture with no visible manure pieces.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../js/guides.js"></script>
 </body>
 </html>
