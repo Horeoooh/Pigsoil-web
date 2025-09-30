@@ -1,4 +1,4 @@
-// Shared User Manager - Updates user profile across all PigSoil+ pages
+// Shared User Manager - Updates user profile AND navigation routing
 import { auth, db } from './init.js';
 import { 
     onAuthStateChanged 
@@ -6,88 +6,75 @@ import {
 import { 
     doc, 
     getDoc,
+    setDoc,
     onSnapshot 
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 
-// Collection names
 const COLLECTIONS = {
     USERS: 'users'
 };
 
-// Global user state
 let currentUser = null;
 let currentUserData = null;
 let userDataListener = null;
 
-// User data change event
 const USER_DATA_CHANGED = 'userDataChanged';
 
-// Initialize shared user manager on all pages
 export function initializeSharedUserManager() {
     console.log('🔧 Initializing Shared User Manager');
     
-    // Check authentication state
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUser = user;
             console.log('👤 User authenticated:', user.uid);
             
-            // Set up real-time listener for user data
             setupUserDataListener(user.uid);
         } else {
             console.log('👤 User signed out');
             currentUser = null;
             currentUserData = null;
             
-            // Clean up listener
             if (userDataListener) {
                 userDataListener();
                 userDataListener = null;
             }
             
-            // Clear UI
             clearUserProfile();
         }
     });
 }
 
-// Set up real-time listener for user data changes
 function setupUserDataListener(uid) {
     const userDocRef = doc(db, COLLECTIONS.USERS, uid);
     
-    // Clean up existing listener
     if (userDataListener) {
         userDataListener();
     }
     
-    // Set up new listener
     userDataListener = onSnapshot(userDocRef, async (docSnapshot) => {
         if (docSnapshot.exists()) {
             const newUserData = docSnapshot.data();
             
-            // Check if data actually changed
             if (JSON.stringify(newUserData) !== JSON.stringify(currentUserData)) {
                 currentUserData = newUserData;
                 console.log('📡 User data updated from Firestore:', newUserData);
                 
-                // Update all UI elements
                 updateAllUserProfile();
+                updateNavigationLinks(); // NEW: Update navigation based on user type
                 
-                // Dispatch custom event for other components
                 dispatchUserDataEvent();
             }
         } else {
-            // Create default user data if not found
             console.log('📝 Creating default user data');
             currentUserData = await createDefaultUserData(uid);
             updateAllUserProfile();
+            updateNavigationLinks(); // NEW: Update navigation
         }
     }, (error) => {
         console.error('❌ Error listening to user data:', error);
     });
 }
 
-// Create default user data
 async function createDefaultUserData(uid) {
     const defaultData = {
         userEmail: currentUser.email || 'unknown@email.com',
@@ -100,7 +87,6 @@ async function createDefaultUserData(uid) {
     };
     
     try {
-        // Save to Firestore
         await setDoc(doc(db, COLLECTIONS.USERS, uid), defaultData);
         return defaultData;
     } catch (error) {
@@ -109,7 +95,6 @@ async function createDefaultUserData(uid) {
     }
 }
 
-// Update all user profile elements on the page
 function updateAllUserProfile() {
     if (!currentUserData || !currentUser) return;
     
@@ -117,19 +102,16 @@ function updateAllUserProfile() {
     const userRole = getUserRoleDisplay(currentUserData.userType);
     const initials = generateInitials(userName);
     
-    // Update header user name
     const userNameElements = document.querySelectorAll('.user-name, #headerUserName, #profileUserName');
     userNameElements.forEach(element => {
         if (element) element.textContent = userName;
     });
     
-    // Update header user role
     const userRoleElements = document.querySelectorAll('.user-role, #headerUserRole, #profileUserRole');
     userRoleElements.forEach(element => {
         if (element) element.textContent = userRole;
     });
     
-    // Update user avatars
     const avatarElements = document.querySelectorAll('.user-avatar, #headerUserAvatar, #profileAvatar');
     avatarElements.forEach(element => {
         if (element) element.textContent = initials;
@@ -138,7 +120,33 @@ function updateAllUserProfile() {
     console.log('🔄 Updated all user profile elements');
 }
 
-// Get user role display text
+// NEW FUNCTION: Update navigation links based on user type
+function updateNavigationLinks() {
+   if (!currentUserData) return;
+    
+    const isBuyer = isFertilizerBuyer();
+    console.log('🔗 Updating navigation links for:', isBuyer ? 'BUYER' : 'FARMER');
+    
+    // Find all navigation links with data-nav attribute
+    const navLinks = document.querySelectorAll('[data-nav]');
+    
+    navLinks.forEach(link => {
+        const navType = link.getAttribute('data-nav');
+        
+        // Update based on nav type
+        if (navType === 'dashboard') {
+            link.setAttribute('href', isBuyer ? '../html/buyer-dashboard.html' : '../html/dashboard.html');
+        }
+        else if (navType === 'market') {
+            link.setAttribute('href', isBuyer ? '../html/buyer-marketplace.html' : '../html/farmermarket.html');
+        }
+        
+        // Guides and Settings remain the same (shared)
+    });
+    
+    console.log('✅ Navigation links updated successfully');
+}
+
 function getUserRoleDisplay(userType) {
     switch(userType) {
         case 'swine_farmer':
@@ -152,7 +160,6 @@ function getUserRoleDisplay(userType) {
     }
 }
 
-// Generate initials from name
 function generateInitials(name) {
     if (!name || name === 'User') return 'U';
     
@@ -163,7 +170,6 @@ function generateInitials(name) {
                .toUpperCase();
 }
 
-// Clear user profile from UI
 function clearUserProfile() {
     const userNameElements = document.querySelectorAll('.user-name, #headerUserName, #profileUserName');
     userNameElements.forEach(element => {
@@ -181,7 +187,6 @@ function clearUserProfile() {
     });
 }
 
-// Dispatch custom event when user data changes
 function dispatchUserDataEvent() {
     const event = new CustomEvent(USER_DATA_CHANGED, {
         detail: {
@@ -193,7 +198,6 @@ function dispatchUserDataEvent() {
     document.dispatchEvent(event);
 }
 
-// Public functions for other modules to use
 export function getCurrentUser() {
     return currentUser;
 }
@@ -208,31 +212,27 @@ export function onUserDataChange(callback) {
     });
 }
 
-// Force update user profile (useful after profile changes)
 export function forceUpdateUserProfile() {
     updateAllUserProfile();
+    updateNavigationLinks(); // NEW: Also update navigation
 }
 
-// Check if user is authenticated
 export function isAuthenticated() {
     return currentUser !== null;
 }
 
-// Check if user is a swine farmer
 export function isSwineFarmer() {
     return currentUserData && 
            (currentUserData.userType === 'swine_farmer' || 
             currentUserData.userType === 'Swine Farmer');
 }
 
-// Check if user is a fertilizer buyer
 export function isFertilizerBuyer() {
     return currentUserData && 
            (currentUserData.userType === 'fertilizer_buyer' || 
             currentUserData.userType === 'Organic Fertilizer Buyer');
 }
 
-// Initialize the shared user manager when this module is imported
 initializeSharedUserManager();
 
-console.log('🔧 Shared User Manager loaded and initialized!');
+console.log('🔧 Shared User Manager with Routing loaded!');

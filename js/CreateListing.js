@@ -1,4 +1,4 @@
-// js/CreateListing.js - Updated to use your exact Firebase collections
+// js/CreateListing.js - Updated with Google Maps integration
 import { auth, db, storage } from '../js/init.js';
 import { 
     collection, 
@@ -31,9 +31,35 @@ const COLLECTIONS = {
 // Global variables for integration with enhanced UI
 let uploadedPhotos = [];
 let isFormSubmitting = false;
+let selectedTechnique = 'basic_swine_manure';
+let currentUser = null;
+let currentUserData = null;
+
+// Google Maps variables
+let map;
+let marker;
+let selectedLocation = {
+    lat: 10.3157,  // Default to Cebu City
+    lng: 123.8854,
+    name: 'Select farm location',
+    address: 'Click "Change" to choose pickup location',
+    formattedAddress: 'Cebu City, Philippines'
+};
+let geocoder;
+let placesService;
+let autocomplete;
+
+// Initialize Google Maps
+window.initMap = function() {
+    console.log('🗺️ Google Maps API loaded');
+    geocoder = new google.maps.Geocoder();
+    
+    // Initialize map in modal (will be created when modal opens)
+    setupLocationModal();
+};
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🐷 PigSoil+ CreateListing.js loaded with YOUR Firebase collections');
+    console.log('🐷 PigSoil+ CreateListing.js loaded with Google Maps integration');
     
     // Wait a bit for HTML to initialize first
     setTimeout(() => {
@@ -46,13 +72,15 @@ function initializePigSoilCreateListing() {
     checkAuthState();
     setupIntegratedPhotoUpload();
     setupIntegratedFormValidation();
+    setupCharacterCounters();
     setupLocationHandlers();
     setupFirebaseFormSubmission();
+    setupCompostTechnique();
     
     // Test Firebase connection
     testFirebaseConnection();
     
-    console.log('✅ PigSoil+ Create Listing with YOUR Firebase collections ready!');
+    console.log('✅ PigSoil+ Create Listing with Google Maps ready!');
 }
 
 // Test Firebase connection using your collections
@@ -79,11 +107,9 @@ async function testFirebaseConnection() {
 function checkAuthState() {
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            // Redirect to login instead of creating test user
             console.log('No user authenticated, redirecting to login');
             showNotification('Please sign in to create a listing', 'error');
             
-            // Disable form to prevent submission
             const submitBtn = document.getElementById('submitBtn');
             if (submitBtn) {
                 submitBtn.disabled = true;
@@ -91,7 +117,6 @@ function checkAuthState() {
                 submitBtn.style.background = '#ccc';
             }
             
-            // Redirect to login after a brief delay
             setTimeout(() => {
                 window.location.href = '../html/login.html';
             }, 2000);
@@ -100,15 +125,13 @@ function checkAuthState() {
         }
         
         console.log('User authenticated:', user.uid);
-        window.currentUser = user;
+        currentUser = user;
         
         try {
-            const userData = await getUserData(user.uid);
-            window.currentUserData = userData;
-            console.log('User data loaded:', userData);
+            currentUserData = await getUserData(user.uid);
+            console.log('User data loaded:', currentUserData);
             
-            // Check if user is a swine farmer
-            if (userData.userType !== 'swine_farmer' && userData.userType !== 'Swine Farmer') {
+            if (currentUserData.userType !== 'swine_farmer' && currentUserData.userType !== 'Swine Farmer') {
                 showNotification('Only swine farmers can create listings', 'error');
                 setTimeout(() => {
                     window.location.href = '../html/marketplace.html';
@@ -120,8 +143,7 @@ function checkAuthState() {
             console.error('Error loading user data:', error);
             showNotification('Error loading user profile. Please try again.', 'error');
             
-            // Create minimal user data for authenticated users
-            window.currentUserData = {
+            currentUserData = {
                 userType: 'swine_farmer',
                 userName: user.displayName || 'Swine Farmer',
                 userEmail: user.email || 'unknown@email.com',
@@ -131,13 +153,9 @@ function checkAuthState() {
     });
 }
 
-// Remove the test user creation function since we're using real auth only
-// createTestUser function removed - no longer needed with proper auth
-
 // Get user data from your users collection
 async function getUserData(uid) {
     try {
-        // Try to find user by uid first
         const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, uid));
         
         if (userDoc.exists()) {
@@ -146,10 +164,9 @@ async function getUserData(uid) {
             return userData;
         }
         
-        // If not found by UID, try to find by email
-        if (window.currentUser?.email) {
+        if (currentUser?.email) {
             const usersRef = collection(db, COLLECTIONS.USERS);
-            const userQuery = query(usersRef, where('userEmail', '==', window.currentUser.email));
+            const userQuery = query(usersRef, where('userEmail', '==', currentUser.email));
             const userSnapshot = await getDocs(userQuery);
             
             if (!userSnapshot.empty) {
@@ -159,13 +176,12 @@ async function getUserData(uid) {
             }
         }
         
-        // If no user data found, create a default entry for authenticated users
         console.log('No user data found, creating default entry for authenticated user');
         const defaultUserData = {
             userCreatedAt: serverTimestamp(),
-            userEmail: window.currentUser.email || 'unknown@email.com',
+            userEmail: currentUser.email || 'unknown@email.com',
             userIsActive: true,
-            userName: window.currentUser.displayName || 'Swine Farmer',
+            userName: currentUser.displayName || 'Swine Farmer',
             userPhone: '+639123456789',
             userPhoneVerified: false,
             userType: 'swine_farmer',
@@ -179,6 +195,283 @@ async function getUserData(uid) {
     } catch (error) {
         console.error('Error fetching user data:', error);
         throw error;
+    }
+}
+
+// Setup composting technique selection
+function setupCompostTechnique() {
+    const techniqueOptions = document.querySelectorAll('.technique-option');
+    const hiddenInput = document.getElementById('compostTechnique');
+    
+    techniqueOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            techniqueOptions.forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedTechnique = this.getAttribute('data-technique');
+            hiddenInput.value = selectedTechnique;
+        });
+    });
+}
+
+// Google Maps Location Functionality
+function setupLocationHandlers() {
+    const changeLocationBtn = document.getElementById('changeLocationBtn');
+    const locationModal = document.getElementById('locationModal');
+    const modalClose = document.getElementById('modalClose');
+    const cancelLocation = document.getElementById('cancelLocation');
+    const confirmLocation = document.getElementById('confirmLocation');
+    
+    if (changeLocationBtn) {
+        changeLocationBtn.addEventListener('click', () => {
+            openLocationPicker();
+        });
+    }
+    
+    if (modalClose) {
+        modalClose.addEventListener('click', closeLocationPicker);
+    }
+    
+    if (cancelLocation) {
+        cancelLocation.addEventListener('click', closeLocationPicker);
+    }
+    
+    if (confirmLocation) {
+        confirmLocation.addEventListener('click', confirmLocationSelection);
+    }
+    
+    // Close modal when clicking overlay
+    if (locationModal) {
+        locationModal.addEventListener('click', function(e) {
+            if (e.target === locationModal) {
+                closeLocationPicker();
+            }
+        });
+    }
+}
+
+function setupLocationModal() {
+    console.log('🗺️ Setting up location modal functionality');
+}
+
+function openLocationPicker() {
+    console.log('📍 Opening location picker with Google Maps');
+    
+    const locationModal = document.getElementById('locationModal');
+    if (locationModal) {
+        locationModal.classList.add('show');
+        
+        // Initialize map when modal opens
+        setTimeout(() => {
+            initializeMap();
+        }, 300);
+    }
+}
+
+function closeLocationPicker() {
+    console.log('📍 Closing location picker');
+    
+    const locationModal = document.getElementById('locationModal');
+    if (locationModal) {
+        locationModal.classList.remove('show');
+    }
+}
+
+function initializeMap() {
+    console.log('🗺️ Initializing Google Maps in modal');
+    
+    const mapContainer = document.getElementById('mapContainer');
+    const locationSearch = document.getElementById('locationSearch');
+    
+    if (!mapContainer) {
+        console.error('Map container not found');
+        return;
+    }
+    
+    // Initialize map centered on Cebu
+    map = new google.maps.Map(mapContainer, {
+        center: selectedLocation,
+        zoom: 13,
+        mapTypeId: 'roadmap',
+        styles: [
+            {
+                featureType: 'all',
+                stylers: [{ saturation: -10 }]
+            }
+        ]
+    });
+    
+    // Initialize marker
+    marker = new google.maps.Marker({
+        position: selectedLocation,
+        map: map,
+        draggable: true,
+        title: 'Your swine farm location'
+    });
+    
+    // Set up places autocomplete for search
+    if (locationSearch) {
+        autocomplete = new google.maps.places.Autocomplete(locationSearch, {
+            bounds: new google.maps.LatLngBounds(
+                new google.maps.LatLng(9.5, 123.0),  // Southwest bounds (Southern Cebu)
+                new google.maps.LatLng(11.5, 125.0)  // Northeast bounds (Northern Cebu)
+            ),
+            strictBounds: true,
+            componentRestrictions: { country: 'PH' }
+        });
+        
+        autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            
+            if (place.geometry) {
+                const location = {
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng()
+                };
+                
+                updateMapLocation(location, place);
+            }
+        });
+    }
+    
+    // Handle marker drag
+    marker.addListener('dragend', (event) => {
+        const location = {
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng()
+        };
+        
+        reverseGeocode(location);
+    });
+    
+    // Handle map click
+    map.addListener('click', (event) => {
+        const location = {
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng()
+        };
+        
+        marker.setPosition(location);
+        reverseGeocode(location);
+    });
+    
+    console.log('✅ Google Maps initialized successfully');
+}
+
+function updateMapLocation(location, place = null) {
+    selectedLocation.lat = location.lat;
+    selectedLocation.lng = location.lng;
+    
+    if (place && place.formatted_address) {
+        selectedLocation.formattedAddress = place.formatted_address;
+        selectedLocation.name = place.name || 'Selected Location';
+        selectedLocation.address = place.formatted_address;
+    }
+    
+    // Update map and marker
+    if (map && marker) {
+        map.setCenter(location);
+        marker.setPosition(location);
+    }
+    
+    console.log('📍 Location updated:', selectedLocation);
+}
+
+function reverseGeocode(location) {
+    if (!geocoder) {
+        console.error('Geocoder not initialized');
+        return;
+    }
+    
+    geocoder.geocode({ location: location }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+            const result = results[0];
+            
+            selectedLocation.lat = location.lat;
+            selectedLocation.lng = location.lng;
+            selectedLocation.formattedAddress = result.formatted_address;
+            selectedLocation.name = extractLocationName(result);
+            selectedLocation.address = result.formatted_address;
+            
+            console.log('📍 Reverse geocoded location:', selectedLocation);
+        } else {
+            console.error('Reverse geocoding failed:', status);
+        }
+    });
+}
+
+function extractLocationName(result) {
+    // Try to get a meaningful name from the geocoding result
+    for (let component of result.address_components) {
+        if (component.types.includes('establishment') || 
+            component.types.includes('point_of_interest')) {
+            return component.long_name;
+        }
+    }
+    
+    // Fallback to locality or political area
+    for (let component of result.address_components) {
+        if (component.types.includes('locality') || 
+            component.types.includes('administrative_area_level_3')) {
+            return component.long_name + ' Area';
+        }
+    }
+    
+    return 'Farm Location';
+}
+
+function confirmLocationSelection() {
+    console.log('✅ Confirming location selection:', selectedLocation);
+    
+    // Update the display
+    updateLocationDisplay();
+    
+    // Update static map preview
+    updateStaticMapPreview();
+    
+    // Close modal
+    closeLocationPicker();
+    
+    showNotification('Farm location updated successfully!', 'success');
+}
+
+function updateLocationDisplay() {
+    const locationName = document.getElementById('selectedLocationName');
+    const locationAddress = document.getElementById('selectedLocationAddress');
+    const locationContainer = document.getElementById('locationContainer');
+    
+    if (locationName) {
+        locationName.textContent = selectedLocation.name;
+    }
+    
+    if (locationAddress) {
+        locationAddress.textContent = selectedLocation.address;
+    }
+    
+    if (locationContainer) {
+        locationContainer.classList.add('active');
+        setTimeout(() => {
+            locationContainer.classList.remove('active');
+        }, 1000);
+    }
+}
+
+function updateStaticMapPreview() {
+    const staticMapContainer = document.getElementById('staticMap');
+    
+    if (staticMapContainer && selectedLocation.lat && selectedLocation.lng) {
+        const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?` +
+            `center=${selectedLocation.lat},${selectedLocation.lng}` +
+            `&zoom=15` +
+            `&size=400x200` +
+            `&markers=color:red%7C${selectedLocation.lat},${selectedLocation.lng}` +
+            `&key=AIzaSyDxldiepJaqTaCW9kxCr-3cYgSlVD0fQYg` +
+            `&style=saturation:-10`;
+        
+        staticMapContainer.innerHTML = `
+            <img src="${staticMapUrl}" 
+                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" 
+                 alt="Selected farm location">
+        `;
     }
 }
 
@@ -218,25 +511,16 @@ function setupIntegratedPhotoUpload() {
 function handleEnhancedPhotoSelection(file, upload, index, input) {
     console.log('📷 Processing photo with Firebase integration:', file.name);
     
-    // Clear any previous errors using HTML's function if available
-    if (typeof clearPhotoErrors === 'function') {
-        clearPhotoErrors();
-    }
+    clearPhotoErrors();
     
-    // Use HTML's validation if available, otherwise use basic validation
-    const isValid = validatePhotoFile ? validatePhotoFile(file) : basicPhotoValidation(file);
+    const isValid = validatePhotoFile(file);
     
     if (!isValid.isValid) {
-        if (typeof showPhotoError === 'function') {
-            showPhotoError(isValid.message);
-        } else {
-            showNotification(isValid.message, 'error');
-        }
+        showNotification(isValid.message, 'error');
         input.value = '';
         return;
     }
     
-    // Show loading state
     upload.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
             <div style="font-size: 24px; animation: spin 1s linear infinite;">⏳</div>
@@ -249,39 +533,27 @@ function handleEnhancedPhotoSelection(file, upload, index, input) {
     reader.onload = (e) => {
         try {
             createFirebasePhotoPreview(e.target.result, upload, index, file);
-            uploadedPhotos[index] = file; // Store for Firebase upload
+            uploadedPhotos[index] = file;
             showNotification('Photo ready for upload!', 'success');
-            
-            // Validate using HTML function if available
-            if (typeof validatePhotos === 'function') {
-                validatePhotos();
-            }
+            validatePhotos();
         } catch (error) {
             console.error('Error creating photo preview:', error);
-            if (typeof showPhotoError === 'function') {
-                showPhotoError('Failed to process image. Please try again.');
-            } else {
-                showNotification('Failed to process image. Please try again.', 'error');
-            }
+            showNotification('Failed to process image. Please try again.', 'error');
             resetPhotoUpload(upload, index);
         }
     };
     
     reader.onerror = () => {
         console.error('Error reading file');
-        if (typeof showPhotoError === 'function') {
-            showPhotoError('Error reading image file. Please try a different file.');
-        } else {
-            showNotification('Error reading image file', 'error');
-        }
+        showNotification('Error reading image file', 'error');
         resetPhotoUpload(upload, index);
     };
     
     reader.readAsDataURL(file);
 }
 
-// Basic photo validation fallback
-function basicPhotoValidation(file) {
+// Basic photo validation
+function validatePhotoFile(file) {
     if (!file.type.startsWith('image/')) {
         return {
             isValid: false,
@@ -312,7 +584,7 @@ function createFirebasePhotoPreview(imageSrc, upload, index, file) {
     newInput.accept = 'image/*';
     newInput.setAttribute('data-index', index);
     newInput.style.display = 'none';
-    newInput.uploadFile = file; // Store file for Firebase upload
+    newInput.uploadFile = file;
     
     const newRemoveBtn = document.createElement('button');
     newRemoveBtn.type = 'button';
@@ -357,12 +629,7 @@ function createFirebasePhotoPreview(imageSrc, upload, index, file) {
 function removeEnhancedPhoto(upload, index) {
     uploadedPhotos[index] = null;
     resetPhotoUpload(upload, index);
-    
-    // Use HTML validation if available
-    if (typeof validatePhotos === 'function') {
-        validatePhotos();
-    }
-    
+    validatePhotos();
     showNotification('Photo removed', 'info');
 }
 
@@ -401,17 +668,30 @@ function resetPhotoUpload(upload, index) {
 
 // Integrated Form Validation - Works with Enhanced UI
 function setupIntegratedFormValidation() {
-    // Don't override HTML validation, just add Firebase-specific validation
+    const fields = [
+        { id: 'productTitle', validator: validateProductTitle },
+        { id: 'quantity', validator: validateQuantity },
+        { id: 'price', validator: validatePrice },
+        { id: 'description', validator: validateDescription }
+    ];
+    
+    fields.forEach(field => {
+        const element = document.getElementById(field.id);
+        if (element) {
+            element.addEventListener('input', field.validator);
+            element.addEventListener('blur', field.validator);
+        }
+    });
+}
+
+// Firebase-specific form submission
+function setupFirebaseFormSubmission() {
     const form = document.getElementById('createListingForm');
     if (form) {
-        // Remove any existing Firebase handlers
-        form.removeEventListener('submit', handleFormSubmission);
-        // Add our Firebase handler
         form.addEventListener('submit', handleFirebaseFormSubmission);
     }
 }
 
-// Firebase-specific form submission
 function handleFirebaseFormSubmission(e) {
     e.preventDefault();
     
@@ -421,17 +701,16 @@ function handleFirebaseFormSubmission(e) {
     
     console.log('🚀 Firebase form submission started');
     
-    // Use HTML validation functions if available
-    const isValidTitle = typeof validateProductTitle === 'function' ? validateProductTitle() : true;
-    const isValidQuantity = typeof validateQuantity === 'function' ? validateQuantity() : true;
-    const isValidPrice = typeof validatePrice === 'function' ? validatePrice() : true;
-    const isValidDescription = typeof validateDescription === 'function' ? validateDescription() : true;
-    const isValidPhotos = typeof validatePhotos === 'function' ? validatePhotos() : checkPhotosBasic();
+    const isValidTitle = validateProductTitle();
+    const isValidQuantity = validateQuantity();
+    const isValidPrice = validatePrice();
+    const isValidDescription = validateDescription();
+    const isValidPhotos = validatePhotos();
+    const isValidLocation = validateLocation();
     
-    if (!isValidTitle || !isValidQuantity || !isValidPrice || !isValidPhotos) {
+    if (!isValidTitle || !isValidQuantity || !isValidPrice || !isValidPhotos || !isValidLocation) {
         showNotification('Please fix all errors before submitting', 'error');
         
-        // Scroll to first error if HTML function is available
         const firstError = document.querySelector('.form-input.error, .photo-upload-grid.error');
         if (firstError) {
             firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -440,21 +719,16 @@ function handleFirebaseFormSubmission(e) {
     }
     
     isFormSubmitting = true;
-    
-    // Use HTML loading overlay if available
-    if (typeof showLoadingOverlay === 'function') {
-        showLoadingOverlay('Preparing your swine compost listing...');
-    }
+    showLoadingOverlay('Preparing your swine compost listing...');
     
     const formData = collectFirebaseFormData();
     submitListingToFirebase(formData);
 }
 
-// Basic photo check fallback
-function checkPhotosBasic() {
-    const hasPhotos = uploadedPhotos.some(photo => photo !== null && photo !== undefined);
-    if (!hasPhotos) {
-        showNotification('Please upload at least one product photo', 'error');
+// Validate location
+function validateLocation() {
+    if (!selectedLocation.lat || !selectedLocation.lng) {
+        showNotification('Please select a pickup location for your swine compost', 'error');
         return false;
     }
     return true;
@@ -486,8 +760,9 @@ function collectFirebaseFormData() {
         description,
         technique,
         photos,
-        sellerId: window.currentUser?.uid || 'test-swine-farmer-' + Date.now(),
-        sellerName: window.currentUserData?.userName || window.currentUser?.displayName || 'Test Swine Farmer'
+        location: selectedLocation,
+        sellerId: currentUser?.uid || 'test-swine-farmer-' + Date.now(),
+        sellerName: currentUserData?.userName || currentUser?.displayName || 'Test Swine Farmer'
     };
 }
 
@@ -511,19 +786,28 @@ async function submitListingToFirebase(formData) {
         
         // Using your exact product_listings schema from Firebase
         const listingData = {
-            // These match your Firebase product_listings collection exactly
-            listingAddressId: 'default_address', // We'll use a default for now
-            listingBatchID: 'batch_' + Date.now(), // Generate a batch ID
+            listingAddressId: 'default_address',
+            listingBatchID: 'batch_' + Date.now(),
             listingCreatedAt: serverTimestamp(),
             listingDescription: formData.description,
             listingIsAvailable: true,
             listingPricePerKG: formData.price.toString(),
-            listingProductImages: photoUrls.map(photo => photo.url), // Array of image URLs
+            listingProductImages: photoUrls.map(photo => photo.url),
             listingProductName: formData.title,
             listingQuantityKG: formData.quantity.toString(),
             listingSellerID: formData.sellerId,
             listingTotalPrice: formData.quantity * formData.price,
-            listingUpdatedAt: serverTimestamp()
+            listingUpdatedAt: serverTimestamp(),
+            // Add location data
+            listingLocation: {
+                lat: formData.location.lat,
+                lng: formData.location.lng,
+                name: formData.location.name,
+                address: formData.location.address,
+                formattedAddress: formData.location.formattedAddress
+            },
+            // Add composting technique
+            compostTechnique: formData.technique
         };
         
         // Step 3: Save to YOUR product_listings collection
@@ -539,10 +823,7 @@ async function submitListingToFirebase(formData) {
         
         // Hide loading and show success
         setTimeout(() => {
-            if (typeof hideLoadingOverlay === 'function') {
-                hideLoadingOverlay();
-            }
-            
+            hideLoadingOverlay();
             showNotification('Swine compost listing posted successfully!', 'success');
             isFormSubmitting = false;
             
@@ -556,10 +837,7 @@ async function submitListingToFirebase(formData) {
     } catch (error) {
         console.error('❌ Error creating listing:', error);
         
-        if (typeof hideLoadingOverlay === 'function') {
-            hideLoadingOverlay();
-        }
-        
+        hideLoadingOverlay();
         showNotification('Error creating listing: ' + error.message, 'error');
         isFormSubmitting = false;
         
@@ -610,110 +888,203 @@ async function uploadPhotosToFirebase(photos) {
     return photoUrls;
 }
 
-// Location Handlers
-function setupLocationHandlers() {
-    const changeLocationBtn = document.querySelector('.change-location') || document.getElementById('changeLocationBtn');
+// Form validation functions
+function validateProductTitle() {
+    const field = document.getElementById('productTitle');
+    const value = field.value.trim();
     
-    if (changeLocationBtn) {
-        changeLocationBtn.addEventListener('click', () => {
-            openLocationPicker();
+    if (value.length === 0) {
+        setFieldError(field, 'Product title is required');
+        return false;
+    }
+    
+    if (value.length < 3) {
+        setFieldError(field, 'Product title must be at least 3 characters');
+        return false;
+    }
+    
+    if (value.length > 100) {
+        setFieldError(field, 'Product title must be less than 100 characters');
+        return false;
+    }
+    
+    setFieldSuccess(field);
+    return true;
+}
+
+function validateQuantity() {
+    const field = document.getElementById('quantity');
+    const value = parseFloat(field.value);
+    
+    if (!field.value || isNaN(value)) {
+        setFieldError(field, 'Quantity is required');
+        return false;
+    }
+    
+    if (value <= 0) {
+        setFieldError(field, 'Quantity must be greater than 0');
+        return false;
+    }
+    
+    if (value > 10000) {
+        setFieldError(field, 'Quantity seems too large. Maximum is 10,000 kg');
+        return false;
+    }
+    
+    setFieldSuccess(field);
+    return true;
+}
+
+function validatePrice() {
+    const field = document.getElementById('price');
+    const value = parseFloat(field.value);
+    
+    if (!field.value || isNaN(value)) {
+        setFieldError(field, 'Price is required');
+        return false;
+    }
+    
+    if (value <= 0) {
+        setFieldError(field, 'Price must be greater than 0');
+        return false;
+    }
+    
+    if (value > 5000) {
+        setFieldError(field, 'Price seems too high. Maximum is ₱5,000 per kg');
+        return false;
+    }
+    
+    setFieldSuccess(field);
+    return true;
+}
+
+function validateDescription() {
+    const field = document.getElementById('description');
+    const value = field.value.trim();
+    
+    if (value.length > 500) {
+        setFieldError(field, 'Description must be less than 500 characters');
+        return false;
+    }
+    
+    clearFieldError(field);
+    return true;
+}
+
+// Validate photos
+function validatePhotos() {
+    const hasPhotos = uploadedPhotos.some(photo => photo !== null && photo !== undefined);
+    
+    if (!hasPhotos) {
+        showPhotoError('Please upload at least one photo of your swine compost');
+        return false;
+    }
+    
+    clearPhotoErrors();
+    return true;
+}
+
+// Photo error handling
+function showPhotoError(message) {
+    const photoError = document.getElementById('photoError');
+    const photoGrid = document.getElementById('photoUploadGrid');
+    
+    photoError.textContent = message;
+    photoError.style.display = 'flex';
+    photoGrid.classList.add('error');
+}
+
+function clearPhotoErrors() {
+    const photoError = document.getElementById('photoError');
+    const photoGrid = document.getElementById('photoUploadGrid');
+    
+    photoError.style.display = 'none';
+    photoGrid.classList.remove('error');
+}
+
+function setFieldError(field, message) {
+    field.classList.remove('success');
+    field.classList.add('error');
+    
+    const existingMessage = field.parentNode.querySelector('.error-message, .success-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    field.parentNode.appendChild(errorDiv);
+}
+
+function setFieldSuccess(field) {
+    field.classList.remove('error');
+    field.classList.add('success');
+    clearFieldError(field);
+}
+
+function clearFieldError(field) {
+    field.classList.remove('error');
+    
+    const existingMessage = field.parentNode.querySelector('.error-message, .success-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+}
+
+// Character counters
+function setupCharacterCounters() {
+    const description = document.getElementById('description');
+    const counter = document.getElementById('descriptionCounter');
+    
+    if (description && counter) {
+        description.addEventListener('input', () => {
+            const length = description.value.length;
+            counter.textContent = `${length}/500 characters`;
+            
+            if (length > 450) {
+                counter.style.color = '#e74c3c';
+            } else if (length > 400) {
+                counter.style.color = '#ff9800';
+            } else {
+                counter.style.color = '#666';
+            }
         });
     }
 }
 
-function openLocationPicker() {
-    const locations = [
-        { name: 'Ayala Center Cebu', address: 'Cebu Business Park, Cebu City' },
-        { name: 'SM City Cebu', address: 'Juan Luna Ave, Cebu City' },
-        { name: 'IT Park', address: 'Apas, Cebu City' },
-        { name: 'Talamban Area', address: 'Talamban, Cebu City' },
-        { name: 'Mandaue City Center', address: 'Mandaue City, Cebu' }
-    ];
-    
-    const modal = createModal('Select Location', `
-        <div style="max-height: 300px; overflow-y: auto;">
-            ${locations.map((loc, index) => `
-                <div onclick="selectLocation(${index})" style="
-                    padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
-                    margin-bottom: 8px; cursor: pointer; transition: all 0.3s;
-                " onmouseover="this.style.backgroundColor='#f0f8e8'" onmouseout="this.style.backgroundColor='white'">
-                    <div style="font-weight: 600; color: #333;">${loc.name}</div>
-                    <div style="font-size: 12px; color: #666;">${loc.address}</div>
-                </div>
-            `).join('')}
-        </div>
-    `);
-    
-    window.selectLocation = (index) => {
-        const location = locations[index];
-        updateLocationDisplay(location);
-        closeModal();
-    };
-}
-
-function updateLocationDisplay(location) {
-    const locationName = document.querySelector('.location-name');
-    const locationAddress = document.querySelector('.location-address');
-    
-    if (locationName) locationName.textContent = location.name;
-    if (locationAddress) locationAddress.textContent = location.address;
-}
-
 // Utility Functions
-function createModal(title, content) {
-    const existingModal = document.querySelector('.modal-overlay');
-    if (existingModal) {
-        existingModal.remove();
+function showLoadingOverlay(message) {
+    const overlay = document.getElementById('loadingOverlay');
+    const text = document.getElementById('loadingText');
+    const submitBtn = document.getElementById('submitBtn');
+    const progressIndicator = document.getElementById('progressIndicator');
+    const progressBar = document.getElementById('progressBar');
+    
+    if (text) text.textContent = message;
+    if (overlay) overlay.classList.add('show');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
     }
-    
-    const modalOverlay = document.createElement('div');
-    modalOverlay.className = 'modal-overlay';
-    modalOverlay.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5);
-        display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px);
-    `;
-    
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-        background: white; border-radius: 20px; padding: 30px; max-width: 600px; width: 90%;
-        max-height: 80vh; overflow-y: auto; position: relative;
-    `;
-    
-    modal.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="margin: 0; color: #333;">${title}</h2>
-            <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">×</button>
-        </div>
-        ${content}
-    `;
-    
-    modalOverlay.appendChild(modal);
-    document.body.appendChild(modalOverlay);
-    
-    modalOverlay.addEventListener('click', function(e) {
-        if (e.target === modalOverlay) {
-            closeModal();
-        }
-    });
-    
-    return modal;
+    if (progressIndicator) progressIndicator.style.display = 'block';
+    if (progressBar) progressBar.style.width = '0%';
 }
 
-function closeModal() {
-    const modal = document.querySelector('.modal-overlay');
-    if (modal) {
-        modal.remove();
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('loadingOverlay');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (overlay) overlay.classList.remove('show');
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
     }
+    
+    isFormSubmitting = false;
 }
 
 function showNotification(message, type = 'info') {
-    // Try to use HTML's enhanced notification if available
-    if (window.showNotification && typeof window.showNotification === 'function') {
-        window.showNotification(message, type);
-        return;
-    }
-    
-    // Fallback to basic notification
     const existingNotification = document.querySelector('.notification');
     if (existingNotification) {
         existingNotification.remove();
@@ -752,7 +1123,4 @@ function showNotification(message, type = 'info') {
     }, 4000);
 }
 
-// Global functions
-window.closeModal = closeModal;
-
-console.log('🐷 PigSoil+ CreateListing.js using YOUR Firebase collections fully loaded and ready!');
+console.log('🐷 PigSoil+ CreateListing.js with Google Maps integration fully loaded and ready!');

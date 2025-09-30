@@ -1,9 +1,7 @@
-// Enhanced Login functionality for PigSoil+ - Firebase Version with Auth Integration
+// Enhanced Login functionality for PigSoil+ - Firebase Version with Buyer Routing
 import { auth, db } from './init.js';
 import { 
     signInWithEmailAndPassword,
-    signInWithPhoneNumber,
-    RecaptchaVerifier,
     onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
@@ -29,9 +27,6 @@ const alertMessage = document.getElementById('alertMessage');
 const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
 const inputs = document.querySelectorAll('.form-input');
-
-let recaptchaVerifier = null;
-let confirmationResult = null;
 
 // Helper functions
 function showAlert(message, type = 'error') {
@@ -107,7 +102,7 @@ async function getUserData(userId) {
             userCreatedAt: serverTimestamp(),
             userEmail: currentUser?.email || 'unknown@email.com',
             userIsActive: true,
-            userName: currentUser?.displayName || 'Swine Farmer',
+            userName: currentUser?.displayName || 'User',
             userPhone: currentUser?.phoneNumber || '+639123456789',
             userPhoneVerified: false,
             userType: 'swine_farmer', // Default to swine farmer
@@ -124,7 +119,7 @@ async function getUserData(userId) {
     }
 }
 
-// Enhanced redirection logic
+// Enhanced redirection logic for Swine Farmers and Organic Fertilizer Buyers
 function redirectToAppropriateScreen(userData) {
     const userType = userData.userType;
     
@@ -140,14 +135,18 @@ function redirectToAppropriateScreen(userData) {
     
     // Redirect based on user type
     setTimeout(() => {
+        // Check for Swine Farmer types
         if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
             console.log('🐷 Redirecting swine farmer to dashboard');
             window.location.href = '../html/dashboard.html';
-        } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
-            console.log('🌱 Redirecting fertilizer buyer to marketplace');
-            window.location.href = '../html/marketplace.html';
-        } else {
-            // Default to dashboard for unknown user types
+        } 
+        // Check for Organic Fertilizer Buyer types
+        else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+            console.log('🌱 Redirecting organic fertilizer buyer to buyer dashboard');
+            window.location.href = '../html/buyer-dashboard.html';
+        } 
+        // Default fallback
+        else {
             console.log('❓ Unknown user type, redirecting to dashboard');
             window.location.href = '../html/dashboard.html';
         }
@@ -216,117 +215,6 @@ async function handleEmailLogin(email, password) {
     }
 }
 
-// Initialize reCAPTCHA for phone login
-function initializeRecaptcha() {
-    if (!recaptchaVerifier) {
-        recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            'size': 'invisible',
-            'callback': (response) => {
-                console.log('✅ reCAPTCHA solved');
-            },
-            'expired-callback': () => {
-                console.log('❌ reCAPTCHA expired');
-                showAlert('reCAPTCHA expired. Please try again.');
-            }
-        });
-    }
-    return recaptchaVerifier;
-}
-
-// Firebase phone login - start verification
-async function startPhoneLogin(phoneNumber) {
-    try {
-        setLoading(true);
-        
-        console.log('📱 Starting phone authentication for:', phoneNumber);
-        
-        // Initialize reCAPTCHA
-        const recaptcha = initializeRecaptcha();
-        
-        // Send verification code
-        confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, recaptcha);
-        console.log('📤 SMS sent successfully');
-        
-        showAlert('Verification code sent to your phone!', 'success');
-        
-        // Show verification code input (you need to add this HTML section)
-        const verificationSection = document.getElementById('verificationCodeSection');
-        if (verificationSection) {
-            verificationSection.style.display = 'block';
-        }
-        
-        return { success: true };
-    } catch (error) {
-        console.error('❌ Phone login failed:', error);
-        let errorMessage = 'Failed to send verification code. Please try again.';
-        
-        switch (error.code) {
-            case 'auth/invalid-phone-number':
-                errorMessage = 'Invalid phone number format. Please use international format (+639XXXXXXXXX).';
-                break;
-            case 'auth/too-many-requests':
-                errorMessage = 'Too many requests. Please try again later.';
-                break;
-            case 'auth/captcha-check-failed':
-                errorMessage = 'reCAPTCHA verification failed. Please try again.';
-                break;
-        }
-        
-        showAlert(errorMessage, 'error');
-        return { success: false };
-    } finally {
-        setLoading(false);
-    }
-}
-
-// Verify phone code and login
-async function verifyPhoneCode(verificationCode) {
-    try {
-        setLoading(true);
-        
-        if (!confirmationResult) {
-            throw new Error('No verification in progress. Please start over.');
-        }
-
-        console.log('🔢 Verifying phone code...');
-        
-        const result = await confirmationResult.confirm(verificationCode);
-        const user = result.user;
-        
-        console.log('✅ Phone verification successful for:', user.uid);
-
-        // Get user data from Firestore
-        const userData = await getUserData(user.uid);
-        
-        showAlert('Phone login successful! Redirecting...', 'success');
-        
-        // Redirect with user data
-        redirectToAppropriateScreen(userData);
-        
-        return { success: true };
-    } catch (error) {
-        console.error('❌ Phone verification failed:', error);
-        let errorMessage = 'Invalid verification code. Please try again.';
-        
-        switch (error.code) {
-            case 'auth/invalid-verification-code':
-                errorMessage = 'Invalid verification code. Please check and try again.';
-                break;
-            case 'auth/code-expired':
-                errorMessage = 'Verification code has expired. Please request a new one.';
-                break;
-            case 'auth/session-expired':
-                errorMessage = 'Session expired. Please start the verification process again.';
-                break;
-        }
-        
-        showAlert(errorMessage, 'error');
-        return { success: false };
-    } finally {
-        setLoading(false);
-    }
-}
-
 // Enhanced form submission handler
 if (loginForm) {
     loginForm.addEventListener('submit', function(e) {
@@ -372,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.removeItem('pigsoil_user');
 });
 
-// Keep all your existing input animations and interactions (unchanged)
+// Keep all existing input animations and interactions
 if (inputs.length > 0) {
     inputs.forEach(input => {
         input.addEventListener('focus', function() {
@@ -408,7 +296,7 @@ if (inputs.length > 0) {
     });
 }
 
-// Keep all your existing animations and effects (unchanged)
+// Keep all existing animations and effects
 const languageSelector = document.querySelector('.language-btn');
 if (languageSelector) {
     languageSelector.addEventListener('click', function(e) {
@@ -482,10 +370,8 @@ document.head.appendChild(style);
 // Export functions for potential use in other modules
 window.PigSoilLogin = {
     handleEmailLogin,
-    startPhoneLogin,
-    verifyPhoneCode,
     getUserData,
     redirectToAppropriateScreen
 };
 
-console.log('🐷 PigSoil+ Enhanced Login with Authentication Integration loaded!');
+console.log('🐷 PigSoil+ Enhanced Login with Buyer Routing loaded!');

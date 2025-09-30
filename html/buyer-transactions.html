@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Transactions - PigSoil+</title>
+    <link rel="stylesheet" href="../css/buyer-transactions.css">
+</head>
+
+<style>
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-green: #4A6741;
+    --secondary-green: #6B8E5F;
+    --light-green: #E8F5E9;
+    --accent-orange: #FF6B35;
+    --dark-gray: #333333;
+    --medium-gray: #666666;
+    --light-gray: #F5F5F5;
+    --border-gray: #E0E0E0;
+    --white: #FFFFFF;
+    --success-green: #4CAF50;
+    --warning-orange: #FF9800;
+    --info-blue: #2196F3;
+    --error-red: #F44336;
+    --shadow: rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--light-gray);
+    color: var(--dark-gray);
+    padding-bottom: 80px;
+    line-height: 1.6;
+}
+
+ /* Header */
+    .header {
+      background: white;
+      padding: 16px 64px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+      height: 48px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-img {
+      height: 50px;
+      width: auto;
+    }
+
+    .logo-text {
+      height: 40px;
+      width: 171px;
+      object-fit: contain;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 64px;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-menu a {
+      text-decoration: none;
+      color: #666;
+      font-size: 16px;
+      font-weight: 400;
+      transition: color 0.3s;
+    }
+
+    .nav-menu a:hover,
+    .nav-menu a.active {
+      color: #4CAF50;
+    }
+
+    .user-section {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      color: #666;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .icon-btn:hover {
+      color: #4CAF50;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #333;
+    }
+
+    .user-info {
+      text-align: right;
+    }
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 500;
+      display: block;
+    }
+
+    .user-role {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #4CAF50;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+.back-btn, .filter-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 20px;
+    color: var(--white);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover, .filter-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.header-title {
+    flex: 1;
+}
+
+.header-title h1 {
+    font-size: 24px;
+    margin-bottom: -2px;
+}
+
+.header-title p {
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.filter-tabs {
+    background: var(--white);
+    padding: 15px 20px;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px var(--shadow);
+}
+
+.filter-tabs::-webkit-scrollbar {
+    height: 0;
+}
+
+.filter-tab {
+    padding: 8px 16px;
+    border: 2px solid var(--border-gray);
+    background: var(--white);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-tab:hover {
+    border-color: var(--primary-green);
+    color: var(--primary-green);
+}
+
+.filter-tab.active {
+    background: var(--primary-green);
+    color: var(--white);
+    border-color: var(--primary-green);
+}
+
+.transactions-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.transaction-card {
+    background: var(--white);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.transaction-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.transaction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--light-gray);
+}
+
+.transaction-id {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.id-label {
+    font-weight: 700;
+    color: var(--dark-gray);
+    font-size: 14px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-badge.completed {
+    background: #E8F5E9;
+    color: var(--success-green);
+}
+
+.status-badge.pending {
+    background: #FFF3E0;
+    color: var(--warning-orange);
+}
+
+.status-badge.in-progress {
+    background: #E3F2FD;
+    color: var(--info-blue);
+}
+
+.status-badge.cancelled {
+    background: #FFEBEE;
+    color: var(--error-red);
+}
+
+.transaction-date {
+    font-size: 13px;
+    color: var(--medium-gray);
+}
+
+.transaction-body {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.product-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.transaction-details {
+    flex: 1;
+}
+
+.transaction-details h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--dark-gray);
+}
+
+.seller-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: var(--medium-gray);
+}
+
+.seller-icon {
+    font-size: 16px;
+}
+
+.seller-info strong {
+    color: var(--dark-gray);
+}
+
+.seller-rating {
+    margin-left: auto;
+    font-weight: 600;
+    color: var(--accent-orange);
+}
+
+.transaction-meta {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: var(--medium-gray);
+}
+
+.location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.price-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.price-label {
+    font-size: 14px;
+    color: var(--medium-gray);
+}
+
+.price {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-green);
+}
+
+.progress-info {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-gray);
+}
+
+.progress-info p {
+    font-size: 13px;
+    color: var(--medium-gray);
+}
+
+.progress-info strong {
+    color: var(--dark-gray);
+}
+
+.transaction-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-secondary, .btn-primary, .btn-danger {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-secondary {
+    background: var(--light-gray);
+    color: var(--dark-gray);
+}
+
+.btn-secondary:hover {
+    background: var(--border-gray);
+}
+
+.btn-primary {
+    background: var(--primary-green);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background: var(--secondary-green);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.btn-danger {
+    background: var(--error-red);
+    color: var(--white);
+}
+
+.btn-danger:hover {
+    background: #D32F2F;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    display: none;
+}
+
+.empty-state.show {
+    display: block;
+}
+
+.empty-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    font-size: 22px;
+    margin-bottom: 10px;
+    color: var(--dark-gray);
+}
+
+.empty-state p {
+    color: var(--medium-gray);
+    font-size: 14px;
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--white);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    box-shadow: 0 -2px 10px var(--shadow);
+    z-index: 1000;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--medium-gray);
+    transition: all 0.3s ease;
+    padding: 5px 15px;
+    border-radius: 10px;
+}
+
+.nav-item.active {
+    color: var(--primary-green);
+    background: var(--light-green);
+}
+
+.nav-icon {
+    font-size: 24px;
+    margin-bottom: 3px;
+}
+
+.nav-label {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+@media (max-width: 600px) {
+    .transaction-body {
+        flex-direction: column;
+    }
+    .product-image {
+        width: 100%;
+        height: 200px;
+    }
+    .transaction-actions {
+        flex-direction: column;
+    }
+    .price {
+        font-size: 20px;
+    }
+}
+
+@media (min-width: 768px) {
+    .transactions-container {
+        padding: 30px;
+    }
+    .transaction-card {
+        padding: 25px;
+    }
+}
+</style>
+<body>
+    <!-- Header -->
+  <header class="header">
+    <nav class="nav-container">
+      <div class="logo">
+        <img src="../images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+        <img src="../images/pigsoil.png" alt="PigSoil+" class="logo-text">
+      </div>
+      
+      <ul class="nav-menu">
+        <li><a href="../html/dashboard.html" class="active">Dashboard</a></li>
+        <li><a href="../html/farmermarket.html">Market</a></li>
+        <li><a href="../html/guides.html">Guides</a></li>
+      
+      </ul>
+      
+      <div class="user-section">
+        <button class="icon-btn" id="notificationBtn" aria-label="View notifications">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </button>
+        <a href="../html/setting-acc.html" class="user-profile" aria-label="View Profile">
+          <div class="user-info">
+            <span class="user-name">Juan Dela Cruz</span>
+            <span class="user-role">Active Farmer</span>
+          </div>
+          <div class="user-avatar">JD</div>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All</button>
+        <button class="filter-tab" data-filter="pending">Pending</button>
+        <button class="filter-tab" data-filter="in-progress">In Progress</button>
+        <button class="filter-tab" data-filter="completed">Completed</button>
+        <button class="filter-tab" data-filter="cancelled">Cancelled</button>
+    </div>
+
+    <main class="transactions-container" id="transactionsContainer">
+        <div class="transaction-card" data-status="completed" data-id="TXN20240001">
+            <div class="transaction-header">
+                <div class="transaction-id">
+                    <span class="id-label">#TXN20240001</span>
+                    <span class="status-badge completed">✓ Completed</span>
+                </div>
+                <span class="transaction-date">Dec 22, 2024</span>
+            </div>
+            <div class="transaction-body">
+                <div class="product-image">
+                    <img src="../images/compost-basic.jpg" alt="Premium Basic Compost" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%234A6741%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22white%22 font-size=%2214%22%3ECompost%3C/text%3E%3C/svg%3E'">
+                </div>
+                <div class="transaction-details">
+                    <h3>Premium Basic Compost</h3>
+                    <p class="seller-info">
+                        <span class="seller-icon">👨‍🌾</span>
+                        From: <strong>Juan Santos</strong>
+                        <span class="seller-rating">⭐ 4.8</span>
+                    </p>
+                    <div class="transaction-meta">
+                        <span class="location">📍 Lahug, Cebu</span>
+                        <span class="quantity">25kg sack</span>
+                    </div>
+                    <div class="price-info">
+                        <span class="price-label">Total Payment:</span>
+                        <span class="price">₱750.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="transaction-actions">
+                <button class="btn-secondary" onclick="messageSellerBuyer('TXN20240001')">
+                    <span>💬</span> Message Seller
+                </button>
+                <button class="btn-primary" onclick="viewTransactionDetails('TXN20240001')">
+                    View Details
+                </button>
+            </div>
+        </div>
+
+        <div class="transaction-card" data-status="pending" data-id="TXN20240002">
+            <div class="transaction-header">
+                <div class="transaction-id">
+                    <span class="id-label">#TXN20240002</span>
+                    <span class="status-badge pending">⏳ Pending</span>
+                </div>
+                <span class="transaction-date">Dec 28, 2024</span>
+            </div>
+            <div class="transaction-body">
+                <div class="product-image">
+                    <img src="../images/compost-hot.jpg" alt="Hot Compost Organic" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23C44536%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22white%22 font-size=%2214%22%3ECompost%3C/text%3E%3C/svg%3E'">
+                </div>
+                <div class="transaction-details">
+                    <h3>Hot Compost Organic</h3>
+                    <p class="seller-info">
+                        <span class="seller-icon">👩‍🌾</span>
+                        From: <strong>Maria Cruz</strong>
+                        <span class="seller-rating">⭐ 5.0</span>
+                    </p>
+                    <div class="transaction-meta">
+                        <span class="location">📍 Mandaue City</span>
+                        <span class="quantity">20kg sack</span>
+                    </div>
+                    <div class="price-info">
+                        <span class="price-label">Total Payment:</span>
+                        <span class="price">₱650.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="transaction-actions">
+                <button class="btn-secondary" onclick="messageSellerBuyer('TXN20240002')">
+                    <span>💬</span> Message Seller
+                </button>
+                <button class="btn-danger" onclick="cancelOrder('TXN20240002')">
+                    <span>❌</span> Cancel Order
+                </button>
+            </div>
+        </div>
+
+        <div class="transaction-card" data-status="in-progress" data-id="TXN20240003">
+            <div class="transaction-header">
+                <div class="transaction-id">
+                    <span class="id-label">#TXN20240003</span>
+                    <span class="status-badge in-progress">🚚 In Progress</span>
+                </div>
+                <span class="transaction-date">Dec 29, 2024</span>
+            </div>
+            <div class="transaction-body">
+                <div class="product-image">
+                    <img src="../images/compost-basic.jpg" alt="Basic Swine Compost" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%234A6741%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22white%22 font-size=%2214%22%3ECompost%3C/text%3E%3C/svg%3E'">
+                </div>
+                <div class="transaction-details">
+                    <h3>Basic Swine Compost</h3>
+                    <p class="seller-info">
+                        <span class="seller-icon">👨‍🌾</span>
+                        From: <strong>Pedro Reyes</strong>
+                        <span class="seller-rating">⭐ 4.5</span>
+                    </p>
+                    <div class="transaction-meta">
+                        <span class="location">📍 Talisay City</span>
+                        <span class="quantity">15kg sack</span>
+                    </div>
+                    <div class="price-info">
+                        <span class="price-label">Total Payment:</span>
+                        <span class="price">₱500.00</span>
+                    </div>
+                    <div class="progress-info">
+                        <p><strong>Scheduled Meet-up:</strong> Dec 30, 2:00 PM</p>
+                    </div>
+                </div>
+            </div>
+            <div class="transaction-actions">
+                <button class="btn-secondary" onclick="messageSellerBuyer('TXN20240003')">
+                    <span>💬</span> Message Seller
+                </button>
+                <button class="btn-primary" onclick="viewTransactionDetails('TXN20240003')">
+                    View Details
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-icon">📦</div>
+        <h3>No transactions found</h3>
+        <p>Try adjusting your filter</p>
+    </div>
+
+    <script type="module" src="../js/buyer-transactions.js"></script>
+</body>
+</html>
