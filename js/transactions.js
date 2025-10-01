@@ -1,6 +1,6 @@
-// Buyer Transactions functionality for PigSoil+ - Firebase Version
+//Transactions functionality for PigSoil+ - Firebase Version
 import { auth, db } from './init.js';
-import '../js/shared-user-manager.js';
+import './shared-user-manager.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     collection, 

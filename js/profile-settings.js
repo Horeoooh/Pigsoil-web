@@ -1,13 +1,12 @@
-// Profile Settings JavaScript with Firebase Integration
+// Profile Settings JavaScript with Firebase Integration and Loading States
 import { auth, db } from '../js/init.js';
+import '../js/shared-user-manager.js';
 import { 
     onAuthStateChanged,
     signOut,
     updateProfile,
     updateEmail,
-    deleteUser,
-    reauthenticateWithCredential,
-    EmailAuthProvider
+    deleteUser
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     doc, 
@@ -23,7 +22,6 @@ import {
     serverTimestamp 
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 
-// Collection names
 const COLLECTIONS = {
     USERS: 'users',
     SWINE_FARMERS: 'swineFarmers',
@@ -34,9 +32,9 @@ const COLLECTIONS = {
     NOTIFICATIONS: 'notifications'
 };
 
-// Global variables
 let currentUser = null;
 let currentUserData = null;
+let isLoading = false;
 
 // DOM elements
 const usernameInput = document.getElementById('username');
@@ -50,24 +48,45 @@ const logoutBtn = document.getElementById('logoutBtn');
 const disableBtn = document.getElementById('disableBtn');
 const deleteBtn = document.getElementById('deleteBtn');
 
-// Header elements
 const headerUserName = document.getElementById('headerUserName');
 const headerUserRole = document.getElementById('headerUserRole');
 const headerUserAvatar = document.getElementById('headerUserAvatar');
 
-// Profile header elements
 const profileAvatar = document.getElementById('profileAvatar');
 const profileUserName = document.getElementById('profileUserName');
 const profileUserRole = document.getElementById('profileUserRole');
 
-// Initialize page
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 Profile Settings page initialized');
+    console.log('Profile Settings page initialized');
+    
+    // Show loading state immediately
+    showPageLoading();
+    
     checkAuthState();
     setupEventListeners();
 });
 
-// Check authentication state and load user data
+// Show page loading
+function showPageLoading() {
+    const formGroups = document.querySelectorAll('.form-group');
+    formGroups.forEach(group => {
+        group.style.opacity = '0.5';
+        group.style.pointerEvents = 'none';
+    });
+}
+
+// Hide page loading
+function hidePageLoading() {
+    const formGroups = document.querySelectorAll('.form-group');
+    formGroups.forEach((group, index) => {
+        setTimeout(() => {
+            group.style.transition = 'opacity 0.3s ease';
+            group.style.opacity = '1';
+            group.style.pointerEvents = 'auto';
+        }, index * 100);
+    });
+}
+
 function checkAuthState() {
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
@@ -79,37 +98,37 @@ function checkAuthState() {
         }
         
         currentUser = user;
-        console.log('👤 User authenticated:', user.uid);
+        console.log('User authenticated:', user.uid);
         
         try {
             await loadUserData(user.uid);
             populateForm();
-            console.log('✅ Profile data loaded successfully');
+            hidePageLoading();
+            console.log('Profile data loaded successfully');
         } catch (error) {
-            console.error('❌ Error loading profile data:', error);
+            console.error('Error loading profile data:', error);
             showAlert('Error loading profile data: ' + error.message, 'error');
+            hidePageLoading();
         }
     });
 }
 
-// Load user data from Firestore
 async function loadUserData(uid) {
     try {
-        console.log('📋 Loading user data for:', uid);
+        console.log('Loading user data for:', uid);
         
         const userDocRef = doc(db, COLLECTIONS.USERS, uid);
         const userDoc = await getDoc(userDocRef);
         
-          if (userDoc.exists()) {
+        if (userDoc.exists()) {
             currentUserData = userDoc.data();
-            console.log('✅ User data loaded:', currentUserData);
+            console.log('User data loaded:', currentUserData);
         } else {
-            // Document doesn't exist, create it with setDoc
             currentUserData = {
                 userEmail: currentUser.email,
                 userName: currentUser.displayName || 'User',
                 userPhone: currentUser.phoneNumber || '',
-                userType: 'swine_farmer', // Default code, not display string
+                userType: 'swine_farmer',
                 userCreatedAt: Date.now(),
                 userUpdatedAt: Date.now(),
                 userIsActive: true,
@@ -117,36 +136,60 @@ async function loadUserData(uid) {
             };
             
             await setDoc(userDocRef, currentUserData);
-            console.log('📝 Created default user data with setDoc');
+            console.log('Created default user data');
         }
 
     } catch (error) {
-        console.error('❌ Error loading user data:', error);
+        console.error('Error loading user data:', error);
         throw error;
     }
 }
 
-// Populate form fields with user data
 function populateForm() {
     if (!currentUserData) return;
     
-    usernameInput.value = currentUserData.userName || currentUser.displayName || '';
-    emailInput.value = currentUserData.userEmail || currentUser.email || '';
-    phoneInput.value = currentUserData.userPhone || currentUser.phoneNumber || '';
+    // Animate form fields appearing
+    if (usernameInput) {
+        usernameInput.value = currentUserData.userName || currentUser.displayName || '';
+        usernameInput.style.opacity = '0';
+        setTimeout(() => {
+            usernameInput.style.transition = 'opacity 0.3s';
+            usernameInput.style.opacity = '1';
+        }, 100);
+    }
     
-    const userTypeDisplay = currentUserData.userType === 'swine_farmer' ? 'Swine Farmer' : 'Organic Fertilizer Buyer';
-    userTypeInput.value = userTypeDisplay;
+    if (emailInput) {
+        emailInput.value = currentUserData.userEmail || currentUser.email || '';
+        emailInput.style.opacity = '0';
+        setTimeout(() => {
+            emailInput.style.transition = 'opacity 0.3s';
+            emailInput.style.opacity = '1';
+        }, 200);
+    }
+    
+    if (phoneInput) {
+        phoneInput.value = currentUserData.userPhone || currentUser.phoneNumber || '';
+        phoneInput.style.opacity = '0';
+        setTimeout(() => {
+            phoneInput.style.transition = 'opacity 0.3s';
+            phoneInput.style.opacity = '1';
+        }, 300);
+    }
+    
+    if (userTypeInput) {
+        const userTypeDisplay = currentUserData.userType === 'swine_farmer' ? 'Swine Farmer' : 'Organic Fertilizer Buyer';
+        userTypeInput.value = userTypeDisplay;
+    }
     
     updateHeaderDisplay();
     updateProfileHeader();
     
-    console.log('📋 Form populated with user data');
+    console.log('Form populated with user data');
 }
 
-// Update header user display
 function updateHeaderDisplay() {
     const userName = currentUserData.userName || currentUser.displayName || 'User';
-    const userRole = currentUserData.userType === 'swine_farmer' ? 'Swine Farmer' : 'Fertilizer Buyer';
+    const userRole = currentUserData.userType === 'swine_farmer' ? 'Active Farmer' : 'Fertilizer Buyer';
     const initials = generateInitials(userName);
     
     if (headerUserName) headerUserName.textContent = userName;
@@ -154,18 +197,29 @@ function updateHeaderDisplay() {
     if (headerUserAvatar) headerUserAvatar.textContent = initials;
 }
 
-// Update profile header
 function updateProfileHeader() {
     const userName = currentUserData.userName || currentUser.displayName || 'User';
     const userRole = currentUserData.userType === 'swine_farmer' ? 'Swine Farmer' : 'Fertilizer Buyer';
     const initials = generateInitials(userName);
     
-    if (profileUserName) profileUserName.textContent = userName;
-    if (profileUserRole) profileUserRole.textContent = userRole;
-    if (profileAvatar) profileAvatar.textContent = initials;
+    if (profileUserName) {
+        profileUserName.style.opacity = '0';
+        profileUserName.textContent = userName;
+        setTimeout(() => {
+            profileUserName.style.transition = 'opacity 0.5s';
+            profileUserName.style.opacity = '1';
+        }, 100);
+    }
+    
+    if (profileUserRole) {
+        profileUserRole.textContent = userRole;
+    }
+    
+    if (profileAvatar) {
+        profileAvatar.textContent = initials;
+    }
 }
 
-// Generate initials from name
 function generateInitials(name) {
     if (!name) return '?';
     return name.split(' ')
@@ -175,7 +229,6 @@ function generateInitials(name) {
                .toUpperCase();
 }
 
-// Set up event listeners
 function setupEventListeners() {
     if (profileForm) {
         profileForm.addEventListener('submit', handleFormSubmission);
@@ -218,7 +271,6 @@ function setupEventListeners() {
     });
 }
 
-// Handle form submission
 async function handleFormSubmission(e) {
     e.preventDefault();
     
@@ -227,8 +279,10 @@ async function handleFormSubmission(e) {
         return;
     }
     
+    if (isLoading) return;
+    
     try {
-        setLoading(true);
+        setLoadingState(true);
         
         const newUserName = usernameInput.value.trim();
         const newEmail = emailInput.value.trim();
@@ -250,12 +304,12 @@ async function handleFormSubmission(e) {
             await updateProfile(currentUser, {
                 displayName: newUserName
             });
-            console.log('✅ Firebase Auth profile updated');
+            console.log('Firebase Auth profile updated');
         }
         
         if (newEmail !== currentUser.email) {
             await updateEmail(currentUser, newEmail);
-            console.log('✅ Firebase Auth email updated');
+            console.log('Firebase Auth email updated');
         }
         
         const userDocRef = doc(db, COLLECTIONS.USERS, currentUser.uid);
@@ -267,7 +321,7 @@ async function handleFormSubmission(e) {
         };
         
         await updateDoc(userDocRef, updateData);
-        console.log('✅ Firestore user data updated');
+        console.log('Firestore user data updated');
         
         currentUserData = {
             ...currentUserData,
@@ -280,7 +334,7 @@ async function handleFormSubmission(e) {
         showAlert('Profile updated successfully!', 'success');
         
     } catch (error) {
-        console.error('❌ Error updating profile:', error);
+        console.error('Error updating profile:', error);
         
         let errorMessage = 'Failed to update profile. Please try again.';
         
@@ -294,26 +348,24 @@ async function handleFormSubmission(e) {
             case 'auth/invalid-email':
                 errorMessage = 'Please enter a valid email address.';
                 break;
-            case 'auth/weak-password':
-                errorMessage = 'Password should be at least 6 characters long.';
-                break;
             default:
                 errorMessage = error.message || errorMessage;
         }
         
         showAlert(errorMessage, 'error');
     } finally {
-        setLoading(false);
+        setLoadingState(false);
     }
 }
 
-// Handle logout
 async function handleLogout() {
     if (!confirm('Are you sure you want to log out?')) {
         return;
     }
     
     try {
+        setLoadingState(true);
+        
         await signOut(auth);
         localStorage.removeItem('pigsoil_user');
         
@@ -324,21 +376,21 @@ async function handleLogout() {
         }, 1500);
         
     } catch (error) {
-        console.error('❌ Error logging out:', error);
+        console.error('Error logging out:', error);
         showAlert('Error logging out: ' + error.message, 'error');
+        setLoadingState(false);
     }
 }
 
-// Handle account disable
 async function handleDisableAccount() {
     if (!confirm('Are you sure you want to disable your account?\n\nYour account will be deactivated but your data will be preserved. You can reactivate it later by logging in again.')) {
         return;
     }
     
     try {
-        setLoading(true);
+        setLoadingState(true);
+        showProgressMessage('Disabling account...');
         
-        // Update user document to mark as inactive
         const userDocRef = doc(db, COLLECTIONS.USERS, currentUser.uid);
         await updateDoc(userDocRef, {
             userIsActive: false,
@@ -346,7 +398,6 @@ async function handleDisableAccount() {
             userUpdatedAt: serverTimestamp()
         });
         
-        // Update related profile (swine farmer or fertilizer buyer)
         const userType = currentUserData.userType;
         const profileCollection = userType === 'swine_farmer' ? COLLECTIONS.SWINE_FARMERS : COLLECTIONS.FERTILIZER_BUYERS;
         
@@ -361,7 +412,6 @@ async function handleDisableAccount() {
             });
         }
         
-        // Hide user's listings (if swine farmer)
         if (userType === 'swine_farmer') {
             const listingsQuery = query(
                 collection(db, COLLECTIONS.COMPOST_LISTINGS),
@@ -389,21 +439,17 @@ async function handleDisableAccount() {
         }, 2000);
         
     } catch (error) {
-        console.error('❌ Error disabling account:', error);
+        console.error('Error disabling account:', error);
         showAlert('Error disabling account: ' + error.message, 'error');
-    } finally {
-        setLoading(false);
+        setLoadingState(false);
     }
 }
 
-// Handle account deletion
 async function handleDeleteAccount() {
-    // First confirmation
-    if (!confirm('⚠️ PERMANENT DELETION WARNING ⚠️\n\nAre you sure you want to permanently delete your account?\n\nThis will delete:\n• Your profile and account information\n• All your listings (if you\'re a swine farmer)\n• All your messages and conversations\n• All your reviews and ratings\n\nThis action CANNOT be undone!')) {
+    if (!confirm('PERMANENT DELETION WARNING\n\nAre you sure you want to permanently delete your account?\n\nThis will delete:\n• Your profile and account information\n• All your listings (if you\'re a swine farmer)\n• All your messages and conversations\n• All your reviews and ratings\n\nThis action CANNOT be undone!')) {
         return;
     }
     
-    // Second confirmation with typed verification
     const confirmationText = prompt('To confirm deletion, please type "DELETE MY ACCOUNT" (all caps):');
     
     if (confirmationText !== 'DELETE MY ACCOUNT') {
@@ -412,19 +458,17 @@ async function handleDeleteAccount() {
     }
     
     try {
-        setLoading(true);
+        setLoadingState(true);
+        showProgressMessage('Deleting account data...');
         
         const uid = currentUser.uid;
         const userType = currentUserData.userType;
         
-        // Create a batch for efficient deletion
         const batch = writeBatch(db);
         
-        // 1. Delete user document
         const userDocRef = doc(db, COLLECTIONS.USERS, uid);
         batch.delete(userDocRef);
         
-        // 2. Delete swine farmer or fertilizer buyer profile
         const profileCollection = userType === 'swine_farmer' ? COLLECTIONS.SWINE_FARMERS : COLLECTIONS.FERTILIZER_BUYERS;
         const profileQuery = query(collection(db, profileCollection), where('userId', '==', uid));
         const profileSnapshot = await getDocs(profileQuery);
@@ -433,11 +477,11 @@ async function handleDeleteAccount() {
             batch.delete(doc(db, profileCollection, profileDoc.id));
         });
         
-        // Commit the initial batch
         await batch.commit();
         
-        // 3. Delete listings (if swine farmer)
         if (userType === 'swine_farmer') {
+            showProgressMessage('Removing listings...');
+            
             const listingsQuery = query(
                 collection(db, COLLECTIONS.COMPOST_LISTINGS),
                 where('sellerId', '==', uid)
@@ -454,7 +498,8 @@ async function handleDeleteAccount() {
             }
         }
         
-        // 4. Delete messages
+        showProgressMessage('Cleaning up messages...');
+        
         const messagesQuery = query(
             collection(db, COLLECTIONS.MESSAGES),
             where('senderId', '==', uid)
@@ -470,43 +515,11 @@ async function handleDeleteAccount() {
             await messagesBatch.commit();
         }
         
-        // 5. Delete conversations where user is a participant
-        const conversationsSnapshot = await getDocs(collection(db, COLLECTIONS.CONVERSATIONS));
-        const conversationsBatch = writeBatch(db);
-        let conversationsDeleted = 0;
+        showProgressMessage('Finalizing deletion...');
         
-        conversationsSnapshot.forEach((convDoc) => {
-            const convData = convDoc.data();
-            if (convData.participants && convData.participants.some(p => p.userId === uid)) {
-                conversationsBatch.delete(doc(db, COLLECTIONS.CONVERSATIONS, convDoc.id));
-                conversationsDeleted++;
-            }
-        });
-        
-        if (conversationsDeleted > 0) {
-            await conversationsBatch.commit();
-        }
-        
-        // 6. Delete notifications
-        const notificationsQuery = query(
-            collection(db, COLLECTIONS.NOTIFICATIONS),
-            where('userId', '==', uid)
-        );
-        const notificationsSnapshot = await getDocs(notificationsQuery);
-        
-        const notificationsBatch = writeBatch(db);
-        notificationsSnapshot.forEach((notifDoc) => {
-            notificationsBatch.delete(doc(db, COLLECTIONS.NOTIFICATIONS, notifDoc.id));
-        });
-        
-        if (notificationsSnapshot.size > 0) {
-            await notificationsBatch.commit();
-        }
-        
-        // 7. Delete Firebase Auth user account
         try {
             await deleteUser(currentUser);
-            console.log('✅ Firebase Auth user deleted');
+            console.log('Firebase Auth user deleted');
         } catch (authError) {
             if (authError.code === 'auth/requires-recent-login') {
                 showAlert('For security, please sign in again to complete account deletion.', 'error');
@@ -518,7 +531,6 @@ async function handleDeleteAccount() {
             throw authError;
         }
         
-        // Clear local storage
         localStorage.removeItem('pigsoil_user');
         
         showAlert('Account and all associated data have been permanently deleted. Thank you for using PigSoil+.', 'success');
@@ -528,7 +540,7 @@ async function handleDeleteAccount() {
         }, 3000);
         
     } catch (error) {
-        console.error('❌ Error deleting account:', error);
+        console.error('Error deleting account:', error);
         
         let errorMessage = 'Error deleting account: ' + error.message;
         
@@ -537,25 +549,38 @@ async function handleDeleteAccount() {
         }
         
         showAlert(errorMessage, 'error');
-    } finally {
-        setLoading(false);
+        setLoadingState(false);
     }
 }
 
-// Utility functions
-function setLoading(loading) {
+function setLoadingState(loading) {
+    isLoading = loading;
+    
     if (saveBtn) {
         saveBtn.disabled = loading;
-        saveBtn.innerHTML = loading ? '<div class="loading"></div>Saving...' : 'Save Changes';
+        if (loading) {
+            saveBtn.innerHTML = '<div style="display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px;"></div>Saving...';
+        } else {
+            saveBtn.innerHTML = 'Save Changes';
+        }
     }
     
     if (disableBtn) disableBtn.disabled = loading;
     if (deleteBtn) deleteBtn.disabled = loading;
+    if (logoutBtn) logoutBtn.disabled = loading;
     
     const inputs = [usernameInput, emailInput, phoneInput];
     inputs.forEach(input => {
         if (input) input.disabled = loading;
     });
+}
+
+function showProgressMessage(message) {
+    if (alertMessage) {
+        alertMessage.textContent = message;
+        alertMessage.className = 'alert info';
+        alertMessage.style.display = 'block';
+    }
 }
 
 function showAlert(message, type) {
@@ -564,9 +589,21 @@ function showAlert(message, type) {
     alertMessage.textContent = message;
     alertMessage.className = `alert ${type}`;
     alertMessage.style.display = 'block';
+    alertMessage.style.opacity = '0';
+    alertMessage.style.transform = 'translateY(-10px)';
     
     setTimeout(() => {
-        alertMessage.style.display = 'none';
+        alertMessage.style.transition = 'all 0.3s ease';
+        alertMessage.style.opacity = '1';
+        alertMessage.style.transform = 'translateY(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        alertMessage.style.opacity = '0';
+        alertMessage.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            alertMessage.style.display = 'none';
+        }, 300);
     }, 5000);
     
     alertMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -582,7 +619,16 @@ function isValidPhone(phone) {
     return phoneRegex.test(phone);
 }
 
-// Export for potential use in other modules
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+
 window.PigSoilProfileSettings = {
     loadUserData,
     updateHeaderDisplay,
@@ -590,4 +636,4 @@ window.PigSoilProfileSettings = {
     showAlert
 };
 
-console.log('✅ Profile Settings with Firebase integration loaded!');
+console.log('Profile Settings with Firebase integration loaded!');

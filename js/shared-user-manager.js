@@ -44,9 +44,48 @@ export function initializeSharedUserManager() {
     });
 }
 
-function setupUserDataListener(uid) {
+async function setupUserDataListener(uid) {
     const userDocRef = doc(db, COLLECTIONS.USERS, uid);
     
+    // CRITICAL: Disable all navigation links immediately
+    const navLinks = document.querySelectorAll('[data-nav]');
+    navLinks.forEach(link => {
+        link.style.pointerEvents = 'none';
+        link.style.opacity = '0.6';
+        link.style.cursor = 'wait';
+    });
+    
+    try {
+        // Load user data synchronously FIRST
+        const docSnapshot = await getDoc(userDocRef);
+        
+        if (docSnapshot.exists()) {
+            currentUserData = docSnapshot.data();
+            console.log('📡 Initial user data loaded:', currentUserData);
+        } else {
+            console.log('📝 Creating default user data');
+            currentUserData = await createDefaultUserData(uid);
+        }
+        
+        // Update UI and navigation BEFORE enabling links
+        updateAllUserProfile();
+        updateNavigationLinks();
+        dispatchUserDataEvent();
+        
+        // NOW enable navigation links
+        navLinks.forEach(link => {
+            link.style.pointerEvents = '';
+            link.style.opacity = '';
+            link.style.cursor = '';
+        });
+        
+        console.log('✅ Navigation enabled and ready');
+        
+    } catch (error) {
+        console.error('❌ Error loading initial user data:', error);
+    }
+    
+    // Set up real-time listener for future updates
     if (userDataListener) {
         userDataListener();
     }
@@ -60,21 +99,14 @@ function setupUserDataListener(uid) {
                 console.log('📡 User data updated from Firestore:', newUserData);
                 
                 updateAllUserProfile();
-                updateNavigationLinks(); // NEW: Update navigation based on user type
-                
+                updateNavigationLinks();
                 dispatchUserDataEvent();
             }
-        } else {
-            console.log('📝 Creating default user data');
-            currentUserData = await createDefaultUserData(uid);
-            updateAllUserProfile();
-            updateNavigationLinks(); // NEW: Update navigation
         }
     }, (error) => {
         console.error('❌ Error listening to user data:', error);
     });
 }
-
 async function createDefaultUserData(uid) {
     const defaultData = {
         userEmail: currentUser.email || 'unknown@email.com',
@@ -121,32 +153,48 @@ function updateAllUserProfile() {
 }
 
 // NEW FUNCTION: Update navigation links based on user type
-function updateNavigationLinks() {
-   if (!currentUserData) return;
+ function updateNavigationLinks() {
+    if (!currentUserData) {
+        console.log('⏳ Waiting for user data before updating navigation...');
+        // Disable all nav links until data loads
+        const navLinks = document.querySelectorAll('[data-nav]');
+        navLinks.forEach(link => {
+            link.style.pointerEvents = 'none';
+            link.style.opacity = '0.5';
+        });
+        return;
+    }
     
     const isBuyer = isFertilizerBuyer();
     console.log('🔗 Updating navigation links for:', isBuyer ? 'BUYER' : 'FARMER');
+    console.log('🔍 Current user type:', currentUserData.userType);
     
-    // Find all navigation links with data-nav attribute
     const navLinks = document.querySelectorAll('[data-nav]');
     
+    console.log('📍 Found', navLinks.length, 'navigation links to update');
+    
     navLinks.forEach(link => {
-        const navType = link.getAttribute('data-nav');
+        // Re-enable links
+        link.style.pointerEvents = '';
+        link.style.opacity = '';
         
-        // Update based on nav type
+        const navType = link.getAttribute('data-nav');
+        const oldHref = link.getAttribute('href');
+        
         if (navType === 'dashboard') {
-            link.setAttribute('href', isBuyer ? '../html/buyer-dashboard.html' : '../html/dashboard.html');
+            const newHref = isBuyer ? '../html/buyer-dashboard.html' : '../html/dashboard.html';
+            link.setAttribute('href', newHref);
+            console.log('  Dashboard link:', oldHref, '→', newHref);
         }
         else if (navType === 'market') {
-            link.setAttribute('href', isBuyer ? '../html/buyer-marketplace.html' : '../html/farmermarket.html');
+            const newHref = isBuyer ? '../html/buyer-marketplace.html' : '../html/farmermarket.html';
+            link.setAttribute('href', newHref);
+            console.log('  Market link:', oldHref, '→', newHref);
         }
-        
-        // Guides and Settings remain the same (shared)
     });
     
     console.log('✅ Navigation links updated successfully');
 }
-
 function getUserRoleDisplay(userType) {
     switch(userType) {
         case 'swine_farmer':
