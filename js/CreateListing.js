@@ -1,5 +1,6 @@
 // js/CreateListing.js - Updated with Google Maps integration
 import { auth, db, storage } from '../js/init.js';
+import '../js/shared-user-manager.js';
 import { 
     collection, 
     addDoc, 
