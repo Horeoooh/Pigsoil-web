@@ -136,7 +136,43 @@
             margin: 0 auto;
             padding: 32px 24px;
         }
+        
+            .messages-btn {
+        background: white;
+        color: #4CAF50;
+        border: 2px solid #4CAF50;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        text-decoration: none;
+    }
 
+    .messages-btn:hover {
+        background: #f0f8e8;
+    }
+
+    .message-count {
+        background: #e74c3c;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: -8px;
+        right: -8px;
+    }
         /* Hero Section */
         .hero-section {
             background: white;
@@ -431,9 +467,17 @@
     <main class="main-content">
         <!-- Hero Section -->
         <section class="hero-section">
-            <h1 class="hero-title">Fertilizer Marketplace</h1>
-            <p class="hero-subtitle">Browse quality organic fertilizer from verified swine farmers</p>
-        </section>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 class="hero-title">Fertilizer Marketplace</h1>
+                <p class="hero-subtitle">Browse quality organic fertilizer from verified swine farmers</p>
+            </div>
+            <a href="../html/messages.html" class="messages-btn">
+                Messages
+                <span class="message-count">2</span>
+            </a>
+        </div>
+    </section>
 
         <!-- Filter Section -->
         <section class="filter-section">
