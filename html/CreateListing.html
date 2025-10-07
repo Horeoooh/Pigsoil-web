@@ -1011,7 +1011,9 @@
     </main>
 
     <!-- *** GOOGLE MAPS API SCRIPT - ADDED *** -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDxldiepJaqTaCW9kxCr-3cYgSlVD0fQYg&libraries=places&callback=initMap" async defer></script>
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDxldiepJaqTaCW9kxCr-3cYgSlVD0fQYg&libraries=places,marker&loading=async&callback=initMap">
+</script>
 
     <!-- Fixed JavaScript for Better Error Handling -->
     <script type="module">
@@ -1220,23 +1222,73 @@
         });
     }
 
-    function extractLocationName(result) {
-        for (let component of result.address_components) {
-            if (component.types.includes('establishment') || 
-                component.types.includes('point_of_interest')) {
-                return component.long_name;
-            }
+   function extractLocationName(result) {
+    console.log('📍 Extracting location from:', result.address_components.map(c => ({
+        name: c.long_name,
+        types: c.types
+    })));
+    
+    // Priority 1: Establishment or Point of Interest (e.g., "SM City Cebu")
+    for (let component of result.address_components) {
+        if (component.types.includes('establishment') || 
+            component.types.includes('point_of_interest')) {
+            console.log('✅ Using establishment:', component.long_name);
+            return component.long_name;
         }
-        
-        for (let component of result.address_components) {
-            if (component.types.includes('locality') || 
-                component.types.includes('administrative_area_level_3')) {
-                return component.long_name + ' Area';
-            }
-        }
-        
-        return 'Farm Location';
     }
+    
+    // Priority 2: Route/Street Name (e.g., "Osmena Boulevard")
+    for (let component of result.address_components) {
+        if (component.types.includes('route')) {
+            console.log('✅ Using route:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Priority 3: Neighborhood or Sublocality (e.g., "Mabolo", "IT Park")
+    for (let component of result.address_components) {
+        if (component.types.includes('neighborhood') || 
+            component.types.includes('sublocality') ||
+            component.types.includes('sublocality_level_1')) {
+            console.log('✅ Using neighborhood:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Priority 4: Administrative Level 3 (often Barangay in Philippines)
+    for (let component of result.address_components) {
+        if (component.types.includes('administrative_area_level_3')) {
+            console.log('✅ Using admin level 3:', component.long_name);
+            return component.long_name; // Removed " Area" suffix
+        }
+    }
+    
+    // Priority 5: Administrative Level 2 (municipality/city)
+    for (let component of result.address_components) {
+        if (component.types.includes('administrative_area_level_2')) {
+            console.log('✅ Using admin level 2:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Priority 6: Locality (city name)
+    for (let component of result.address_components) {
+        if (component.types.includes('locality')) {
+            console.log('✅ Using locality:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Fallback: Use first part of formatted address
+    if (result.formatted_address) {
+        const firstPart = result.formatted_address.split(',')[0].trim();
+        console.log('✅ Using formatted address first part:', firstPart);
+        return firstPart;
+    }
+    
+    console.log('⚠️ Fallback to generic name');
+    return 'Selected Location';
+}
 
     function confirmLocationSelection() {
         updateLocationDisplay();
@@ -1246,21 +1298,35 @@
     }
 
     function updateLocationDisplay() {
-        const locationName = document.getElementById('selectedLocationName');
-        const locationAddress = document.getElementById('selectedLocationAddress');
-        const locationContainer = document.getElementById('locationContainer');
-        
-        if (locationName) locationName.textContent = selectedLocation.name;
-        if (locationAddress) locationAddress.textContent = selectedLocation.address;
-        
-        if (locationContainer) {
-            locationContainer.classList.add('active');
-            setTimeout(() => {
-                locationContainer.classList.remove('active');
-            }, 1000);
-        }
+    const locationName = document.getElementById('selectedLocationName');
+    const locationAddress = document.getElementById('selectedLocationAddress');
+    const locationContainer = document.getElementById('locationContainer');
+    
+    // For name: use the extracted specific location
+    if (locationName) {
+        locationName.textContent = selectedLocation.name;
     }
-
+    
+    // For address: show more detailed info
+    if (locationAddress && selectedLocation.formattedAddress) {
+        // Extract the first 2-3 parts of formatted address for detail
+        const addressParts = selectedLocation.formattedAddress.split(',').map(p => p.trim());
+        
+        // Show first 2 parts (e.g., "Osmena Blvd, Cebu City" or "Mabolo, Cebu City, Cebu")
+        let detailedAddress = addressParts.slice(0, Math.min(3, addressParts.length)).join(', ');
+        
+        locationAddress.textContent = detailedAddress;
+    } else if (locationAddress) {
+        locationAddress.textContent = selectedLocation.address;
+    }
+    
+    if (locationContainer) {
+        locationContainer.classList.add('active');
+        setTimeout(() => {
+            locationContainer.classList.remove('active');
+        }, 1000);
+    }
+}
     function updateStaticMapPreview() {
         const staticMapContainer = document.getElementById('staticMap');
         

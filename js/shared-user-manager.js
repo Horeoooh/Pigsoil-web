@@ -1,4 +1,4 @@
-// Shared User Manager - Updates user profile AND navigation routing
+// Shared User Manager - FIXED VERSION with correct navigation routing
 import { auth, db } from './init.js';
 import { 
     onAuthStateChanged 
@@ -21,7 +21,7 @@ let userDataListener = null;
 const USER_DATA_CHANGED = 'userDataChanged';
 
 export function initializeSharedUserManager() {
-    console.log('🔧 Initializing Shared User Manager');
+    console.log('🔧 Initializing Shared User Manager - FIXED VERSION');
     
     onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -47,7 +47,7 @@ export function initializeSharedUserManager() {
 async function setupUserDataListener(uid) {
     const userDocRef = doc(db, COLLECTIONS.USERS, uid);
     
-    // CRITICAL: Disable all navigation links immediately
+    // Disable navigation links immediately until user data loads
     const navLinks = document.querySelectorAll('[data-nav]');
     navLinks.forEach(link => {
         link.style.pointerEvents = 'none';
@@ -62,6 +62,7 @@ async function setupUserDataListener(uid) {
         if (docSnapshot.exists()) {
             currentUserData = docSnapshot.data();
             console.log('📡 Initial user data loaded:', currentUserData);
+            console.log('🔍 User type detected:', currentUserData.userType);
         } else {
             console.log('📝 Creating default user data');
             currentUserData = await createDefaultUserData(uid);
@@ -69,7 +70,7 @@ async function setupUserDataListener(uid) {
         
         // Update UI and navigation BEFORE enabling links
         updateAllUserProfile();
-        updateNavigationLinks();
+        updateNavigationLinks(); // This is the critical function
         dispatchUserDataEvent();
         
         // NOW enable navigation links
@@ -107,12 +108,13 @@ async function setupUserDataListener(uid) {
         console.error('❌ Error listening to user data:', error);
     });
 }
+
 async function createDefaultUserData(uid) {
     const defaultData = {
         userEmail: currentUser.email || 'unknown@email.com',
         userName: currentUser.displayName || 'User',
         userPhone: currentUser.phoneNumber || '',
-        userType: 'swine_farmer',
+        userType: 'swine_farmer', // Default to farmer
         userIsActive: true,
         userCreatedAt: new Date(),
         userUpdatedAt: new Date()
@@ -152,11 +154,10 @@ function updateAllUserProfile() {
     console.log('🔄 Updated all user profile elements');
 }
 
-// NEW FUNCTION: Update navigation links based on user type
- function updateNavigationLinks() {
+// FIXED: Update navigation links based on user type with explicit logging
+function updateNavigationLinks() {
     if (!currentUserData) {
         console.log('⏳ Waiting for user data before updating navigation...');
-        // Disable all nav links until data loads
         const navLinks = document.querySelectorAll('[data-nav]');
         navLinks.forEach(link => {
             link.style.pointerEvents = 'none';
@@ -165,12 +166,25 @@ function updateAllUserProfile() {
         return;
     }
     
-    const isBuyer = isFertilizerBuyer();
-    console.log('🔗 Updating navigation links for:', isBuyer ? 'BUYER' : 'FARMER');
-    console.log('🔍 Current user type:', currentUserData.userType);
+    // CRITICAL FIX: Check the EXACT user type string
+    const userType = currentUserData.userType;
+    console.log('🔍 Current userType value:', userType);
+    console.log('🔍 Type of userType:', typeof userType);
+    
+    // Determine if user is a buyer based on EXACT matching
+    const isBuyer = (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer');
+    const isFarmer = (userType === 'swine_farmer' || userType === 'Swine Farmer');
+    
+    console.log('👤 User classification:');
+    console.log('  - Is Buyer?', isBuyer);
+    console.log('  - Is Farmer?', isFarmer);
+    
+    if (!isBuyer && !isFarmer) {
+        console.warn('⚠️ Unknown user type:', userType);
+        console.log('Defaulting to FARMER navigation');
+    }
     
     const navLinks = document.querySelectorAll('[data-nav]');
-    
     console.log('📍 Found', navLinks.length, 'navigation links to update');
     
     navLinks.forEach(link => {
@@ -180,21 +194,28 @@ function updateAllUserProfile() {
         
         const navType = link.getAttribute('data-nav');
         const oldHref = link.getAttribute('href');
+        let newHref = oldHref; // Default to keeping current href
         
         if (navType === 'dashboard') {
-            const newHref = isBuyer ? '../html/buyer-dashboard.html' : '../html/dashboard.html';
-            link.setAttribute('href', newHref);
-            console.log('  Dashboard link:', oldHref, '→', newHref);
+            // FIXED: Use explicit condition
+            newHref = isBuyer ? '../html/buyer-dashboard.html' : '../html/dashboard.html';
+            console.log(`  📊 Dashboard link updated: ${oldHref} → ${newHref} (isBuyer: ${isBuyer})`);
         }
         else if (navType === 'market') {
-            const newHref = isBuyer ? '../html/buyer-marketplace.html' : '../html/farmermarket.html';
+            // FIXED: Use explicit condition
+            newHref = isBuyer ? '../html/buyer-marketplace.html' : '../html/farmermarket.html';
+            console.log(`  🛒 Market link updated: ${oldHref} → ${newHref} (isBuyer: ${isBuyer})`);
+        }
+        
+        // Only update if href actually changed
+        if (newHref !== oldHref) {
             link.setAttribute('href', newHref);
-            console.log('  Market link:', oldHref, '→', newHref);
         }
     });
     
-    console.log('✅ Navigation links updated successfully');
+    console.log('✅ Navigation links updated based on user type:', userType);
 }
+
 function getUserRoleDisplay(userType) {
     switch(userType) {
         case 'swine_farmer':
@@ -246,6 +267,7 @@ function dispatchUserDataEvent() {
     document.dispatchEvent(event);
 }
 
+// EXPORTED FUNCTIONS
 export function getCurrentUser() {
     return currentUser;
 }
@@ -262,25 +284,37 @@ export function onUserDataChange(callback) {
 
 export function forceUpdateUserProfile() {
     updateAllUserProfile();
-    updateNavigationLinks(); // NEW: Also update navigation
+    updateNavigationLinks();
 }
 
 export function isAuthenticated() {
     return currentUser !== null;
 }
 
+// FIXED: More explicit checking functions
 export function isSwineFarmer() {
-    return currentUserData && 
-           (currentUserData.userType === 'swine_farmer' || 
-            currentUserData.userType === 'Swine Farmer');
+    if (!currentUserData) {
+        console.log('⚠️ isSwineFarmer() called but no user data yet');
+        return false;
+    }
+    const result = currentUserData.userType === 'swine_farmer' || 
+                   currentUserData.userType === 'Swine Farmer';
+    console.log('🔍 isSwineFarmer():', result, '(userType:', currentUserData.userType, ')');
+    return result;
 }
 
 export function isFertilizerBuyer() {
-    return currentUserData && 
-           (currentUserData.userType === 'fertilizer_buyer' || 
-            currentUserData.userType === 'Organic Fertilizer Buyer');
+    if (!currentUserData) {
+        console.log('⚠️ isFertilizerBuyer() called but no user data yet');
+        return false;
+    }
+    const result = currentUserData.userType === 'fertilizer_buyer' || 
+                   currentUserData.userType === 'Organic Fertilizer Buyer';
+    console.log('🔍 isFertilizerBuyer():', result, '(userType:', currentUserData.userType, ')');
+    return result;
 }
 
+// Initialize on load
 initializeSharedUserManager();
 
-console.log('🔧 Shared User Manager with Routing loaded!');
+console.log('🔧 Shared User Manager with FIXED Routing loaded!');
