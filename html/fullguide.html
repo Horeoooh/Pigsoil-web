@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PigSoil+ Guides - Basic Pig Manure Composting</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', Arial, sans-serif;
+      background: linear-gradient(103deg, #FFEED0 0%, #FFC7B8 170%);
+      color: #333;
+      min-height: 100vh;
+    }
+
+    /* Header - Same as Dashboard */
+    .header {
+      background: white;
+      padding: 16px 64px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+      height: 48px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-img {
+      height: 50px;
+      width: auto;
+    }
+
+    .logo-text {
+      height: 40px;
+      width: 171px;
+      object-fit: contain;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 64px;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-menu a {
+      text-decoration: none;
+      color: #666;
+      font-size: 16px;
+      font-weight: 400;
+      transition: color 0.3s;
+    }
+
+    .nav-menu a:hover,
+    .nav-menu a.active {
+      color: #4CAF50;
+    }
+
+    .user-section {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      color: #666;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .icon-btn:hover {
+      color: #4CAF50;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #333;
+    }
+
+    .user-info {
+      text-align: right;
+    }
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 500;
+      display: block;
+    }
+
+    .user-role {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #4CAF50;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    /* Main Content */
+    .main-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      background: white;
+      border-radius: 16px;
+      padding: 20px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-btn {
+      background: #f5f5f5;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      color: #666;
+    }
+
+    .back-btn:hover {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .breadcrumb-text {
+      font-size: 16px;
+      color: #888;
+    }
+
+    .breadcrumb-text a {
+      color: #4CAF50;
+      text-decoration: none;
+    }
+
+    .breadcrumb-text a:hover {
+      text-decoration: underline;
+    }
+
+    /* Guide Header */
+    .guide-header {
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .guide-title {
+      font-size: 32px;
+      font-weight: 600;
+      color: #4a5a4a;
+      margin-bottom: 12px;
+    }
+
+    .guide-subtitle {
+      font-size: 18px;
+      color: #888;
+      font-weight: 400;
+    }
+
+    /* About Section */
+    .about-section {
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .about-box {
+      background: linear-gradient(135deg, #E8F5E8, #F0FFF0);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid #C8E6C8;
+    }
+
+    .about-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #4a5a4a;
+      margin-bottom: 16px;
+    }
+
+    .about-text {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #666;
+    }
+
+    /* Materials Section */
+    .materials-section {
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .materials-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 24px;
+    }
+
+    .materials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .material-item {
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 25px;
+      padding: 16px 24px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 500;
+      color: #555;
+      transition: all 0.3s;
+    }
+
+    .material-item:hover {
+      border-color: #4CAF50;
+      background: #f0f8e8;
+      transform: translateY(-2px);
+    }
+
+    /* Process Section */
+    .process-section {
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .process-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 32px;
+    }
+
+    .step-container {
+      border: 2px solid #e0e0e0;
+      border-radius: 20px;
+      padding: 32px;
+      background: #fafafa;
+      margin-bottom: 24px;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .step-number-title {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .step-number {
+      background: #4CAF50;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .day-badge {
+      background: #B8860B;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .step-description {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .tip-box {
+      background: #FFF3CD;
+      border: 1px solid #FFEAA7;
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .tip-label {
+      background: #F39C12;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .tip-text {
+      font-size: 14px;
+      color: #856404;
+      line-height: 1.5;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .header {
+        padding: 16px 24px;
+      }
+
+      .nav-menu {
+        gap: 32px;
+      }
+
+      .main-content {
+        padding: 24px 16px;
+      }
+
+      .breadcrumb,
+      .guide-header,
+      .about-section,
+      .materials-section,
+      .process-section {
+        padding: 24px;
+      }
+
+      .guide-title {
+        font-size: 24px;
+      }
+
+      .materials-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .step-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .tip-box {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav-container">
+      <div class="logo">
+        <img src="../images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+        <img src="../images/pigsoil.png" alt="PigSoil+" class="logo-text">
+      </div>
+      
+      <ul class="nav-menu">
+        <li><a href="../html/dashboard.html">Dashboard</a></li>
+        <li><a href="../html/batches.html">Batches</a></li>
+        <li><a href="../html/farmermarket.html">Market</a></li>
+        <li><a href="../html/guides.html" class="active">Guides</a></li>
+
+      </ul>
+      
+      <div class="user-section">
+        <button class="icon-btn" id="notificationBtn" aria-label="View notifications">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </button>
+        <a href="../html/setting-acc.html" class="user-profile">
+          <div class="user-info">
+            <span class="user-name">Juan Dela Cruz</span>
+            <span class="user-role">Active Farmer</span>
+          </div>
+          <div class="user-avatar">JD</div>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="main-content">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <button class="back-btn" onclick="goBack()" aria-label="Back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <div class="breadcrumb-text">
+        <a href="../html/guides.html">Guides</a> / Basic Pig Manure Composting
+      </div>
+    </div>
+
+    <!-- Guide Header -->
+    <section class="guide-header">
+      <h1 class="guide-title">Basic Pig Manure Composting</h1>
+      <p class="guide-subtitle">Complete step-by-step guide for beginners</p>
+    </section>
+
+    <!-- About This Method -->
+    <section class="about-section">
+      <div class="about-box">
+        <h2 class="about-title">About This Method</h2>
+        <p class="about-text">
+          Traditional aerobic composting using pig waste and plant matter. Perfect for beginners with 
+          minimal equipment needed. Creates low-cost organic fertilizer in 21 days.
+        </p>
+      </div>
+    </section>
+
+    <!-- Materials Needed -->
+    <section class="materials-section">
+      <h2 class="materials-title">Materials Needed</h2>
+      <div class="materials-grid">
+        <div class="material-item">Fresh pig manure</div>
+        <div class="material-item">Dry plant matter</div>
+        <div class="material-item">Shovel or fork</div>
+        <div class="material-item">Rice hulls/sawdust</div>
+        <div class="material-item">Water source</div>
+        <div class="material-item">Tarpaulin cover</div>
+      </div>
+    </section>
+
+    <!-- Step-By-Step Process -->
+    <section class="process-section">
+      <h2 class="process-title">Step-By-Step Process</h2>
+      
+      <div class="step-container">
+        <div class="step-header">
+          <div class="step-number-title">
+            <div class="step-number">1</div>
+            <h3 class="step-title">Layer pig manure & plant matter</h3>
+          </div>
+          <div class="day-badge">Day 1</div>
+        </div>
+        
+        <p class="step-description">
+          Create alternating layers of fresh pig manure and dry plant materials. Start with a 6-inch 
+          layer of plant matter, then 4 inches of manure. Repeat 3-4 times.
+        </p>
+        
+        <div class="tip-box">
+          <div class="tip-label">Tip:</div>
+          <div class="tip-text">
+            Use a 3:1 ratio of brown materials (leaves, rice hulls) to green materials (fresh manure)
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional steps would continue here -->
+    </section>
+  </main>
+
+  <script>
+    // Back button functionality
+    function goBack() {
+      window.history.back();
+    }
+
+    // Notification button functionality
+    document.getElementById('notificationBtn').addEventListener('click', function() {
+      alert('Notifications functionality would be implemented here');
+    });
+
+    // Add smooth scrolling for internal links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+
+    // Add hover effects for material items
+    document.querySelectorAll('.material-item').forEach(item => {
+      item.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-3px)';
+      });
+      
+      item.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+      });
+    });
+
+    // Add click feedback for interactive elements
+    document.querySelectorAll('.material-item, .step-container').forEach(item => {
+      item.addEventListener('click', function() {
+        this.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+          this.style.transform = '';
+        }, 150);
+      });
+    });
+  </script>
+</body>
+</html>

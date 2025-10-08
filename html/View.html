@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PigSoil+ - My Premium Pig Compost</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(103deg, #FFEED0 0%, #FFC7B8 170%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        /* Header - Exact copy from farmermarket.html */
+        .header {
+            background: white;
+            padding: 16px 64px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 48px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+        }
+
+        .logo-text {
+            height: 40px;
+            width: 171px;
+            object-fit: contain;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 64px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #666;
+            font-size: 16px;
+            font-weight: 400;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            color: #4CAF50;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: #666;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            color: #4CAF50;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            display: block;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* Product Detail Container */
+        .product-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        /* Image Section */
+        .product-image-section {
+            position: relative;
+            height: 400px;
+            background: #f5f5f5;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-dots {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .dot.active {
+            background: white;
+        }
+
+        /* Product Info Section */
+        .product-info {
+            padding: 32px;
+        }
+
+        .product-header {
+            margin-bottom: 24px;
+        }
+
+        .product-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .product-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4CAF50;
+        }
+
+        /* Description Section */
+        .description-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .description-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #666;
+        }
+
+        /* Details Section */
+        .details-section {
+            margin-bottom: 32px;
+        }
+
+        .details-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+
+        .detail-label {
+            font-size: 16px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        /* Meetup Preferences Section */
+        .meetup-section {
+            margin-bottom: 32px;
+        }
+
+        .map-container {
+            position: relative;
+            height: 200px;
+            background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+            position: relative;
+        }
+
+        .map-lines {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(90deg, rgba(200,200,200,0.3) 1px, transparent 1px),
+                linear-gradient(rgba(200,200,200,0.3) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .location-pin {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: #4CAF50;
+            border-radius: 50% 50% 50% 0;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(76, 175, 80, 0.4);
+        }
+
+        .location-pin::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transform: rotate(45deg);
+        }
+
+        .location-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .location-icon {
+            color: #e74c3c;
+            font-size: 16px;
+        }
+
+        .location-text {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .location-note {
+            font-size: 14px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            width: 60px;
+            background: white;
+            color: #4CAF50;
+            border: 2px solid #4CAF50;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f8e8;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 16px 24px;
+            }
+
+            .nav-menu {
+                gap: 32px;
+            }
+
+            .main-content {
+                padding: 24px 16px;
+            }
+
+            .product-info {
+                padding: 24px;
+            }
+
+            .product-title {
+                font-size: 24px;
+            }
+
+            .product-price {
+                font-size: 20px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn-secondary {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Navigation - Exact copy from farmermarket.html -->
+    <header class="header">
+        <nav class="nav-container">
+            <div class="logo">
+                <img src="../images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+                <img src="../images/pigsoil.png" alt="PigSoil+" class="logo-text">
+            </div>
+            
+            <ul class="nav-menu">
+                <li><a href="../html/dashboard.html">Dashboard</a></li>
+                <li><a href="../html/batches.html">Batches</a></li>
+                <li><a href="../html/farmermarket.html" class="active">Market</a></li>
+                <li><a href="../html/guides.html">Guides</a></li>
+            
+            </ul>
+            
+            <div class="user-section">
+                <button class="icon-btn" id="notificationBtn" aria-label="View notifications">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </button>
+                <a href="../html/setting-acc.html" class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name">Juan Dela Cruz</span>
+                        <span class="user-role">Active Farmer</span>
+                    </div>
+                    <div class="user-avatar">JD</div>
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="product-container">
+            <!-- Product Image Section -->
+            <div class="product-image-section">
+                <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&h=400&fit=crop" 
+                     alt="Premium Pig Compost" class="product-image" id="productImage">
+                <div class="image-dots">
+                    <div class="dot active" data-image="0"></div>
+                    <div class="dot" data-image="1"></div>
+                    <div class="dot" data-image="2"></div>
+                </div>
+            </div>
+
+            <!-- Product Info Section -->
+            <div class="product-info">
+                <!-- Product Header -->
+                <div class="product-header">
+                    <h1 class="product-title">My Premium Pig Compost</h1>
+                    <div class="product-price">₱75/kg</div>
+                </div>
+
+                <!-- Description Section -->
+                <div class="description-section">
+                    <h2 class="section-title">Description</h2>
+                    <p class="description-text">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
+                        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim 
+                        veniam, quis nostrud.
+                    </p>
+                </div>
+
+                <!-- Details Section -->
+                <div class="details-section">
+                    <h2 class="section-title">Details</h2>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Quantity Left</span>
+                            <span class="detail-value">35kg</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Quantity Total</span>
+                            <span class="detail-value">50kg</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Date Posted</span>
+                            <span class="detail-value">3 days ago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meetup Preferences Section -->
+                <div class="meetup-section">
+                    <h2 class="section-title">Meetup Preferences</h2>
+                    <div class="map-container">
+                        <div class="map-placeholder">
+                            <div class="map-lines"></div>
+                            <div class="location-pin"></div>
+                        </div>
+                    </div>
+                    <div class="location-info">
+                        <span class="location-icon">📍</span>
+                        <div>
+                            <div class="location-text">Avida Towers Riala</div>
+                            <div class="location-note">Location is approximate</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="btn-primary" id="editBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        Edit
+                    </button>
+                    <button class="btn-secondary" id="shareBtn" aria-label="Share this listing">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Image gallery functionality
+        const productImage = document.getElementById('productImage');
+        const dots = document.querySelectorAll('.dot');
+        
+        const images = [
+            'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1574226516831-e1dff420e562?w=800&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?w=800&h=400&fit=crop'
+        ];
+
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', function() {
+                // Update active dot
+                dots.forEach(d => d.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Change image
+                productImage.src = images[index];
+            });
+        });
+
+        // Button functionality
+        document.getElementById('editBtn').addEventListener('click', function() {
+            alert('Edit functionality would redirect to edit form');
+        });
+
+        document.getElementById('shareBtn').addEventListener('click', function() {
+            // Simple share functionality
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My Premium Pig Compost',
+                    text: 'Check out this premium pig compost for sale!',
+                    url: window.location.href
+                });
+            } else {
+                // Fallback - copy to clipboard
+                navigator.clipboard.writeText(window.location.href).then(function() {
+                    alert('Link copied to clipboard!');
+                });
+            }
+        });
+
+        // Notification button
+        document.getElementById('notificationBtn').addEventListener('click', function() {
+            alert('Notifications functionality would be implemented here');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PigSoil+ | AI-Powered Farming Revolution</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f4e4c1 0%, #f0d0a0 100%);
+            min-height: 100vh;
+        }
+
+        /* Header - Clean design like your image */
+        .header {
+            background: white;
+            padding: 16px 64px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 48px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+        }
+
+        .logo-text {
+            height: 40px;
+            width: 171px;
+            object-fit: contain;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 64px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 400;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #2d5a3d;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .language-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: #f8f9fa;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .language-btn:hover {
+            background: #e9ecef;
+        }
+
+        .sign-in-btn {
+            background: #2d5a3d;
+            color: white;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+        }
+
+        .sign-in-btn:hover {
+            background: #1f3d2a;
+        }
+
+        /* Main Content */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            padding: 60px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: center;
+            min-height: calc(100vh - 100px);
+        }
+
+        .content-section {
+            padding-right: 40px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 14px;
+            color: #2d5a3d;
+            margin-bottom: 32px;
+            border: 1px solid rgba(93, 138, 107, 0.3);
+        }
+
+        .main-title {
+            font-size: 48px;
+            font-weight: 700;
+            color: #2d5a3d;
+            line-height: 1.1;
+            margin-bottom: 24px;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: #2d5a3d;
+            margin-bottom: 32px;
+            opacity: 0.9;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .description {
+            font-size: 16px;
+            color: #2d5a3d;
+            line-height: 1.6;
+            margin-bottom: 48px;
+            opacity: 0.8;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-top: 48px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 32px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(93, 138, 107, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: #2d5a3d;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: white;
+            font-size: 24px;
+        }
+
+        .feature-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d5a3d;
+            margin-bottom: 8px;
+        }
+
+        .feature-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        /* Login Section */
+        .login-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 48px 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            max-width: 440px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .login-logo {
+            margin-bottom: 24px;
+        }
+
+        .login-logo img {
+            width: 300px;
+            height: auto;
+        }
+
+        .login-btn, .new-user-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .login-btn {
+            background: #2d5a3d;
+            color: white;
+            border: none;
+        }
+
+        .login-btn:hover {
+            background: #1f3d2a;
+        }
+
+        .divider {
+            margin: 32px 0;
+            position: relative;
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #ddd;
+        }
+
+        .sign-up-btn {
+    background: transparent;
+    color: #2d5a3d;
+    padding: 10px 24px;
+    border: 2px solid #2d5a3d;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+.sign-up-btn:hover {
+    background: #2d5a3d;
+    color: white;
+}
+
+        .divider span {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0 16px;
+        }
+
+        .new-user-btn {
+            background: transparent;
+            color: #2d5a3d;
+            border: 2px solid #2d5a3d;
+            margin-bottom: 0;
+        }
+
+        .new-user-btn:hover {
+            background: #2d5a3d;
+            color: white;
+        }
+
+        /* Globe icon for language selector */
+        .globe-icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .signup-link {
+            text-align: center;
+            color: #4a6741;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .signup-link:hover {
+            color: #2d5016;
+            transform: translateY(-1px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                padding: 40px 20px;
+            }
+
+            .content-section {
+                padding-right: 0;
+                text-align: center;
+            }
+
+            .main-title {
+                font-size: 36px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .login-section {
+                padding: 32px 24px;
+                margin: 0 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+               <img src="/images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+                <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
+            </div>
+            
+            <nav class="nav-links">
+                <a href="#about">About</a>
+                <a href="#support">Support</a>
+            </nav>
+            
+            <div class="header-actions">
+                <a href="#" class="language-btn">
+                    <svg class="globe-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                    </svg>
+                    English
+                </a>
+                                <a href="../html/signup.html" class="sign-up-btn">Sign Up</a>
+
+                <a href="../html/login.html" class="sign-in-btn">Sign In</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <section class="content-section">
+            <div class="badge">
+                🚀 AI-Powered Farming Revolution
+            </div>
+            
+            <h1 class="main-title">Transform Your Farm</h1>
+            <p class="subtitle">Turn swine waste into organic gold with intelligent farming solutions.</p>
+            
+            <p class="description">
+                PigSoil+ revolutionizes swine waste analysis through AI-powered composting guidance and a thriving marketplace. Join thousands of Filipino farmers already transforming their operations into sustainable, profitable enterprises.
+            </p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3 class="feature-title">Manong Bot AI</h3>
+                    <p class="feature-description">24/7 intelligent assistant in English & Cebuano</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Track Compost</h3>
+                    <p class="feature-description">Keep track of multiple compost batches effectively</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🏪</div>
+                    <h3 class="feature-title">Local Marketplace</h3>
+                    <p class="feature-description">Connect with buyers in your community</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="login-section">
+            <div class="login-logo">
+                <img src="/images/pigsoiltext.png"  alt="PigSoil+ AI Analysis">
+            </div>
+            
+            <a href="/html/login.html" class="login-btn">
+                ↻ I have an account
+            </a>
+            
+            <div class="divider">
+                <span>OR</span>
+            </div>
+            
+            <a href="/html/signup.html" class="new-user-btn">
+                ⚲ I'm new to PigSoil+
+            </a>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,2004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PigSoil+ - Create Swine Compost Listing</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(103deg, #FFEED0 0%, #FFC7B8 170%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        /* Header - Matching existing design */
+        .header {
+            background: white;
+            padding: 16px 64px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 48px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+        }
+
+        .logo-text {
+            height: 40px;
+            width: 171px;
+            object-fit: contain;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 64px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #666;
+            font-size: 16px;
+            font-weight: 400;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            color: #4CAF50;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: #666;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            color: #4CAF50;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            display: block;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* Header Section */
+        .page-header {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+
+        /* Form Section */
+        .form-section {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: 'Poppins', Arial, sans-serif;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #4CAF50;
+        }
+
+        .form-input.error {
+            border-color: #e74c3c;
+            background-color: #fdf2f2;
+        }
+
+        .form-input.success {
+            border-color: #4CAF50;
+            background-color: #f0f8f4;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Error Message Styling */
+        .error-message {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .error-message::before {
+            content: "⚠️";
+            font-size: 10px;
+        }
+
+        .success-message {
+            color: #4CAF50;
+            font-size: 12px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .success-message::before {
+            content: "✓";
+            font-size: 12px;
+        }
+
+        /* Photo Upload Section */
+        .photo-upload-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+
+        .photo-upload {
+            aspect-ratio: 1;
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .photo-upload:hover {
+            border-color: #4CAF50;
+            background: #f0f8e8;
+        }
+
+        .photo-upload.has-image {
+            border-style: solid;
+            border-color: #4CAF50;
+        }
+
+        .photo-upload.error {
+            border-color: #e74c3c;
+            background: #fdf2f2;
+        }
+
+        .photo-upload-icon {
+            font-size: 32px;
+            color: #ccc;
+            transition: color 0.3s;
+        }
+
+        .photo-upload:hover .photo-upload-icon {
+            color: #4CAF50;
+        }
+
+        .photo-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+        }
+
+        .photo-upload.has-image .photo-remove {
+            display: block;
+        }
+
+        .photo-hint {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .photo-error {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .photo-error::before {
+            content: "📷";
+            font-size: 12px;
+        }
+
+        /* Form Row */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Compost Technique Section */
+        .technique-section {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            background: #f9f9f9;
+        }
+
+        .technique-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .technique-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .technique-option:hover {
+            border-color: #4CAF50;
+            background: #f0f8f4;
+        }
+
+        .technique-option.selected {
+            border-color: #4CAF50;
+            background: #f0f8f4;
+        }
+
+        .technique-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .technique-description {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        /* Location Section */
+        .location-container {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            background: #f9f9f9;
+            transition: border-color 0.3s;
+        }
+
+        .location-container.active {
+            border-color: #4CAF50;
+            background: #f0f8f4;
+        }
+
+        .location-map {
+            width: 100%;
+            height: 200px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #666;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .location-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .location-pin {
+            color: #e74c3c;
+            font-size: 16px;
+        }
+
+        .location-details {
+            flex: 1;
+        }
+
+        .location-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .location-address {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .change-location {
+            color: #4CAF50;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .change-location:hover {
+            color: #45a049;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .submit-btn.loading {
+            background: #95a5a6;
+        }
+
+        .submit-btn.loading::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Hidden file inputs */
+        .photo-input {
+            display: none;
+        }
+
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1001;
+            font-weight: 600;
+            max-width: 350px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .notification.error {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .notification.info {
+            background: #2196F3;
+            color: white;
+        }
+
+        .notification.warning {
+            background: #ff9800;
+            color: white;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-content {
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        .loading-text {
+            color: #333;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        /* Progress Indicator */
+        .progress-indicator {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #4CAF50;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* *** GOOGLE MAPS MODAL STYLES - ADDED *** */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            margin: 0;
+            color: #333;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 400px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .location-search {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: 'Poppins', Arial, sans-serif;
+            margin-bottom: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .location-search:focus {
+            border-color: #4CAF50;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 16px 24px;
+            }
+
+            .nav-menu {
+                gap: 32px;
+            }
+
+            .main-content {
+                padding: 24px 16px;
+            }
+
+            .photo-upload-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .technique-options {
+                grid-template-columns: 1fr;
+            }
+
+            .notification {
+                right: 16px;
+                left: 16px;
+                transform: translateY(-100%);
+                max-width: none;
+            }
+
+            .notification.show {
+                transform: translateY(0);
+            }
+
+            /* Modal responsive styles */
+            .modal {
+                width: 95%;
+                padding: 20px;
+                margin: 20px;
+            }
+
+            .map-container {
+                height: 300px;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+
+            .btn-secondary, .btn-primary {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loadingText">Preparing your swine compost listing...</div>
+            <div class="progress-indicator" id="progressIndicator">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- *** GOOGLE MAPS MODAL - ADDED *** -->
+    <div id="locationModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Select Pickup Location</h2>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <input type="text" id="locationSearch" class="location-search" placeholder="Search for your farm location...">
+            <div id="mapContainer" class="map-container"></div>
+            <div class="modal-buttons">
+                <button class="btn-secondary" id="cancelLocation">Cancel</button>
+                <button class="btn-primary" id="confirmLocation">Confirm Location</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <div class="logo">
+                <img src="../images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+                <img src="../images/pigsoil.png" alt="PigSoil+" class="logo-text">
+            </div>
+            
+            <ul class="nav-menu">
+                <li><a href="../html/buyer-dashboard.html" data-nav="dashboard" class="active">Dashboard</a></li>
+                <li><a href="../html/buyer-marketplace.html" data-nav="market">Market</a></li>
+                <li><a href="../html/guides.html" data-nav="guides">Guides</a></li>
+            </ul>
+            
+            <div class="user-section">
+                <button class="icon-btn" id="notificationBtn" aria-label="View notifications">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </button>
+                <a href="../html/setting-acc.html" class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name">Juan Dela Cruz</span>
+                        <span class="user-role">Swine Farmer</span>
+                    </div>
+                    <div class="user-avatar">JD</div>
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <!-- Page Header -->
+        <section class="page-header">
+            <h1 class="page-title">Create Swine Compost Listing</h1>
+            <p class="page-subtitle">Add your premium swine compost to the marketplace and connect with organic fertilizer buyers</p>
+        </section>
+
+        <!-- Create Listing Form -->
+        <section class="form-section">
+            <form id="createListingForm" novalidate>
+                <!-- Product Photos -->
+                <div class="form-group">
+                    <label class="form-label">Compost Photos *</label>
+                    <div class="photo-upload-grid" id="photoUploadGrid">
+                        <div class="photo-upload" data-index="0">
+                            <span class="photo-upload-icon">+</span>
+                            <input type="file" class="photo-input" accept="image/*" data-index="0">
+                            <button type="button" class="photo-remove">&times;</button>
+                        </div>
+                        <div class="photo-upload" data-index="1">
+                            <span class="photo-upload-icon">+</span>
+                            <input type="file" class="photo-input" accept="image/*" data-index="1">
+                            <button type="button" class="photo-remove">&times;</button>
+                        </div>
+                        <div class="photo-upload" data-index="2">
+                            <span class="photo-upload-icon">+</span>
+                            <input type="file" class="photo-input" accept="image/*" data-index="2">
+                            <button type="button" class="photo-remove">&times;</button>
+                        </div>
+                        <div class="photo-upload" data-index="3">
+                            <span class="photo-upload-icon">+</span>
+                            <input type="file" class="photo-input" accept="image/*" data-index="3">
+                            <button type="button" class="photo-remove">&times;</button>
+                        </div>
+                    </div>
+                    <p class="photo-hint">Upload at least one photo of your swine compost • The first photo will be the main display image</p>
+                    <div id="photoError" class="photo-error" style="display: none;"></div>
+                </div>
+
+                <!-- Product Title -->
+                <div class="form-group">
+                    <label class="form-label" for="productTitle">Compost Title *</label>
+                    <input 
+                        type="text" 
+                        id="productTitle" 
+                        class="form-input" 
+                        placeholder="e.g., Premium Organic Swine Compost - Ready to Use" 
+                        required 
+                        maxlength="100"
+                        autocomplete="off"
+                    >
+                </div>
+
+                <!-- Quantity and Price Row -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="quantity">Quantity (kg) *</label>
+                        <input 
+                            type="number" 
+                            id="quantity" 
+                            class="form-input" 
+                            placeholder="e.g., 100" 
+                            min="1" 
+                            max="10000" 
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="price">Price per kg (₱) *</label>
+                        <input 
+                            type="number" 
+                            id="price" 
+                            class="form-input" 
+                            placeholder="e.g., 15.00" 
+                            min="1" 
+                            max="5000" 
+                            step="0.01" 
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+                </div>
+
+                <!-- Composting Technique Selection -->
+                <div class="form-group">
+                    <label class="form-label">Composting Technique Used *</label>
+                    <div class="technique-section">
+                        <p style="font-size: 14px; color: #666; margin-bottom: 8px;">Select the composting method you used for this batch:</p>
+                        <div class="technique-options">
+                            <div class="technique-option selected" data-technique="basic_swine_manure">
+                                <div class="technique-title">Basic Swine Manure</div>
+                                <div class="technique-description">Traditional composting method using swine manure with natural decomposition process</div>
+                            </div>
+                            <div class="technique-option" data-technique="hot_composting">
+                                <div class="technique-title">Hot Composting Method</div>
+                                <div class="technique-description">Advanced composting with temperature monitoring and controlled decomposition</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="compostTechnique" value="basic_swine_manure">
+                    </div>
+                </div>
+
+                <!-- *** UPDATED LOCATION SECTION *** -->
+                <div class="form-group">
+                    <label class="form-label">Pickup/Meetup Location</label>
+                    <div class="location-container" id="locationContainer">
+                        <div class="location-map" id="locationMapPreview">
+                            <div id="staticMap" style="width: 100%; height: 100%; border-radius: 8px; overflow: hidden;">
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; text-align: center; color: #999;">
+                                    🗺️ Click "Change" to set your farm location<br>
+                                    <small>Select your swine farm pickup location</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="location-info">
+                            <span class="location-pin">📍</span>
+                            <div class="location-details">
+                                <div class="location-name" id="selectedLocationName">Select farm location</div>
+                                <div class="location-address" id="selectedLocationAddress">Click "Change" to choose pickup location</div>
+                            </div>
+                            <span class="change-location" id="changeLocationBtn">Change</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label class="form-label" for="description">Compost Description</label>
+                    <textarea 
+                        id="description" 
+                        class="form-input form-textarea" 
+                        placeholder="Describe your swine compost: composting technique used, age of compost, quality, and any special features. Example: 'High-quality organic compost made from swine manure using basic composting method. Aged for 3 months, rich in nutrients, perfect for vegetable gardens and organic farming. Direct communication preferred for pickup arrangements.'"
+                        maxlength="500"
+                    ></textarea>
+                    <div id="descriptionCounter" style="font-size: 12px; color: #666; text-align: right; margin-top: 4px;">0/500 characters</div>
+                </div>
+
+                <!-- Payment Note -->
+                <div style="background: #e8f5e8; border: 2px solid #4CAF50; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                    <div style="display: flex; align-items: start; gap: 12px;">
+                        <span style="font-size: 20px;">💡</span>
+                        <div>
+                            <div style="font-weight: 600; color: #2e7d32; margin-bottom: 8px;">Direct Communication & Payment</div>
+                            <p style="font-size: 14px; color: #2e7d32; line-height: 1.5; margin: 0;">
+                                PigSoil+ connects swine farmers with organic fertilizer buyers through direct messaging. Payment arrangements (cash, installments, barter) are handled privately between you and the buyer during face-to-face meetings. This approach respects traditional Filipino agricultural community practices.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    Post Swine Compost Listing
+                </button>
+            </form>
+        </section>
+    </main>
+
+    <!-- *** GOOGLE MAPS API SCRIPT - ADDED *** -->
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDxldiepJaqTaCW9kxCr-3cYgSlVD0fQYg&libraries=places,marker&loading=async&callback=initMap">
+</script>
+
+    <!-- Fixed JavaScript for Better Error Handling -->
+    <script type="module">
+    // Import Firebase modules
+    import { auth, db, storage } from '../js/init.js';
+    import { 
+        collection, 
+        addDoc, 
+        serverTimestamp, 
+        query, 
+        where, 
+        getDocs,
+        doc,
+        setDoc,
+        getDoc
+    } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
+    import { ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-storage.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
+
+    // Collection names matching your Firebase structure
+    const COLLECTIONS = {
+        PRODUCT_LISTINGS: 'product_listings',
+        USERS: 'users'
+    };
+
+    // Global variables
+    let uploadedPhotos = [];
+    let isFormSubmitting = false;
+    let selectedTechnique = 'basic_swine_manure';
+    let currentUser = null;
+    let currentUserData = null;
+
+    // *** GOOGLE MAPS VARIABLES - ADDED ***
+    let map;
+    let marker;
+    let selectedLocation = {
+        lat: 10.3157,  // Default to Cebu City
+        lng: 123.8854,
+        name: 'Select farm location',
+        address: 'Click "Change" to choose pickup location',
+        formattedAddress: 'Cebu City, Philippines'
+    };
+    let geocoder;
+    let autocomplete;
+
+    // *** GOOGLE MAPS INITIALIZATION - ADDED ***
+    window.initMap = function() {
+        console.log('Google Maps API loaded');
+        geocoder = new google.maps.Geocoder();
+        setupLocationModal();
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('PigSoil+ Create Listing loaded with Firebase integration');
+        
+        checkAuthState();
+        setupPhotoUpload();
+        setupFormValidation();
+        setupCharacterCounters();
+        setupLocationHandler();
+        setupCompostTechnique();
+        setupLocationModal(); // Added Google Maps setup
+    });
+
+    // *** GOOGLE MAPS FUNCTIONS - ADDED ***
+    function setupLocationModal() {
+        const changeLocationBtn = document.getElementById('changeLocationBtn');
+        const locationModal = document.getElementById('locationModal');
+        const modalClose = document.getElementById('modalClose');
+        const cancelLocation = document.getElementById('cancelLocation');
+        const confirmLocation = document.getElementById('confirmLocation');
+        
+        if (changeLocationBtn) {
+            changeLocationBtn.addEventListener('click', openLocationPicker);
+        }
+        
+        if (modalClose) {
+            modalClose.addEventListener('click', closeLocationPicker);
+        }
+        
+        if (cancelLocation) {
+            cancelLocation.addEventListener('click', closeLocationPicker);
+        }
+        
+        if (confirmLocation) {
+            confirmLocation.addEventListener('click', confirmLocationSelection);
+        }
+        
+        if (locationModal) {
+            locationModal.addEventListener('click', function(e) {
+                if (e.target === locationModal) {
+                    closeLocationPicker();
+                }
+            });
+        }
+    }
+
+    function openLocationPicker() {
+        const locationModal = document.getElementById('locationModal');
+        if (locationModal) {
+            locationModal.classList.add('show');
+            setTimeout(() => {
+                initializeMap();
+            }, 300);
+        }
+    }
+
+    function closeLocationPicker() {
+        const locationModal = document.getElementById('locationModal');
+        if (locationModal) {
+            locationModal.classList.remove('show');
+        }
+    }
+
+    function initializeMap() {
+        const mapContainer = document.getElementById('mapContainer');
+        const locationSearch = document.getElementById('locationSearch');
+        
+        if (!mapContainer) {
+            console.error('Map container not found');
+            return;
+        }
+        
+        map = new google.maps.Map(mapContainer, {
+            center: selectedLocation,
+            zoom: 13,
+            mapTypeId: 'roadmap',
+            styles: [{ featureType: 'all', stylers: [{ saturation: -10 }] }]
+        });
+        
+        marker = new google.maps.Marker({
+            position: selectedLocation,
+            map: map,
+            draggable: true,
+            title: 'Your swine farm location'
+        });
+        
+        if (locationSearch) {
+            autocomplete = new google.maps.places.Autocomplete(locationSearch, {
+                bounds: new google.maps.LatLngBounds(
+                    new google.maps.LatLng(9.5, 123.0),
+                    new google.maps.LatLng(11.5, 125.0)
+                ),
+                strictBounds: true,
+                componentRestrictions: { country: 'PH' }
+            });
+            
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+                if (place.geometry) {
+                    const location = {
+                        lat: place.geometry.location.lat(),
+                        lng: place.geometry.location.lng()
+                    };
+                    updateMapLocation(location, place);
+                }
+            });
+        }
+        
+        marker.addListener('dragend', (event) => {
+            const location = {
+                lat: event.latLng.lat(),
+                lng: event.latLng.lng()
+            };
+            reverseGeocode(location);
+        });
+        
+        map.addListener('click', (event) => {
+            const location = {
+                lat: event.latLng.lat(),
+                lng: event.latLng.lng()
+            };
+            marker.setPosition(location);
+            reverseGeocode(location);
+        });
+    }
+
+    function updateMapLocation(location, place = null) {
+        selectedLocation.lat = location.lat;
+        selectedLocation.lng = location.lng;
+        
+        if (place && place.formatted_address) {
+            selectedLocation.formattedAddress = place.formatted_address;
+            selectedLocation.name = place.name || 'Selected Location';
+            selectedLocation.address = place.formatted_address;
+        }
+        
+        if (map && marker) {
+            map.setCenter(location);
+            marker.setPosition(location);
+        }
+    }
+
+    function reverseGeocode(location) {
+        if (!geocoder) return;
+        
+        geocoder.geocode({ location: location }, (results, status) => {
+            if (status === 'OK' && results[0]) {
+                const result = results[0];
+                selectedLocation.lat = location.lat;
+                selectedLocation.lng = location.lng;
+                selectedLocation.formattedAddress = result.formatted_address;
+                selectedLocation.name = extractLocationName(result);
+                selectedLocation.address = result.formatted_address;
+            }
+        });
+    }
+
+   function extractLocationName(result) {
+    console.log('📍 Extracting location from:', result.address_components.map(c => ({
+        name: c.long_name,
+        types: c.types
+    })));
+    
+    // Priority 1: Establishment or Point of Interest (e.g., "SM City Cebu")
+    for (let component of result.address_components) {
+        if (component.types.includes('establishment') || 
+            component.types.includes('point_of_interest')) {
+            console.log('✅ Using establishment:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Priority 2: Route/Street Name (e.g., "Osmena Boulevard")
+    for (let component of result.address_components) {
+        if (component.types.includes('route')) {
+            console.log('✅ Using route:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Priority 3: Neighborhood or Sublocality (e.g., "Mabolo", "IT Park")
+    for (let component of result.address_components) {
+        if (component.types.includes('neighborhood') || 
+            component.types.includes('sublocality') ||
+            component.types.includes('sublocality_level_1')) {
+            console.log('✅ Using neighborhood:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Priority 4: Administrative Level 3 (often Barangay in Philippines)
+    for (let component of result.address_components) {
+        if (component.types.includes('administrative_area_level_3')) {
+            console.log('✅ Using admin level 3:', component.long_name);
+            return component.long_name; // Removed " Area" suffix
+        }
+    }
+    
+    // Priority 5: Administrative Level 2 (municipality/city)
+    for (let component of result.address_components) {
+        if (component.types.includes('administrative_area_level_2')) {
+            console.log('✅ Using admin level 2:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Priority 6: Locality (city name)
+    for (let component of result.address_components) {
+        if (component.types.includes('locality')) {
+            console.log('✅ Using locality:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Fallback: Use first part of formatted address
+    if (result.formatted_address) {
+        const firstPart = result.formatted_address.split(',')[0].trim();
+        console.log('✅ Using formatted address first part:', firstPart);
+        return firstPart;
+    }
+    
+    console.log('⚠️ Fallback to generic name');
+    return 'Selected Location';
+}
+
+    function confirmLocationSelection() {
+        updateLocationDisplay();
+        updateStaticMapPreview();
+        closeLocationPicker();
+        showNotification('Farm location updated successfully!', 'success');
+    }
+
+    function updateLocationDisplay() {
+    const locationName = document.getElementById('selectedLocationName');
+    const locationAddress = document.getElementById('selectedLocationAddress');
+    const locationContainer = document.getElementById('locationContainer');
+    
+    // For name: use the extracted specific location
+    if (locationName) {
+        locationName.textContent = selectedLocation.name;
+    }
+    
+    // For address: show more detailed info
+    if (locationAddress && selectedLocation.formattedAddress) {
+        // Extract the first 2-3 parts of formatted address for detail
+        const addressParts = selectedLocation.formattedAddress.split(',').map(p => p.trim());
+        
+        // Show first 2 parts (e.g., "Osmena Blvd, Cebu City" or "Mabolo, Cebu City, Cebu")
+        let detailedAddress = addressParts.slice(0, Math.min(3, addressParts.length)).join(', ');
+        
+        locationAddress.textContent = detailedAddress;
+    } else if (locationAddress) {
+        locationAddress.textContent = selectedLocation.address;
+    }
+    
+    if (locationContainer) {
+        locationContainer.classList.add('active');
+        setTimeout(() => {
+            locationContainer.classList.remove('active');
+        }, 1000);
+    }
+}
+    function updateStaticMapPreview() {
+        const staticMapContainer = document.getElementById('staticMap');
+        
+        if (staticMapContainer && selectedLocation.lat && selectedLocation.lng) {
+            const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?` +
+                `center=${selectedLocation.lat},${selectedLocation.lng}` +
+                `&zoom=15&size=400x200` +
+                `&markers=color:red%7C${selectedLocation.lat},${selectedLocation.lng}` +
+                `&key=AIzaSyDxldiepJaqTaCW9kxCr-3cYgSlVD0fQYg&style=saturation:-10`;
+            
+            staticMapContainer.innerHTML = `
+                <img src="${staticMapUrl}" 
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" 
+                     alt="Selected farm location">
+            `;
+        }
+    }
+
+    // *** UPDATED LOCATION VALIDATION - ADDED ***
+    function validateLocation() {
+        if (!selectedLocation.lat || !selectedLocation.lng) {
+            showNotification('Please select a pickup location for your swine compost', 'error');
+            return false;
+        }
+        return true;
+    }
+
+    // Check authentication
+    function checkAuthState() {
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                showNotification('Please sign in to create a listing', 'error');
+                setTimeout(() => {
+                    window.location.href = '../html/login.html';
+                }, 2000);
+                return;
+            }
+            
+            currentUser = user;
+            
+            try {
+                currentUserData = await getUserData(user.uid);
+                
+                if (currentUserData.userType !== 'swine_farmer' && currentUserData.userType !== 'Swine Farmer') {
+                    showNotification('Only swine farmers can create listings', 'error');
+                    setTimeout(() => {
+                        window.location.href = '../html/marketplace.html';
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                currentUserData = {
+                    userType: 'swine_farmer',
+                    userName: user.displayName || 'Swine Farmer',
+                    userEmail: user.email
+                };
+            }
+        });
+    }
+
+    // Get user data from Firestore
+    async function getUserData(uid) {
+        try {
+            const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, uid));
+            
+            if (userDoc.exists()) {
+                return userDoc.data();
+            }
+            
+            // Create default user data if not found
+            const defaultUserData = {
+                userCreatedAt: serverTimestamp(),
+                userEmail: currentUser.email,
+                userIsActive: true,
+                userName: currentUser.displayName || 'Swine Farmer',
+                userPhone: '+639123456789',
+                userType: 'swine_farmer',
+                userUpdatedAt: serverTimestamp()
+            };
+            
+            await setDoc(doc(db, COLLECTIONS.USERS, uid), defaultUserData);
+            return defaultUserData;
+            
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            throw error;
+        }
+    }
+
+    // Setup composting technique selection
+    function setupCompostTechnique() {
+        const techniqueOptions = document.querySelectorAll('.technique-option');
+        const hiddenInput = document.getElementById('compostTechnique');
+        
+        techniqueOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                techniqueOptions.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedTechnique = this.getAttribute('data-technique');
+                hiddenInput.value = selectedTechnique;
+            });
+        });
+    }
+
+    // Setup photo upload
+    function setupPhotoUpload() {
+        const photoUploads = document.querySelectorAll('.photo-upload');
+        
+        photoUploads.forEach((upload, index) => {
+            const input = upload.querySelector('.photo-input');
+            const removeBtn = upload.querySelector('.photo-remove');
+            
+            upload.addEventListener('click', function(e) {
+                if (e.target === removeBtn || e.target.closest('.photo-remove')) {
+                    return;
+                }
+                input.click();
+            });
+            
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    handlePhotoSelection(file, upload, index, input);
+                }
+            });
+            
+            removeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                removePhoto(upload, index);
+            });
+        });
+    }
+
+    // Handle photo selection
+    function handlePhotoSelection(file, upload, index, input) {
+        clearPhotoErrors();
+        
+        if (!validatePhotoFile(file)) {
+            input.value = '';
+            return;
+        }
+        
+        upload.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                <div style="font-size: 24px; animation: spin 1s linear infinite;">⏳</div>
+                <div style="font-size: 12px; margin-top: 8px; color: #666;">Processing...</div>
+            </div>
+        `;
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            createPhotoPreview(e.target.result, upload, index, file);
+            uploadedPhotos[index] = file;
+            showNotification('Photo ready for upload!', 'success');
+            validatePhotos();
+        };
+        
+        reader.onerror = function() {
+            showPhotoError('Error reading image file');
+            resetPhotoUpload(upload, index);
+        };
+        
+        reader.readAsDataURL(file);
+    }
+
+    // Validate photo file
+    function validatePhotoFile(file) {
+        if (!file.type.startsWith('image/')) {
+            showPhotoError('Please select a valid image file (JPG, PNG, GIF, WebP)');
+            return false;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) {
+            showPhotoError('Image size must be less than 5MB');
+            return false;
+        }
+        
+        return true;
+    }
+
+    // Create photo preview
+    function createPhotoPreview(imageSrc, upload, index, file) {
+        const img = document.createElement('img');
+        img.src = imageSrc;
+        img.className = 'photo-preview';
+        img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+        
+        const newInput = document.createElement('input');
+        newInput.type = 'file';
+        newInput.className = 'photo-input';
+        newInput.accept = 'image/*';
+        newInput.setAttribute('data-index', index);
+        newInput.style.display = 'none';
+        
+        const newRemoveBtn = document.createElement('button');
+        newRemoveBtn.type = 'button';
+        newRemoveBtn.className = 'photo-remove';
+        newRemoveBtn.innerHTML = '&times;';
+        newRemoveBtn.style.cssText = `
+            position: absolute; top: 4px; right: 4px; background: #e74c3c;
+            color: white; border: none; border-radius: 50%; width: 24px; height: 24px;
+            cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center;
+        `;
+        
+        upload.innerHTML = '';
+        upload.appendChild(img);
+        upload.appendChild(newInput);
+        upload.appendChild(newRemoveBtn);
+        upload.classList.add('has-image');
+        
+        // Re-attach event listeners
+        newInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handlePhotoSelection(file, upload, index, newInput);
+            }
+        });
+        
+        newRemoveBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            removePhoto(upload, index);
+        });
+        
+        upload.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (e.target !== newRemoveBtn && !e.target.closest('.photo-remove')) {
+                newInput.click();
+            }
+        });
+    }
+
+    // Remove photo
+    function removePhoto(upload, index) {
+        uploadedPhotos[index] = null;
+        resetPhotoUpload(upload, index);
+        validatePhotos();
+        showNotification('Photo removed', 'info');
+    }
+
+    // Reset photo upload
+    function resetPhotoUpload(upload, index) {
+        upload.classList.remove('has-image');
+        upload.innerHTML = `
+            <span class="photo-upload-icon">+</span>
+            <input type="file" class="photo-input" accept="image/*" data-index="${index}">
+            <button type="button" class="photo-remove">&times;</button>
+        `;
+        
+        const input = upload.querySelector('.photo-input');
+        const removeBtn = upload.querySelector('.photo-remove');
+        
+        input.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handlePhotoSelection(file, upload, index, input);
+            }
+        });
+        
+        removeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            removePhoto(upload, index);
+        });
+        
+        upload.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (e.target !== removeBtn && !e.target.closest('.photo-remove')) {
+                input.click();
+            }
+        });
+    }
+
+    // Validate photos
+    function validatePhotos() {
+        const hasPhotos = uploadedPhotos.some(photo => photo !== null && photo !== undefined);
+        
+        if (!hasPhotos) {
+            showPhotoError('Please upload at least one photo of your swine compost');
+            return false;
+        }
+        
+        clearPhotoErrors();
+        return true;
+    }
+
+    // Photo error handling
+    function showPhotoError(message) {
+        const photoError = document.getElementById('photoError');
+        const photoGrid = document.getElementById('photoUploadGrid');
+        
+        photoError.textContent = message;
+        photoError.style.display = 'flex';
+        photoGrid.classList.add('error');
+    }
+
+    function clearPhotoErrors() {
+        const photoError = document.getElementById('photoError');
+        const photoGrid = document.getElementById('photoUploadGrid');
+        
+        photoError.style.display = 'none';
+        photoGrid.classList.remove('error');
+    }
+
+    // Setup form validation
+    function setupFormValidation() {
+        const fields = [
+            { id: 'productTitle', validator: validateProductTitle },
+            { id: 'quantity', validator: validateQuantity },
+            { id: 'price', validator: validatePrice },
+            { id: 'description', validator: validateDescription }
+        ];
+        
+        fields.forEach(field => {
+            const element = document.getElementById(field.id);
+            if (element) {
+                element.addEventListener('input', field.validator);
+                element.addEventListener('blur', field.validator);
+            }
+        });
+
+        document.getElementById('createListingForm').addEventListener('submit', handleFormSubmission);
+    }
+
+    // *** UPDATED FORM SUBMISSION HANDLER - ADDED LOCATION VALIDATION ***
+    function handleFormSubmission(e) {
+        e.preventDefault();
+        
+        if (isFormSubmitting) {
+            return;
+        }
+        
+        const isValidTitle = validateProductTitle();
+        const isValidQuantity = validateQuantity();
+        const isValidPrice = validatePrice();
+        const isValidDescription = validateDescription();
+        const isValidPhotos = validatePhotos();
+        const isValidLocation = validateLocation(); // Added location validation
+        
+        if (!isValidTitle || !isValidQuantity || !isValidPrice || !isValidPhotos || !isValidLocation) {
+            showNotification('Please fix all errors before submitting', 'error');
+            
+            const firstError = document.querySelector('.form-input.error, .photo-upload-grid.error');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
+        
+        isFormSubmitting = true;
+        showLoadingOverlay('Preparing your swine compost listing...');
+        
+        const formData = collectFormData();
+        submitListingToFirebase(formData);
+    }
+
+    // *** UPDATED COLLECT FORM DATA - ADDED LOCATION ***
+    function collectFormData() {
+        const title = document.getElementById('productTitle').value.trim();
+        const quantity = document.getElementById('quantity').value;
+        const price = document.getElementById('price').value;
+        const description = document.getElementById('description').value.trim();
+        const technique = document.getElementById('compostTechnique').value;
+        
+        const photos = [];
+        uploadedPhotos.forEach((file, index) => {
+            if (file) {
+                photos.push({
+                    index: index,
+                    file: file,
+                    fileName: `swine_compost_${Date.now()}_${index}.${file.name.split('.').pop()}`
+                });
+            }
+        });
+        
+        return {
+            title,
+            quantity: parseFloat(quantity),
+            price: parseFloat(price),
+            description,
+            technique,
+            photos,
+            location: selectedLocation, // Added location data
+            sellerId: currentUser?.uid,
+            sellerName: currentUserData?.userName || currentUser?.displayName || 'Swine Farmer'
+        };
+    }
+
+    // *** UPDATED SUBMIT TO FIREBASE - ADDED LOCATION DATA ***
+    async function submitListingToFirebase(formData) {
+        try {
+            // Upload photos
+            updateProgress('Uploading compost photos...', 25);
+            const photoUrls = await uploadPhotosToFirebase(formData.photos);
+            
+            // Create listing data
+            updateProgress('Creating swine compost listing...', 50);
+            const listingData = {
+                listingAddressId: 'default_address',
+                listingBatchID: 'batch_' + Date.now(),
+                listingCreatedAt: serverTimestamp(),
+                listingDescription: formData.description,
+                listingIsAvailable: true,
+                listingPricePerKG: formData.price.toString(),
+                listingProductImages: photoUrls.map(photo => photo.url),
+                listingProductName: formData.title,
+                listingQuantityKG: formData.quantity.toString(),
+                listingSellerID: formData.sellerId,
+                listingTotalPrice: formData.quantity * formData.price,
+                listingUpdatedAt: serverTimestamp(),
+                // Added location data
+                listingLocation: {
+                    lat: formData.location.lat,
+                    lng: formData.location.lng,
+                    name: formData.location.name,
+                    address: formData.location.address,
+                    formattedAddress: formData.location.formattedAddress
+                },
+                compostTechnique: formData.technique
+            };
+            
+            // Save to Firestore
+            updateProgress('Saving to database...', 75);
+            const docRef = await addDoc(collection(db, COLLECTIONS.PRODUCT_LISTINGS), listingData);
+            
+            updateProgress('Listing created successfully!', 100);
+            
+            setTimeout(() => {
+                hideLoadingOverlay();
+                showNotification('Swine compost listing posted successfully!', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'farmermarket.html';
+                }, 2000);
+            }, 1000);
+            
+        } catch (error) {
+            console.error('Error creating listing:', error);
+            hideLoadingOverlay();
+            showNotification('Error creating listing: ' + error.message, 'error');
+            isFormSubmitting = false;
+        }
+    }
+
+    // Upload photos to Firebase Storage
+    async function uploadPhotosToFirebase(photos) {
+        const photoUrls = [];
+        
+        for (let i = 0; i < photos.length; i++) {
+            const photo = photos[i];
+            
+            const storageRef = ref(storage, `swine-compost-listings/${photo.fileName}`);
+            const snapshot = await uploadBytes(storageRef, photo.file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+            
+            photoUrls.push({
+                url: downloadURL,
+                fileName: photo.fileName,
+                index: photo.index
+            });
+        }
+        
+        return photoUrls;
+    }
+
+    // Form validation functions
+    function validateProductTitle() {
+        const field = document.getElementById('productTitle');
+        const value = field.value.trim();
+        
+        if (value.length === 0) {
+            setFieldError(field, 'Product title is required');
+            return false;
+        }
+        
+        if (value.length < 3) {
+            setFieldError(field, 'Product title must be at least 3 characters');
+            return false;
+        }
+        
+        if (value.length > 100) {
+            setFieldError(field, 'Product title must be less than 100 characters');
+            return false;
+        }
+        
+        setFieldSuccess(field);
+        return true;
+    }
+
+    function validateQuantity() {
+        const field = document.getElementById('quantity');
+        const value = parseFloat(field.value);
+        
+        if (!field.value || isNaN(value)) {
+            setFieldError(field, 'Quantity is required');
+            return false;
+        }
+        
+        if (value <= 0) {
+            setFieldError(field, 'Quantity must be greater than 0');
+            return false;
+        }
+        
+        if (value > 10000) {
+            setFieldError(field, 'Quantity seems too large. Maximum is 10,000 kg');
+            return false;
+        }
+        
+        setFieldSuccess(field);
+        return true;
+    }
+
+    function validatePrice() {
+        const field = document.getElementById('price');
+        const value = parseFloat(field.value);
+        
+        if (!field.value || isNaN(value)) {
+            setFieldError(field, 'Price is required');
+            return false;
+        }
+        
+        if (value <= 0) {
+            setFieldError(field, 'Price must be greater than 0');
+            return false;
+        }
+        
+        if (value > 5000) {
+            setFieldError(field, 'Price seems too high. Maximum is ₱5,000 per kg');
+            return false;
+        }
+        
+        setFieldSuccess(field);
+        return true;
+    }
+
+    function validateDescription() {
+        const field = document.getElementById('description');
+        const value = field.value.trim();
+        
+        if (value.length > 500) {
+            setFieldError(field, 'Description must be less than 500 characters');
+            return false;
+        }
+        
+        clearFieldError(field);
+        return true;
+    }
+
+    function setFieldError(field, message) {
+        field.classList.remove('success');
+        field.classList.add('error');
+        
+        const existingMessage = field.parentNode.querySelector('.error-message, .success-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = message;
+        field.parentNode.appendChild(errorDiv);
+    }
+
+    function setFieldSuccess(field) {
+        field.classList.remove('error');
+        field.classList.add('success');
+        clearFieldError(field);
+    }
+
+    function clearFieldError(field) {
+        field.classList.remove('error');
+        
+        const existingMessage = field.parentNode.querySelector('.error-message, .success-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+    }
+
+    // Character counters
+    function setupCharacterCounters() {
+        const description = document.getElementById('description');
+        const counter = document.getElementById('descriptionCounter');
+        
+        if (description && counter) {
+            description.addEventListener('input', () => {
+                const length = description.value.length;
+                counter.textContent = `${length}/500 characters`;
+                
+                if (length > 450) {
+                    counter.style.color = '#e74c3c';
+                } else if (length > 400) {
+                    counter.style.color = '#ff9800';
+                } else {
+                    counter.style.color = '#666';
+                }
+            });
+        }
+    }
+
+    // Location handler - SIMPLIFIED SINCE WE HAVE GOOGLE MAPS NOW
+    function setupLocationHandler() {
+        // This now just ensures the Google Maps modal functions are available
+        // The actual functionality is handled by the Google Maps functions above
+    }
+
+    // Utility functions
+    function updateProgress(message, percent) {
+        const loadingText = document.getElementById('loadingText');
+        const progressBar = document.getElementById('progressBar');
+        const progressIndicator = document.getElementById('progressIndicator');
+        
+        if (loadingText) loadingText.textContent = message;
+        if (progressBar) progressBar.style.width = `${percent}%`;
+        if (progressIndicator) progressIndicator.style.display = 'block';
+    }
+
+    function showLoadingOverlay(message) {
+        const overlay = document.getElementById('loadingOverlay');
+        const text = document.getElementById('loadingText');
+        const submitBtn = document.getElementById('submitBtn');
+        const progressIndicator = document.getElementById('progressIndicator');
+        const progressBar = document.getElementById('progressBar');
+        
+        if (text) text.textContent = message;
+        if (overlay) overlay.classList.add('show');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+        }
+        if (progressIndicator) progressIndicator.style.display = 'block';
+        if (progressBar) progressBar.style.width = '0%';
+    }
+
+    function hideLoadingOverlay() {
+        const overlay = document.getElementById('loadingOverlay');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        if (overlay) overlay.classList.remove('show');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+        }
+        
+        isFormSubmitting = false;
+    }
+
+    function showNotification(message, type = 'info') {
+        const existingNotification = document.querySelector('.notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }, 4000);
+    }
+</script>
+</body>
+</html>

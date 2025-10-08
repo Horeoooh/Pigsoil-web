@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PigSoil+ Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', Arial, sans-serif;
+      background: linear-gradient(103deg, #FFEED0 0%, #FFC7B8 170%);
+      color: #333;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      padding: 16px 64px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+      height: 48px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-img {
+      height: 50px;
+      width: auto;
+    }
+
+    .logo-text {
+      height: 40px;
+      width: 171px;
+      object-fit: contain;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 64px;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-menu a {
+      text-decoration: none;
+      color: #666;
+      font-size: 16px;
+      font-weight: 400;
+      transition: color 0.3s;
+    }
+
+    .nav-menu a:hover,
+    .nav-menu a.active {
+      color: #4CAF50;
+    }
+
+    .user-section {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      color: #666;
+      transition: all 0.3s;
+    }
+
+    .icon-btn:hover {
+      color: #4CAF50;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #333;
+    }
+
+    .user-info {
+      text-align: right;
+    }
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 500;
+      display: block;
+    }
+
+    .user-role {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #4CAF50;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    /* Main Content */
+    .main-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+ 
+    /* Transform Section */
+    .transform-section {
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .transform-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 24px;
+      color: #333;
+    }
+
+    .process-flow {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 60px;
+      margin-bottom: 24px;
+      background: linear-gradient(90deg, #FFFBE8 0%, #C7F756 330%);
+      padding: 40px;
+      border-radius: 16px;
+      border: 2px solid #C6C6C6;
+    }
+
+    .process-step {
+      text-align: center;
+      flex: 1;
+      max-width: 200px;
+    }
+
+    .step-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: white;
+      font-weight: 600;
+    }
+
+    .step-icon.pig { background: #EE5908; }
+    .step-icon.composting { background: #345F63; }
+    .step-icon.gold { background: #E8CF29; }
+
+    .step-icon-img {
+      width: 40px;
+      height: 50px; 
+      object-fit: contain;
+    }
+
+    .step-icon.pig .step-icon-img {
+      width: 50px;
+      height: 69px;
+    }
+
+    .step-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .step-description {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    .arrow {
+      font-size: 24px;
+      color: #666;
+      font-weight: bold;
+    }
+
+    .transform-note {
+      text-align: center;
+      font-style: medium;
+      color: #7E1F05;
+      font-size: 16px;
+      margin-top: 16px;
+      font-weight: 500;
+      transform: skew(-5deg);
+    }
+
+    /* Bot and Quick Actions */
+    .bot-actions-section {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 32px;
+      margin-bottom: 32px;
+    }
+
+    /* Bot Card */
+    .bot-card {
+      background: linear-gradient(135deg, #ffffff, #f4faf5);
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid #e0f2e0;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .bot-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .bot-avatar {
+      width: 50px;
+      height: 50px;
+      background: #4CAF50;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+    }
+
+    .bot-avatar img {
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+    }
+
+    .bot-info h4 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2e7d32;
+      margin-bottom: 4px;
+    }
+
+    .bot-info small {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .bot-message {
+      background: white;
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #333;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .bot-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .bot-buttons button {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .bot-buttons .primary {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .bot-buttons .secondary {
+      background: #2e7d32;
+      color: white;
+    }
+
+    .bot-buttons button:hover {
+      transform: translateY(-1px);
+    }
+
+    /* Quick Actions */
+    .quick-actions-container {
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .quick-actions-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .quick-actions-header h4 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .action-card {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      aspect-ratio: 16/10;
+    }
+
+    .action-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .action-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .action-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-align: center;
+      padding: 16px;
+    }
+
+    .action-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+       -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+    }
+
+    .action-overlay strong {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* Featured Listings Section */
+    .featured-section {
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .featured-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .featured-header h4 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .view-all-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .view-all-btn:hover {
+      background: #45a049;
+      transform: translateY(-1px);
+    }
+
+    .listings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .listing-card {
+      background: #f8f9fa;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      border: 1px solid #e9ecef;
+    }
+
+    .listing-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .listing-image {
+      height: 150px;
+      background: linear-gradient(45deg, #4a4a4a, #666);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      position: relative;
+    }
+
+    .listing-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+      background: #4CAF50;
+    }
+
+    .listing-details {
+      padding: 16px;
+    }
+
+    .listing-details h5 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .listing-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e9ecef;
+    }
+
+    .listing-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: #4CAF50;
+    }
+
+    .listing-location {
+      font-size: 13px;
+      color: #666;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header {
+        padding: 16px 24px;
+      }
+
+      .nav-menu {
+        gap: 32px;
+      }
+
+      .main-content {
+        padding: 24px 16px;
+      }
+
+      .bot-actions-section {
+        grid-template-columns: 1fr;
+      }
+
+      .process-flow {
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .arrow {
+        transform: rotate(90deg);
+      }
+
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .listings-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav-container">
+      <div class="logo">
+        <img src="../images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+        <img src="../images/pigsoil.png" alt="PigSoil+" class="logo-text">
+      </div>
+      
+      <ul class="nav-menu">
+        <li><a href="../html/dashboard.html" data-nav="dashboard" class="active">Dashboard</a></li>
+        <li><a href="../html/farmermarket.html" data-nav="market">Market</a></li>
+        <li><a href="../html/guides.html" data-nav="guides">Guides</a></li>
+      </ul>
+      
+      <div class="user-section">
+        <button class="icon-btn" id="notificationBtn" aria-label="View notifications">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </button>
+        <a href="../html/setting-acc.html" class="user-profile" aria-label="View Profile">
+          <div class="user-info">
+            <span class="user-name">Juan Dela Cruz</span>
+            <span class="user-role">Active Farmer</span>
+          </div>
+          <div class="user-avatar">JD</div>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="main-content">
+    <!-- Transform Section -->
+    <section class="transform-section">
+      <h3 class="transform-title">Transform your farm with intelligent waste management</h3>
+      <div class="process-flow">
+        <div class="process-step">
+          <div class="step-icon pig">
+            <img src="../images/Pig png.png" alt="Swine Waste Icon" class="step-icon-img">
+          </div>
+          <div class="step-title">Swine Waste</div>
+          <div class="step-description">Raw manure from your farm</div>
+        </div>
+        <div class="arrow">⇨</div>
+        <div class="process-step">
+          <div class="step-icon composting">🌱</div>
+          <div class="step-title">Smart Composting</div>
+          <div class="step-description">Traditional composting methods</div>
+        </div>
+        <div class="arrow">⇨</div>
+        <div class="process-step">
+          <div class="step-icon gold">
+            <img src="../images/Money Bag.png" alt="Money Icon" class="step-icon-img">
+          </div>
+          <div class="step-title">Organic Gold</div>
+          <div class="step-description">Premium fertilizer sales</div>
+        </div>
+      </div>
+      <p class="transform-note">"From Disposal Cost to Profit Center"</p>
+    </section>
+
+    <!-- Bot & Quick Actions -->
+    <section class="bot-actions-section">
+      <div class="bot-card">
+        <div class="bot-header">
+          <div class="bot-avatar">
+            <img src="../images/Farmer.png" alt="Farmer Bot" />
+          </div>
+          <div class="bot-info">
+            <h4>Manong Bot</h4>
+            <small>AI Farming Assistant</small>
+          </div>
+        </div>
+        <div class="bot-message">
+          Get personalized composting guidance and smart recommendations! Download our mobile app to access Manong Bot - your AI farming assistant available 24/7.
+        </div>
+        <div class="bot-buttons">
+          <button class="primary" onclick="alert('Mobile app coming soon! Stay tuned for iOS and Android releases.')">Download App</button>
+          <button class="secondary" onclick="alert('Visit our mobile app to chat with Manong Bot!')">Learn More</button>
+        </div>
+      </div>
+
+      <div class="quick-actions-container">
+        <div class="quick-actions-header">
+          <span>🚀</span>
+          <h4>Quick Actions</h4>
+        </div>
+        <div class="quick-actions">
+          <div class="action-card" onclick="window.location.href='CreateListing.html'">
+            <img src="../images/17.png" alt="Create Listing">
+            <div class="action-overlay">
+              <div class="action-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                  <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM17 13H13V17H11V13H7V11H11V7H13V11H17V13Z"/>
+                </svg>
+              </div>
+              <strong>Create Listing</strong>
+            </div>
+          </div>
+          <div class="action-card" onclick="window.location.href='guides.html'">
+            <img src="../images/18.png" alt="Learn Composting">
+            <div class="action-overlay">
+              <div class="action-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                  <path d="M12 3L1 9L5 11.18V17.18L12 21L19 17.18V11.18L21 10.09V17H23V9L12 3Z"/>
+                </svg>
+              </div>
+              <strong>Composting Guides</strong>
+            </div>
+          </div>
+          <div class="action-card" onclick="window.location.href='farmermarket.html'">
+            <img src="../images/19.png" alt="My Listings">
+            <div class="action-overlay">
+              <div class="action-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                  <path d="M21,18V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V18H21M12,2L14,4H20L18,6H17V11A4,4 0 0,1 13,15H11A4,4 0 0,1 7,11V6H6L4,4H10L12,2Z"/>
+                </svg>
+              </div>
+              <strong>My Listings</strong>
+            </div>
+          </div>
+          <div class="action-card" onclick="window.location.href='transactions.html'">
+            <img src="../images/18.png" alt="Transactions">
+            <div class="action-overlay">
+              <div class="action-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                  <path d="M3,6H21V18H3V6M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9M7,8A2,2 0 0,1 5,10V14A2,2 0 0,1 7,16H17A2,2 0 0,1 19,14V10A2,2 0 0,1 17,8H7Z"/>
+                </svg>
+              </div>
+              <strong>Transactions</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="../js/dashboard.js"></script>
+  <script type="module" src="../js/shared-user-manager.js"></script>
+</body>
+</html>
