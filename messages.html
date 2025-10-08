@@ -454,15 +454,15 @@
     <header class="header">
         <nav class="nav-container">
             <div class="logo">
-                <img src="../images/pig logo.png" alt="PigSoil Logo" class="logo-img">
-                <img src="../images/pigsoil.png" alt="PigSoil+" class="logo-text">
+                <img src="/images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+                <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
             </div>
             
             <!-- CRITICAL FIX: Added data-nav attributes to navigation links -->
             <ul class="nav-menu">
-                <li><a href="../html/dashboard.html" data-nav="dashboard">Dashboard</a></li>
-                <li><a href="../html/farmermarket.html" data-nav="market">Market</a></li>
-                <li><a href="../html/guides.html" data-nav="guides">Guides</a></li>
+                <li><a href="/dashboard.html" data-nav="dashboard">Dashboard</a></li>
+                <li><a href="/farmermarket.html" data-nav="market">Market</a></li>
+                <li><a href="/guides.html" data-nav="guides">Guides</a></li>
             </ul>
             
             <div class="user-section">
@@ -472,7 +472,7 @@
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                     </svg>
                 </button>
-                <a href="../html/setting-acc.html" class="user-profile">
+                <a href="/setting-acc.html" class="user-profile">
                     <div class="user-info">
                         <span class="user-name" id="currentUserName">Loading...</span>
                         <span class="user-role" id="currentUserRole">User</span>
@@ -508,10 +508,10 @@
     <!-- CRITICAL FIX: Import shared-user-manager.js BEFORE messages.js -->
     <script type="module">
         // Import shared user manager to handle navigation
-        import '../js/shared-user-manager.js';
+        import '/js/shared-user-manager.js';
         
         // Then import messages functionality
-        import '../js/messages.js';
+        import '/js/messages.js';
         
         console.log('💬 Messages page loaded with user manager integration');
     </script>

@@ -138,17 +138,17 @@ function redirectToAppropriateScreen(userData) {
         // Check for Swine Farmer types
         if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
             console.log('🐷 Redirecting swine farmer to dashboard');
-            window.location.href = '../html/dashboard.html';
+            window.location.href = '/dashboard.html';
         } 
         // Check for Organic Fertilizer Buyer types
         else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
             console.log('🌱 Redirecting organic fertilizer buyer to buyer dashboard');
-            window.location.href = '../html/buyer-dashboard.html';
+            window.location.href = '/buyer-dashboard.html';
         } 
         // Default fallback
         else {
             console.log('❓ Unknown user type, redirecting to dashboard');
-            window.location.href = '../html/dashboard.html';
+            window.location.href = '/dashboard.html';
         }
     }, 1500);
 }

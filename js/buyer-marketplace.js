@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         } else {
             console.log('⚠️ No user authenticated, redirecting to login');
-            window.location.href = '../html/login.html';
+            window.location.href = '/login.html';
         }
     });
 });
@@ -441,7 +441,7 @@ function performSearch(searchTerm) {
 // Global function for view button
 window.viewListing = function(listingId) {
     console.log('👁️ Viewing listing:', listingId);
-    window.location.href = `listing-details.html?id=${listingId}`;
+    window.location.href = `/listing-details.html?id=${listingId}`;
 };
 
 // Cleanup on page unload

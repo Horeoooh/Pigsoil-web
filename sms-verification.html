@@ -21,10 +21,9 @@
       margin: 0;
     }
 
-    /* Header Styles - Consistent with login page */
     .header {
       background-color: rgba(255, 255, 255, 0.95); 
-         -webkit-backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       backdrop-filter: blur(6px);
       border-bottom: 1px solid #ddd;
       position: sticky; 
@@ -63,7 +62,6 @@
       margin-left: 10px;
     }
 
-    /* Navigation Links Styles */
     .nav-links {
       display: flex;
       gap: 64px;
@@ -148,7 +146,6 @@
       fill: currentColor;
     }
 
-    /* Main Content */
     .main-center {
       flex: 1;
       display: flex;
@@ -297,7 +294,6 @@
       transform: translateY(-1px);
     }
 
-    /* Input animation when typing */
     .inputs input.typing {
       animation: typing 0.3s ease;
     }
@@ -306,6 +302,139 @@
       0% { transform: scale(1) translateY(-2px); }
       50% { transform: scale(1.05) translateY(-4px); }
       100% { transform: scale(1) translateY(-2px); }
+    }
+
+    /* Complete Profile Styles */
+    .complete-profile-container {
+      width: 100%;
+      max-width: 576px;
+      background: #fff;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      animation: slideUp 0.8s ease-out;
+    }
+
+    .form-title {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 600;
+      color: #2d5016;
+      margin-bottom: 12px;
+    }
+
+    .form-subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 32px;
+    }
+
+    .alert {
+      padding: 12px;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      display: none;
+      text-align: center;
+    }
+
+    .alert.error {
+      background-color: #fee;
+      color: #c33;
+      border: 1px solid #fcc;
+    }
+
+    .alert.success {
+      background-color: #efe;
+      color: #3c3;
+      border: 1px solid #cfc;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 20px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 16px;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s ease;
+      background: #fafafa;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #4a6741;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(74, 103, 65, 0.1);
+    }
+
+    .user-type-section {
+      margin-bottom: 32px;
+    }
+
+    .user-type-label {
+      display: block;
+      margin-bottom: 16px;
+      font-size: 16px;
+      font-weight: 500;
+      color: #333;
+      text-align: center;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      color: #666;
+      padding: 10px 20px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      border: 2px solid #e0e0e0;
+      background: #fafafa;
+    }
+
+    .radio-option:hover {
+      background: rgba(74, 103, 65, 0.1);
+      border-color: #4a6741;
+    }
+
+    .radio-option input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #4a6741;
+    }
+
+    .radio-option input[type="radio"]:checked + span {
+      color: #2d5016;
+      font-weight: 600;
+    }
+
+    .radio-option:has(input[type="radio"]:checked) {
+      border-color: #4a6741;
+      background: rgba(74, 103, 65, 0.1);
     }
 
     /* Responsive Design */
@@ -322,7 +451,7 @@
         padding: 1rem;
       }
 
-      .container {
+      .container, .complete-profile-container {
         padding: 30px 20px;
         max-width: 90%;
       }
@@ -337,23 +466,31 @@
         font-size: 20px;
       }
 
-      h2 {
+      h2, .form-title {
         font-size: 24px;
       }
 
       .btn {
         width: 100%;
       }
+
+      .radio-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .radio-option {
+        justify-content: center;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- HEADER -->
   <header class="header">
     <div class="nav-container">
       <div class="logo">
-        <img src="../images/pig logo.png" alt="PigSoil Logo" class="logo-img">
-        <img src="../images/pigsoil.png" alt="PigSoil+" class="logo-text">
+        <img src="/images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+        <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
       </div>
       
       <nav class="nav-links">
@@ -368,34 +505,65 @@
           </svg>
           English
         </a>
-        <a href="../html/signup.html" class="sign-up-btn">Sign Up</a>
-        <a href="../html/login.html" class="sign-in-btn">Sign In</a>
+        <a href="/signup.html" class="sign-up-btn">Sign Up</a>
+        <a href="/login.html" class="sign-in-btn">Sign In</a>
       </div>
     </div>
   </header>
 
-  <!-- MAIN CENTER -->
   <div class="main-center">
-    <!-- MAIN CONTAINER -->
-    <div class="container">
-      <a href="../html/signup.html" class="back-link">← Back to signup</a>
+    <!-- SMS Verification Container -->
+    <div class="container" id="verificationContainer">
+      <a href="/phone-registration.html" class="back-link">← Back</a>
       <div class="center-content">
         <h2>Enter SMS Code Sent to</h2>
-        <p>+63123456789</p>
-      <div class="inputs">
-        <input type="text" id="code-1" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="First digit of verification code">
-        <input type="text" id="code-2" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Second digit of verification code">
-        <input type="text" id="code-3" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Third digit of verification code">
-        <input type="text" id="code-4" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Fourth digit of verification code">
-        <input type="text" id="code-5" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Fifth digit of verification code">
-        <input type="text" id="code-6" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Sixth digit of verification code">
+        <p id="phoneDisplay">+63123456789</p>
+        <div class="inputs">
+          <input type="text" id="code-1" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="First digit">
+          <input type="text" id="code-2" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Second digit">
+          <input type="text" id="code-3" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Third digit">
+          <input type="text" id="code-4" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Fourth digit">
+          <input type="text" id="code-5" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Fifth digit">
+          <input type="text" id="code-6" maxlength="1" inputmode="numeric" pattern="[0-9]*" aria-label="Sixth digit">
+        </div>
+        <div class="resend" id="resendBtn">Resend</div>
+        <button class="btn" id="verifyBtn">Verify</button>
       </div>
-        <div class="resend">Resend</div>
-        <a href="../html/dashboard.html" class="btn">Verify</a>
-      </div>
+    </div>
+
+    <!-- Complete Profile Container (Hidden by default) -->
+    <div class="complete-profile-container" id="completeProfileContainer" style="display: none;">
+      <h1 class="form-title">Complete Your Profile</h1>
+      <p class="form-subtitle">Just a few more details to get started</p>
+      
+      <div id="profileAlertMessage" class="alert"></div>
+      
+      <form id="completeProfileForm">
+        <div class="form-group">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" id="username" name="username" class="form-input" placeholder="Choose your username" required>
+        </div>
+
+        <div class="user-type-section">
+          <span class="user-type-label">I'm a:</span>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="userType" value="swine_farmer" required>
+              <span>Swine Farmer</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="userType" value="fertilizer_buyer" required>
+              <span>Organic Fertilizer Buyer</span>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn" id="completeProfileBtn">Complete Registration</button>
+      </form>
     </div>
   </div>
 
- <script type="module" src="../js/sms-verification.js"></script>
+  <div id="recaptcha-container"></div>
+  <script type="module" src="/js/sms-verification.js"></script>
 </body>
 </html>

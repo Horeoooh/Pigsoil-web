@@ -198,12 +198,12 @@ function updateNavigationLinks() {
         
         if (navType === 'dashboard') {
             // FIXED: Use explicit condition
-            newHref = isBuyer ? '../html/buyer-dashboard.html' : '../html/dashboard.html';
+            newHref = isBuyer ? '/buyer-dashboard.html' : '/dashboard.html';
             console.log(`  📊 Dashboard link updated: ${oldHref} → ${newHref} (isBuyer: ${isBuyer})`);
         }
         else if (navType === 'market') {
             // FIXED: Use explicit condition
-            newHref = isBuyer ? '../html/buyer-marketplace.html' : '../html/farmermarket.html';
+            newHref = isBuyer ? '/buyer-marketplace.html' : '/farmermarket.html';
             console.log(`  🛒 Market link updated: ${oldHref} → ${newHref} (isBuyer: ${isBuyer})`);
         }
         

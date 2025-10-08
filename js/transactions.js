@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             setupEventListeners();
         } else {
             console.log('❌ No user authenticated, redirecting to login');
-            window.location.href = '../html/login.html';
+            window.location.href = '/login.html';
         }
     });
 });
@@ -264,7 +264,7 @@ window.messageSellerBuyer = function(transactionId) {
 };
 
 window.viewTransactionDetails = function(transactionId) {
-    window.location.href = `transaction-details.html?id=${transactionId}`;
+    window.location.href = `/transaction-details.html?id=${transactionId}`;
 };
 
 window.cancelOrder = async function(transactionId) {

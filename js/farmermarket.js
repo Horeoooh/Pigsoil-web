@@ -53,7 +53,7 @@ function checkAuthState() {
         if (!user) {
             showNotification('Please sign in to view your listings', 'error');
             setTimeout(() => {
-                window.location.href = '../html/login.html';
+                window.location.href = '/login.html';
             }, 2000);
             return;
         }
@@ -246,7 +246,7 @@ function createListingCard(listing, index) {
                     <span>₱${totalPrice.toFixed(2)} total</span>
                 </div>
             </div>
-            <a href="../html/View.html?id=${listing.id}" class="btn-view">View Details</a>
+            <a href="/View.html?id=${listing.id}" class="btn-view">View Details</a>
         </div>
     `;
     
@@ -264,12 +264,12 @@ function showEmptyState() {
         case 'My Listings':
             emptyMessage = 'You haven\'t created any listings yet';
             emptyIcon = '📦';
-            actionButton = '<a href="../html/CreateListing.html" class="btn-primary" style="margin-top: 16px; display: inline-block; text-decoration: none; padding: 12px 24px; background: #4CAF50; color: white; border-radius: 8px; font-weight: 600;">Create Your First Listing</a>';
+            actionButton = '<a href="/CreateListing.html" class="btn-primary" style="margin-top: 16px; display: inline-block; text-decoration: none; padding: 12px 24px; background: #4CAF50; color: white; border-radius: 8px; font-weight: 600;">Create Your First Listing</a>';
             break;
         case 'Active':
             emptyMessage = 'No active listings found';
             emptyIcon = '🔍';
-            actionButton = '<a href="../html/CreateListing.html" class="btn-primary" style="margin-top: 16px; display: inline-block; text-decoration: none; padding: 12px 24px; background: #4CAF50; color: white; border-radius: 8px; font-weight: 600;">Create New Listing</a>';
+            actionButton = '<a href="/CreateListing.html" class="btn-primary" style="margin-top: 16px; display: inline-block; text-decoration: none; padding: 12px 24px; background: #4CAF50; color: white; border-radius: 8px; font-weight: 600;">Create New Listing</a>';
             break;
         case 'Sold':
             emptyMessage = 'No sold listings yet';

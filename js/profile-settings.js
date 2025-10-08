@@ -92,7 +92,7 @@ function checkAuthState() {
         if (!user) {
             showAlert('Please sign in to access your profile settings.', 'error');
             setTimeout(() => {
-                window.location.href = '../html/login.html';
+                window.location.href = '/login.html';
             }, 2000);
             return;
         }
@@ -372,7 +372,7 @@ async function handleLogout() {
         showAlert('Logged out successfully. Redirecting...', 'success');
         
         setTimeout(() => {
-            window.location.href = '../html/login.html';
+            window.location.href = '/login.html';
         }, 1500);
         
     } catch (error) {
@@ -435,7 +435,7 @@ async function handleDisableAccount() {
         showAlert('Account disabled successfully. You can reactivate it by logging in again.', 'success');
         
         setTimeout(() => {
-            window.location.href = '../html/login.html';
+            window.location.href = '/login.html';
         }, 2000);
         
     } catch (error) {
@@ -524,7 +524,7 @@ async function handleDeleteAccount() {
             if (authError.code === 'auth/requires-recent-login') {
                 showAlert('For security, please sign in again to complete account deletion.', 'error');
                 setTimeout(() => {
-                    window.location.href = '../html/login.html';
+                    window.location.href = '/login.html';
                 }, 2000);
                 return;
             }
@@ -536,7 +536,7 @@ async function handleDeleteAccount() {
         showAlert('Account and all associated data have been permanently deleted. Thank you for using PigSoil+.', 'success');
         
         setTimeout(() => {
-            window.location.href = '../html/login.html';
+            window.location.href = '/login.html';
         }, 3000);
         
     } catch (error) {

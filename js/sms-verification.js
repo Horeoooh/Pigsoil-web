@@ -1,124 +1,102 @@
-// SMS Verification functionality for PigSoil+ - Firebase Version (FIXED)
+// SMS Verification functionality for PigSoil+ - Firebase Version
 import { auth, db } from './init.js';
 import { 
     signInWithPhoneNumber,
-    RecaptchaVerifier,
-    onAuthStateChanged
+    RecaptchaVerifier
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     doc, 
-    updateDoc,
-    getDoc 
+    getDoc,
+    setDoc,
+    collection, 
+    query, 
+    where, 
+    getDocs 
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 
 // Global variables
 let recaptchaVerifier = null;
 let confirmationResult = null;
-let pendingUserData = null;
+let pendingVerificationData = null;
+let verifiedUser = null;
 
 // DOM elements
 const codeInputs = document.querySelectorAll('.inputs input');
-const verifyBtn = document.querySelector('.btn');
-const resendBtn = document.querySelector('.resend');
-const phoneDisplay = document.querySelector('p');
+const verifyBtn = document.getElementById('verifyBtn');
+const resendBtn = document.getElementById('resendBtn');
+const phoneDisplay = document.getElementById('phoneDisplay');
+const verificationContainer = document.getElementById('verificationContainer');
+const completeProfileContainer = document.getElementById('completeProfileContainer');
+const completeProfileForm = document.getElementById('completeProfileForm');
+const profileAlertMessage = document.getElementById('profileAlertMessage');
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('SMS Verification page loaded');
-    loadPendingUserData();
+    loadPendingVerificationData();
     setupCodeInputs();
     setupEventListeners();
-    
-    // Wait a moment before initializing reCAPTCHA and sending SMS
-    setTimeout(() => {
-        initializeRecaptcha();
-        if (pendingUserData && pendingUserData.phone) {
-            startPhoneVerification(pendingUserData.phone);
-        }
-    }, 1000);
+    initializeRecaptcha();
 });
 
-// Load pending user data from localStorage
-function loadPendingUserData() {
-    const pending = localStorage.getItem('pendingSignup');
-    console.log('Pending signup data:', pending);
-    
+// Load pending verification data from localStorage
+function loadPendingVerificationData() {
+    const pending = localStorage.getItem('pendingPhoneVerification');
     if (pending) {
-        try {
-            pendingUserData = JSON.parse(pending);
-            
-            // Display phone number
-            if (phoneDisplay && pendingUserData.phone) {
-                phoneDisplay.textContent = pendingUserData.phone;
-                console.log('Displaying phone number:', pendingUserData.phone);
-            }
-        } catch (error) {
-            console.error('Error parsing pending signup data:', error);
-            showError('Invalid signup data. Please start over.');
-            setTimeout(() => {
-                window.location.href = '/html/signup.html';
-            }, 2000);
+        pendingVerificationData = JSON.parse(pending);
+        
+        // Display phone number
+        if (phoneDisplay && pendingVerificationData.phone) {
+            phoneDisplay.textContent = pendingVerificationData.phone;
+        }
+        
+        // Check if we have confirmation result from previous page
+        if (window.confirmationResult) {
+            confirmationResult = window.confirmationResult;
+        } else {
+            // Start phone verification automatically if no confirmation result
+            startPhoneVerification(pendingVerificationData.phone);
         }
     } else {
-        console.log('No pending signup data, redirecting to signup');
-        showError('No signup session found. Redirecting...');
-        setTimeout(() => {
-            window.location.href = '/html/signup.html';
-        }, 2000);
+        // No pending data, redirect back to phone registration
+        window.location.href = '/phone-registration.html';
     }
 }
 
 // Initialize reCAPTCHA
 function initializeRecaptcha() {
-    try {
-        if (!recaptchaVerifier) {
-            // Create invisible reCAPTCHA container if it doesn't exist
-            let recaptchaContainer = document.getElementById('recaptcha-container');
-            if (!recaptchaContainer) {
-                recaptchaContainer = document.createElement('div');
-                recaptchaContainer.id = 'recaptcha-container';
-                recaptchaContainer.style.display = 'none';
-                document.body.appendChild(recaptchaContainer);
-                console.log('Created reCAPTCHA container');
-            }
-
-            recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                'size': 'invisible',
-                'callback': (response) => {
-                    console.log('reCAPTCHA solved successfully');
-                },
-                'expired-callback': () => {
-                    console.log('reCAPTCHA expired');
-                    showError('Security verification expired. Please try again.');
-                }
-            });
-            
-            console.log('reCAPTCHA verifier initialized');
+    if (!recaptchaVerifier) {
+        let recaptchaContainer = document.getElementById('recaptcha-container');
+        if (!recaptchaContainer) {
+            recaptchaContainer = document.createElement('div');
+            recaptchaContainer.id = 'recaptcha-container';
+            recaptchaContainer.style.display = 'none';
+            document.body.appendChild(recaptchaContainer);
         }
-        return recaptchaVerifier;
-    } catch (error) {
-        console.error('reCAPTCHA initialization failed:', error);
-        showError('Security verification failed to initialize.');
-        return null;
+
+        recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible',
+            'callback': (response) => {
+                console.log('reCAPTCHA solved');
+            },
+            'expired-callback': () => {
+                console.log('reCAPTCHA expired');
+                showError('reCAPTCHA expired. Please try again.');
+            }
+        });
     }
+    return recaptchaVerifier;
 }
 
 // Start phone verification
 async function startPhoneVerification(phoneNumber) {
     try {
-        console.log('Starting phone verification for:', phoneNumber);
         showLoading(true);
         
         const recaptcha = initializeRecaptcha();
-        if (!recaptcha) {
-            throw new Error('reCAPTCHA initialization failed');
-        }
-        
-        console.log('Sending SMS to:', phoneNumber);
         confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, recaptcha);
         
         console.log('SMS sent successfully');
-        showSuccess('Verification code sent to your phone!');
+        showSuccess('SMS code sent successfully!');
         
     } catch (error) {
         console.error('SMS sending failed:', error);
@@ -131,57 +109,44 @@ async function startPhoneVerification(phoneNumber) {
 // Verify SMS code
 async function verifySMSCode(code) {
     try {
-        console.log('Verifying SMS code:', code);
         showLoading(true);
         
         if (!confirmationResult) {
             throw new Error('No verification in progress. Please resend code.');
         }
 
-        // Confirm the SMS code
+        // Confirm the SMS code - this creates/signs in the Firebase Auth user
         const result = await confirmationResult.confirm(code);
-        const user = result.user;
+        verifiedUser = result.user;
         
-        console.log('Phone verification successful for user:', user.uid);
+        console.log('Phone verification successful:', verifiedUser.uid);
         
-        // Check if user document exists in Firestore
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
+        // Check if user profile exists in Firestore
+        const userDoc = await getDoc(doc(db, 'users', verifiedUser.uid));
         
         if (userDoc.exists()) {
-            // Update user's phone verification status
-            await updateDoc(userDocRef, {
-                userPhoneVerified: true,
-                userUpdatedAt: Date.now()
-            });
-            console.log('Updated user verification status in Firestore');
+            // Existing user - go to dashboard
+            const userData = userDoc.data();
+            localStorage.setItem('pigsoil_user', JSON.stringify(userData));
+            localStorage.removeItem('pendingPhoneVerification');
+            
+            showSuccess('Welcome back! Redirecting...');
+            
+            setTimeout(() => {
+                if (userData.userType === 'Swine Farmer') {
+                    window.location.href = '/dashboard.html';
+                } else {
+                    window.location.href = '/marketplace.html';
+                }
+            }, 2000);
         } else {
-            console.error('User document not found in Firestore');
+            // New user - show complete profile form
+            showSuccess('Phone verified! Please complete your profile.');
+            setTimeout(() => {
+                verificationContainer.style.display = 'none';
+                completeProfileContainer.style.display = 'block';
+            }, 1500);
         }
-        
-        // Store complete user data for the session
-        const completeUserData = {
-            uid: user.uid,
-            email: pendingUserData.email,
-            userName: pendingUserData.username,
-            userType: pendingUserData.userType === 'swine_farmer' ? 'Swine Farmer' : 'Organic Fertilizer Buyer',
-            userPhone: pendingUserData.phone,
-            userPhoneVerified: true
-        };
-        
-        localStorage.setItem('pigsoil_user', JSON.stringify(completeUserData));
-        localStorage.removeItem('pendingSignup');
-        
-        showSuccess('Phone verification successful! Redirecting...');
-        
-        // Redirect based on user type
-        setTimeout(() => {
-            if (pendingUserData.userType === 'swine_farmer') {
-                window.location.href = '/html/dashboard.html';
-            } else {
-                window.location.href = '/html/marketplace.html';
-            }
-        }, 2000);
         
     } catch (error) {
         console.error('SMS verification failed:', error);
@@ -191,33 +156,100 @@ async function verifySMSCode(code) {
     }
 }
 
+// Complete user profile (NO email/password, just username and userType)
+async function completeUserProfile(profileData) {
+    try {
+        setProfileLoading(true);
+        
+        // Validate inputs
+        if (!profileData.username || profileData.username.length < 3) {
+            throw new Error('Username must be at least 3 characters long.');
+        }
+        
+        if (profileData.username.length > 30) {
+            throw new Error('Username cannot exceed 30 characters.');
+        }
+        
+        if (!profileData.userType) {
+            throw new Error('Please select your user type.');
+        }
+        
+        // Check if username exists
+        const usernameExists = await checkUsernameExists(profileData.username);
+        if (usernameExists) {
+            throw new Error('Username is already taken. Please choose another.');
+        }
+        
+        // Save user data to Firestore (account already created by Firebase Phone Auth)
+        const userType = profileData.userType === 'swine_farmer' ? 'Swine Farmer' : 'Organic Fertilizer Buyer';
+        await setDoc(doc(db, 'users', verifiedUser.uid), {
+            userID: verifiedUser.uid,
+            userName: profileData.username,
+            userEmail: null,
+            userPhone: pendingVerificationData.phone,
+            userType: userType,
+            userIsActive: true,
+            userPhoneVerified: true,
+            userCreatedAt: Date.now(),
+            userUpdatedAt: Date.now()
+        });
+        
+        // Store user data in localStorage
+        const completeUserData = {
+            uid: verifiedUser.uid,
+            userName: profileData.username,
+            userType: userType,
+            userPhone: pendingVerificationData.phone,
+            userPhoneVerified: true
+        };
+        
+        localStorage.setItem('pigsoil_user', JSON.stringify(completeUserData));
+        localStorage.removeItem('pendingPhoneVerification');
+        
+        showProfileSuccess('Registration complete! Redirecting...');
+        
+        // Redirect based on user type
+        setTimeout(() => {
+            if (profileData.userType === 'swine_farmer') {
+                window.location.href = '/dashboard.html';
+            } else {
+                window.location.href = '/marketplace.html';
+            }
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Profile completion failed:', error);
+        handleProfileError(error);
+    } finally {
+        setProfileLoading(false);
+    }
+}
+
+// Check if username exists
+async function checkUsernameExists(username) {
+    try {
+        const q = query(collection(db, 'users'), where('userName', '==', username));
+        const querySnapshot = await getDocs(q);
+        return !querySnapshot.empty;
+    } catch (error) {
+        console.error('Username check failed:', error);
+        return false;
+    }
+}
+
 // Handle SMS sending errors
 function handleSMSError(error) {
-    console.error('SMS Error details:', error);
-    let errorMessage = 'Failed to send verification code. Please try again.';
+    let errorMessage = 'Failed to send SMS code. Please try again.';
     
     switch (error.code) {
         case 'auth/invalid-phone-number':
-            errorMessage = 'Invalid phone number format. Please check the number and try again.';
+            errorMessage = 'Invalid phone number format.';
             break;
         case 'auth/too-many-requests':
-            errorMessage = 'Too many SMS requests. Please wait a few minutes before trying again.';
+            errorMessage = 'Too many requests. Please try again later.';
             break;
         case 'auth/quota-exceeded':
             errorMessage = 'SMS quota exceeded. Please try again later.';
-            break;
-        case 'auth/captcha-check-failed':
-            errorMessage = 'Security verification failed. Please ensure you are accessing from an authorized domain.';
-            break;
-        case 'auth/missing-app-credential':
-            errorMessage = 'Firebase configuration error. Please contact support.';
-            break;
-        default:
-            if (error.message && error.message.includes('captcha')) {
-                errorMessage = 'Security verification failed. Please refresh the page and try again.';
-            } else if (error.message) {
-                errorMessage = error.message;
-            }
             break;
     }
     
@@ -226,7 +258,6 @@ function handleSMSError(error) {
 
 // Handle verification errors
 function handleVerificationError(error) {
-    console.error('Verification Error details:', error);
     let errorMessage = 'Invalid verification code. Please try again.';
     
     switch (error.code) {
@@ -237,15 +268,7 @@ function handleVerificationError(error) {
             errorMessage = 'Verification code has expired. Please request a new one.';
             break;
         case 'auth/session-expired':
-            errorMessage = 'Verification session expired. Please request a new code.';
-            break;
-        case 'auth/too-many-requests':
-            errorMessage = 'Too many failed attempts. Please wait before trying again.';
-            break;
-        default:
-            if (error.message) {
-                errorMessage = error.message;
-            }
+            errorMessage = 'Session expired. Please request a new verification code.';
             break;
     }
     
@@ -253,7 +276,18 @@ function handleVerificationError(error) {
     clearCodeInputs();
 }
 
-// Setup code input functionality (unchanged)
+// Handle profile completion errors
+function handleProfileError(error) {
+    let errorMessage = 'Failed to complete profile. Please try again.';
+    
+    if (error.message.includes('already taken') || error.message.includes('at least') || error.message.includes('exceed')) {
+        errorMessage = error.message;
+    }
+    
+    showProfileError(errorMessage);
+}
+
+// Setup code input functionality
 function setupCodeInputs() {
     codeInputs.forEach((input, index) => {
         input.addEventListener('input', function(e) {
@@ -322,9 +356,7 @@ function clearCodeInputs() {
     codeInputs.forEach(input => {
         input.value = '';
     });
-    if (codeInputs.length > 0) {
-        codeInputs[0].focus();
-    }
+    codeInputs[0].focus();
 }
 
 // Setup event listeners
@@ -336,7 +368,7 @@ function setupEventListeners() {
             const code = getEnteredCode();
             
             if (code.length !== 6) {
-                showError('Please enter the complete 6-digit verification code.');
+                showError('Please enter the complete 6-digit code.');
                 return;
             }
             
@@ -346,37 +378,37 @@ function setupEventListeners() {
     
     // Resend button click
     if (resendBtn) {
-        resendBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log('Resend button clicked');
-            
-            if (pendingUserData && pendingUserData.phone) {
-                // Clear previous reCAPTCHA and confirmation
+        resendBtn.addEventListener('click', function() {
+            if (pendingVerificationData && pendingVerificationData.phone) {
+                // Clear previous reCAPTCHA
                 if (recaptchaVerifier) {
-                    try {
-                        recaptchaVerifier.clear();
-                    } catch (error) {
-                        console.log('Error clearing reCAPTCHA:', error);
-                    }
+                    recaptchaVerifier.clear();
                     recaptchaVerifier = null;
                 }
                 
-                confirmationResult = null;
                 clearCodeInputs();
-                
-                // Wait a moment then reinitialize and resend
-                setTimeout(() => {
-                    initializeRecaptcha();
-                    startPhoneVerification(pendingUserData.phone);
-                }, 1000);
-            } else {
-                showError('No phone number available. Please return to signup.');
+                startPhoneVerification(pendingVerificationData.phone);
             }
+        });
+    }
+    
+    // Complete profile form submission
+    if (completeProfileForm) {
+        completeProfileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(completeProfileForm);
+            const profileData = {
+                username: formData.get('username').trim(),
+                userType: formData.get('userType')
+            };
+            
+            completeUserProfile(profileData);
         });
     }
 }
 
-// UI Helper functions (unchanged)
+// UI Helper functions
 function showLoading(isLoading) {
     if (verifyBtn) {
         if (isLoading) {
@@ -393,6 +425,21 @@ function showLoading(isLoading) {
     if (resendBtn) {
         resendBtn.style.opacity = isLoading ? '0.5' : '1';
         resendBtn.style.pointerEvents = isLoading ? 'none' : 'auto';
+    }
+}
+
+function setProfileLoading(isLoading) {
+    const completeProfileBtn = document.getElementById('completeProfileBtn');
+    if (completeProfileBtn) {
+        if (isLoading) {
+            completeProfileBtn.textContent = 'Completing...';
+            completeProfileBtn.style.opacity = '0.7';
+            completeProfileBtn.disabled = true;
+        } else {
+            completeProfileBtn.textContent = 'Complete Registration';
+            completeProfileBtn.style.opacity = '1';
+            completeProfileBtn.disabled = false;
+        }
     }
 }
 
@@ -425,7 +472,7 @@ function showError(message) {
         if (alertDiv) {
             alertDiv.style.display = 'none';
         }
-    }, 8000);
+    }, 5000);
 }
 
 function showSuccess(message) {
@@ -458,4 +505,25 @@ function showSuccess(message) {
             alertDiv.style.display = 'none';
         }
     }, 5000);
+}
+
+function showProfileError(message) {
+    if (profileAlertMessage) {
+        profileAlertMessage.textContent = message;
+        profileAlertMessage.className = 'alert error';
+        profileAlertMessage.style.display = 'block';
+        profileAlertMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => {
+            profileAlertMessage.style.display = 'none';
+        }, 6000);
+    }
+}
+
+function showProfileSuccess(message) {
+    if (profileAlertMessage) {
+        profileAlertMessage.textContent = message;
+        profileAlertMessage.className = 'alert success';
+        profileAlertMessage.style.display = 'block';
+        profileAlertMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 }

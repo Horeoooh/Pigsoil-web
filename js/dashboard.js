@@ -35,7 +35,7 @@ function setupUserDataListener() {
             if (!isSwineFarmer()) {
                 console.log('Redirecting non-farmer to buyer marketplace');
                 setTimeout(() => {
-                    window.location.href = '../html/buyer-marketplace.html';
+                    window.location.href = '/buyer-marketplace.html';
                 }, 1000);
             }
         }

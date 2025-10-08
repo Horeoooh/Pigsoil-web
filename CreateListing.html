@@ -823,14 +823,14 @@
     <header class="header">
         <nav class="nav-container">
             <div class="logo">
-                <img src="../images/pig logo.png" alt="PigSoil Logo" class="logo-img">
-                <img src="../images/pigsoil.png" alt="PigSoil+" class="logo-text">
+                <img src="/images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+                <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
             </div>
             
             <ul class="nav-menu">
-                <li><a href="../html/buyer-dashboard.html" data-nav="dashboard" class="active">Dashboard</a></li>
-                <li><a href="../html/buyer-marketplace.html" data-nav="market">Market</a></li>
-                <li><a href="../html/guides.html" data-nav="guides">Guides</a></li>
+                <li><a href="/buyer-dashboard.html" data-nav="dashboard" class="active">Dashboard</a></li>
+                <li><a href="/buyer-marketplace.html" data-nav="market">Market</a></li>
+                <li><a href="/guides.html" data-nav="guides">Guides</a></li>
             </ul>
             
             <div class="user-section">
@@ -840,7 +840,7 @@
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                     </svg>
                 </button>
-                <a href="../html/setting-acc.html" class="user-profile">
+                <a href="/setting-acc.html" class="user-profile">
                     <div class="user-info">
                         <span class="user-name">Juan Dela Cruz</span>
                         <span class="user-role">Swine Farmer</span>
@@ -1018,7 +1018,7 @@
     <!-- Fixed JavaScript for Better Error Handling -->
     <script type="module">
     // Import Firebase modules
-    import { auth, db, storage } from '../js/init.js';
+    import { auth, db, storage } from '/js/init.js';
     import { 
         collection, 
         addDoc, 
@@ -1360,7 +1360,7 @@
             if (!user) {
                 showNotification('Please sign in to create a listing', 'error');
                 setTimeout(() => {
-                    window.location.href = '../html/login.html';
+                    window.location.href = '/login.html';
                 }, 2000);
                 return;
             }
@@ -1373,7 +1373,7 @@
                 if (currentUserData.userType !== 'swine_farmer' && currentUserData.userType !== 'Swine Farmer') {
                     showNotification('Only swine farmers can create listings', 'error');
                     setTimeout(() => {
-                        window.location.href = '../html/marketplace.html';
+                        window.location.href = '/marketplace.html';
                     }, 2000);
                 }
             } catch (error) {

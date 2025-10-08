@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Registration - PigSoil+</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #FFC7B8, #FFEED0);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            border-bottom: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            height: 80px;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 100%;
+            padding: 0 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+        }
+
+        .logo-text {
+            height: 40px;
+            width: 171px;
+            object-fit: contain;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 64px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-size: 16px;
+            font-weight: 400;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #2d5a3d;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .language-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: #f8f9fa;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .language-btn:hover {
+            background: #e9ecef;
+        }
+
+        .globe-icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        .main-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        .phone-form-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 48px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 480px;
+            animation: slideUp 0.8s ease-out;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            font-size: 14px;
+            text-decoration: none;
+            color: #2d5a3d;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            color: #1f3d2a;
+            text-decoration: underline;
+        }
+
+        .form-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 600;
+            color: #2d5a3d;
+            margin-bottom: 16px;
+        }
+
+        .form-subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .alert {
+            padding: 12px;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .alert.error {
+            background-color: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .alert.success {
+            background-color: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+
+        .form-group {
+            margin-bottom: 32px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 20px 16px 50px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2d5a3d;
+            box-shadow: 0 0 0 3px rgba(45, 90, 61, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #bbb;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .form-input:focus + .input-icon {
+            color: #2d5a3d;
+        }
+
+        .phone-btn {
+            width: 100%;
+            background: #2d5a3d;
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .phone-btn:hover {
+            background: #1f3d2a;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(45, 90, 61, 0.3);
+        }
+
+        .phone-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .phone-btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .phone-btn.loading::before {
+            content: "";
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .skip-link {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .skip-link a {
+            color: #2d5a3d;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .skip-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .phone-form-container {
+                padding: 32px 24px;
+                margin: 0 16px;
+            }
+
+            .form-title {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="/images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+                <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
+            </div>
+            
+            <nav class="nav-links">
+                <a href="#about">About</a>
+                <a href="#support">Support</a>
+            </nav>
+            
+            <div class="header-actions">
+                <a href="#" class="language-btn">
+                    <svg class="globe-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                    </svg>
+                    English
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="phone-form-container">
+            <a href="/signup.html" class="back-link">← Back to sign up</a>
+            
+            <h1 class="form-title">Continue With Phone</h1>
+            <p class="form-subtitle">Add your phone number to enable SMS verification and enhance account security</p>
+            
+            <div id="alertMessage" class="alert"></div>
+            
+            <form id="phoneForm">
+                <div class="form-group">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <div class="input-with-icon">
+                        <input type="tel" id="phone" name="phone" class="form-input" placeholder="+63 9XX XXX XXXX" required>
+                        <span class="input-icon">📱</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="phone-btn" id="phoneButton">
+                    <span>📱</span>
+                    <span>Send Verification Code</span>
+                </button>
+            </form>
+
+            <div class="skip-link">
+                <a href="#" id="skipLink">Skip for now</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Hidden reCAPTCHA container -->
+    <div id="recaptcha-container"></div>
+    
+    <script type="module" src="/js/phone-registration.js"></script>
+    
+    <script>
+        // Auto-format phone number from 09XXXXXXXXX to +639XXXXXXXXX
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            
+            // If starts with 09 and has 11 digits total
+            if (value.startsWith('09') && value.length === 11) {
+                // Convert 09XXXXXXXXX to +639XXXXXXXXX
+                const formatted = '+63' + value.substring(1);
+                e.target.value = formatted;
+            }
+            // If starts with 63 and has 12 digits, add +
+            else if (value.startsWith('63') && value.length === 12) {
+                e.target.value = '+' + value;
+            }
+            // If already starts with +63, keep as is
+            else if (value.length <= 11) {
+                // Show the digits as user types (09123456...)
+                e.target.value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{3})/, '$1 $2 $3 $4').trim();
+            }
+        });
+
+        // Also format on blur (when user leaves the field)
+        document.getElementById('phone').addEventListener('blur', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.startsWith('09') && value.length === 11) {
+                const formatted = '+63' + value.substring(1);
+                e.target.value = formatted;
+            }
+        });
+    </script>
+</body>
+</html>

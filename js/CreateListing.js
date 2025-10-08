@@ -119,7 +119,7 @@ function checkAuthState() {
             }
             
             setTimeout(() => {
-                window.location.href = '../html/login.html';
+                window.location.href = '/login.html';
             }, 2000);
             
             return;
@@ -135,7 +135,7 @@ function checkAuthState() {
             if (currentUserData.userType !== 'swine_farmer' && currentUserData.userType !== 'Swine Farmer') {
                 showNotification('Only swine farmers can create listings', 'error');
                 setTimeout(() => {
-                    window.location.href = '../html/marketplace.html';
+                    window.location.href = '/marketplace.html';
                 }, 2000);
                 return;
             }
@@ -831,7 +831,7 @@ async function submitListingToFirebase(formData) {
             // Redirect after successful creation
             setTimeout(() => {
                 showNotification('Redirecting to marketplace...', 'info');
-                window.location.href = 'farmermarket.html';
+                window.location.href = '/farmermarket.html';
             }, 2000);
         }, 1000);
         

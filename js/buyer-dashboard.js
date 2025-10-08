@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         } else {
             console.log('No user authenticated, redirecting to login');
-            window.location.href = '../html/login.html';
+            window.location.href = '/login.html';
         }
     });
 });
@@ -163,7 +163,7 @@ function createTransactionCard(transaction) {
     `;
     
     card.onclick = () => {
-        window.location.href = `transaction-details.html?id=${transaction.transactionID}`;
+        window.location.href = `/transaction-details.html?id=${transaction.transactionID}`;
     };
     
     return card;
@@ -198,7 +198,7 @@ function displayEmptyTransactions() {
             <div style="font-size: 60px; margin-bottom: 15px;">📦</div>
             <h3 style="margin-bottom: 10px; font-size: 18px; color: #333;">No transactions yet</h3>
             <p style="margin-bottom: 20px; font-size: 14px;">Start browsing the marketplace to find quality organic fertilizer</p>
-            <a href="buyer-marketplace.html" style="display: inline-block; background: #4CAF50; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: background 0.3s;">
+            <a href="/buyer-marketplace.html" style="display: inline-block; background: #4CAF50; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: background 0.3s;">
                 Browse Marketplace
             </a>
         </div>

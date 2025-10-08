@@ -1,9 +1,7 @@
-// Signup functionality for PigSoil+ - Firebase Version (CORRECTED)
+// Signup functionality for PigSoil+ - Firebase Version (Email/Password Only)
 import { auth, db } from './init.js';
 import { 
-    createUserWithEmailAndPassword,
-    signInWithPhoneNumber,
-    RecaptchaVerifier
+    createUserWithEmailAndPassword
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     doc, 
@@ -19,9 +17,6 @@ const signupForm = document.getElementById('signupForm');
 const signupButton = document.getElementById('signupButton');
 const alertMessage = document.getElementById('alertMessage');
 const inputs = document.querySelectorAll('.form-input');
-
-let recaptchaVerifier = null;
-let confirmationResult = null;
 
 // Helper functions
 function showAlert(message, type = 'error') {
@@ -50,32 +45,6 @@ function setLoading(loading) {
     }
 }
 
-// SINGLE formatPhoneNumber function - handles all cases properly
-function formatPhoneNumber(phone) {
-    // Remove all spaces and non-digit characters except +
-    const cleanPhone = phone.replace(/[^\d+]/g, '');
-    
-    console.log('Formatting phone:', phone, '-> cleaned:', cleanPhone);
-    
-    // Convert 09XXXXXXXXX to +639XXXXXXXXX
-    if (cleanPhone.startsWith('09') && cleanPhone.length === 11) {
-        return '+63' + cleanPhone.substring(1);
-    }
-    
-    // If already in +639XXXXXXXXX format, return as is
-    if (cleanPhone.startsWith('+639') && cleanPhone.length === 13) {
-        return cleanPhone;
-    }
-    
-    // If in 639XXXXXXXXX format, add +
-    if (cleanPhone.startsWith('639') && cleanPhone.length === 12) {
-        return '+' + cleanPhone;
-    }
-    
-    // Return as-is if already properly formatted
-    return cleanPhone;
-}
-
 // Check if username exists in Firestore
 async function checkUsernameExists(username) {
     try {
@@ -88,21 +57,6 @@ async function checkUsernameExists(username) {
     }
 }
 
-// Check if phone exists in Firestore
-async function checkPhoneExists(phone) {
-    try {
-        const formattedPhone = formatPhoneNumber(phone);
-        console.log('Checking phone exists for:', formattedPhone);
-        
-        const q = query(collection(db, 'users'), where('userPhone', '==', formattedPhone));
-        const querySnapshot = await getDocs(q);
-        return !querySnapshot.empty;
-    } catch (error) {
-        console.error('Phone check failed:', error);
-        return false;
-    }
-}
-
 // Save user data to Firestore
 async function saveUserToFirestore(userData) {
     try {
@@ -110,7 +64,7 @@ async function saveUserToFirestore(userData) {
             userID: userData.userID,
             userName: userData.userName,
             userEmail: userData.userEmail,
-            userPhone: userData.userPhone,
+            userPhone: null,
             userType: userData.userType,
             userIsActive: true,
             userPhoneVerified: false,
@@ -126,16 +80,14 @@ async function saveUserToFirestore(userData) {
     }
 }
 
-// CORRECTED validateForm function
 function validateForm() {
     const username = document.getElementById('username').value.trim();
     const email = document.getElementById('email').value.trim();
-    const phone = document.getElementById('phone').value.trim();
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
     const userType = document.querySelector('input[name="userType"]:checked');
 
-    if (!username || !email || !phone || !password || !confirmPassword || !userType) {
+    if (!username || !email || !password || !confirmPassword || !userType) {
         showAlert('Please fill in all fields.', 'error');
         return false;
     }
@@ -152,17 +104,6 @@ function validateForm() {
 
     if (!/\S+@\S+\.\S+/.test(email)) {
         showAlert('Please enter a valid email address.', 'error');
-        return false;
-    }
-
-    // Updated phone validation - more flexible
-    const cleanPhone = phone.replace(/\s+/g, '').replace(/[^\d+]/g, '');
-    const phoneRegex09 = /^09\d{9}$/; // 09XXXXXXXXX
-    const phoneRegex63 = /^\+639\d{9}$/; // +639XXXXXXXXX
-    const phoneRegex639 = /^639\d{9}$/; // 639XXXXXXXXX
-    
-    if (!phoneRegex09.test(cleanPhone) && !phoneRegex63.test(cleanPhone) && !phoneRegex639.test(cleanPhone)) {
-        showAlert('Please enter a valid Philippine mobile number (09XXXXXXXXX or +639XXXXXXXXX).', 'error');
         return false;
     }
 
@@ -184,20 +125,10 @@ async function handleSignup(userData) {
     try {
         setLoading(true);
 
-        // Format phone number consistently
-        const formattedPhone = formatPhoneNumber(userData.phone);
-        console.log('Formatted phone for signup:', formattedPhone);
-
         // Check if username already exists
         const usernameExists = await checkUsernameExists(userData.username);
         if (usernameExists) {
             throw new Error('Username is already taken. Please choose another.');
-        }
-
-        // Check if phone already exists
-        const phoneExists = await checkPhoneExists(userData.phone);
-        if (phoneExists) {
-            throw new Error('Phone number is already registered. Please use a different number.');
         }
 
         // Create Firebase Auth user with email/password
@@ -209,7 +140,6 @@ async function handleSignup(userData) {
             userID: user.uid,
             userName: userData.username,
             userEmail: userData.email,
-            userPhone: formattedPhone, // Use consistently formatted phone
             userType: userData.userType === 'swine_farmer' ? 'Swine Farmer' : 'Organic Fertilizer Buyer'
         };
 
@@ -220,20 +150,19 @@ async function handleSignup(userData) {
         }
 
         // Registration successful
-        showAlert('Account created successfully! Redirecting to SMS verification...', 'success');
+        showAlert('Account created successfully! Redirecting...', 'success');
         
-        // Store user data for SMS verification
-        localStorage.setItem('pendingSignup', JSON.stringify({
-            phone: formattedPhone, // Store the formatted version
+        // Store user data temporarily
+        localStorage.setItem('newUser', JSON.stringify({
+            userId: user.uid,
             email: userData.email,
             username: userData.username,
-            userType: userData.userType,
-            userId: user.uid
+            userType: userData.userType
         }));
         
-        // Redirect to SMS verification page
+        // Redirect to phone registration page
         setTimeout(() => {
-            window.location.href = '/html/sms-verification.html';
+            window.location.href = '/phone-registration.html';
         }, 2000);
         
     } catch (error) {
@@ -251,7 +180,7 @@ async function handleSignup(userData) {
                 errorMessage = 'Invalid email address format.';
                 break;
             default:
-                if (error.message.includes('already taken') || error.message.includes('already registered')) {
+                if (error.message.includes('already taken')) {
                     errorMessage = error.message;
                 }
                 break;
@@ -261,32 +190,6 @@ async function handleSignup(userData) {
     } finally {
         setLoading(false);
     }
-}
-
-// Initialize reCAPTCHA for SMS verification
-function initializeRecaptcha() {
-    if (!recaptchaVerifier) {
-        // Ensure recaptcha container exists
-        let recaptchaContainer = document.getElementById('recaptcha-container');
-        if (!recaptchaContainer) {
-            recaptchaContainer = document.createElement('div');
-            recaptchaContainer.id = 'recaptcha-container';
-            recaptchaContainer.style.display = 'none';
-            document.body.appendChild(recaptchaContainer);
-        }
-
-        recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            'size': 'invisible',
-            'callback': (response) => {
-                console.log('reCAPTCHA solved');
-            },
-            'expired-callback': () => {
-                console.log('reCAPTCHA expired');
-                showAlert('reCAPTCHA expired. Please try again.', 'error');
-            }
-        });
-    }
-    return recaptchaVerifier;
 }
 
 // Form submission handler
@@ -302,17 +205,15 @@ if (signupForm) {
         const userData = {
             username: formData.get('username').trim(),
             email: formData.get('email').trim().toLowerCase(),
-            phone: formData.get('phone').trim(),
             password: formData.get('password'),
             userType: formData.get('userType')
         };
 
-        console.log('Form data collected:', { ...userData, password: '[HIDDEN]' });
         await handleSignup(userData);
     });
 }
 
-// Keep all existing input animations and interactions
+// Input animations and interactions
 if (inputs.length > 0) {
     inputs.forEach(input => {
         input.addEventListener('focus', function() {
@@ -384,11 +285,14 @@ document.getElementById('confirmPassword')?.addEventListener('input', function()
     }
 });
 
-// Export functions for SMS verification page (if needed)
-window.startPhoneVerification = function(phoneNumber) {
-    console.error('startPhoneVerification should be handled by SMS verification page');
-};
-
-window.verifyPhoneCode = function(code) {
-    console.error('verifyPhoneCode should be handled by SMS verification page');
-};
+// Language selector interaction
+const languageSelector = document.querySelector('.language-btn');
+if (languageSelector) {
+    languageSelector.addEventListener('click', function(e) {
+        e.preventDefault();
+        this.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            this.style.transform = '';
+        }, 150);
+    });
+}
