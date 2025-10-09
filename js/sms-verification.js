@@ -133,7 +133,7 @@ async function verifySMSCode(code) {
             showSuccess('Welcome back! Redirecting...');
             
             setTimeout(() => {
-                if (userData.userType === 'Swine Farmer') {
+               if (userData.userType === 'swine_farmer') {
                     window.location.href = '/dashboard.html';
                 } else {
                     window.location.href = '/marketplace.html';
@@ -180,8 +180,7 @@ async function completeUserProfile(profileData) {
             throw new Error('Username is already taken. Please choose another.');
         }
         
-        // Save user data to Firestore (account already created by Firebase Phone Auth)
-        const userType = profileData.userType === 'swine_farmer' ? 'Swine Farmer' : 'Organic Fertilizer Buyer';
+        const userType = profileData.userType; // Keep as 'swine_farmer' or 'fertilizer_buyer'
         await setDoc(doc(db, 'users', verifiedUser.uid), {
             userID: verifiedUser.uid,
             userName: profileData.username,

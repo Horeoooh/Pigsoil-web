@@ -1,5 +1,5 @@
-// messages.js - Integrated with shared user manager
-import { auth, db } from './init.js';
+// messages.js - Complete messaging with real-time updates
+import { auth, db, storage } from './init.js';
 import { 
     getCurrentUser, 
     getCurrentUserData,
@@ -12,36 +12,159 @@ import {
     orderBy, 
     onSnapshot,
     addDoc,
+    updateDoc,
+    doc,
     serverTimestamp,
-    getDocs 
+    getDocs,
+    getDoc,
+    Timestamp,
+    runTransaction
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
+import {
+    ref,
+    uploadBytesResumable,
+    getDownloadURL
+} from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-storage.js';
 
 const COLLECTIONS = {
     CONVERSATIONS: 'conversations',
     MESSAGES: 'messages',
-    USERS: 'users'
+    USERS: 'users',
+    LISTINGS: 'product_listings',
+    TRANSACTIONS: 'transactions',
+    ADDRESSES: 'addresses'
 };
 
 let currentConversationId = null;
+let currentConversation = null;
+let currentReceiverId = null;
+let currentListing = null;
 let conversationsListener = null;
 let messagesListener = null;
+let conversationDetailsListener = null;
+let uploadInProgress = false;
+
+// Default profile picture
+const DEFAULT_PROFILE_PICTURE = 'https://i.pinimg.com/736x/d7/95/c3/d795c373a0539e64c7ee69bb0af3c5c3.jpg';
+
+// Toast notification system
+function showToast(message, type = 'info') {
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <span class="toast-icon">${type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ'}</span>
+            <span class="toast-message">${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Confirmation dialog system
+function showConfirmDialog(message, onConfirm, onCancel = null) {
+    const existingDialog = document.getElementById('confirmDialog');
+    if (existingDialog) {
+        existingDialog.remove();
+    }
+    
+    const dialog = document.createElement('div');
+    dialog.className = 'modal';
+    dialog.id = 'confirmDialog';
+    dialog.innerHTML = `
+        <div class="modal-content confirm-dialog">
+            <div class="confirm-icon">⚠️</div>
+            <p class="confirm-message">${message}</p>
+            <div class="confirm-actions">
+                <button class="btn-secondary" id="confirmCancel">Cancel</button>
+                <button class="btn-primary" id="confirmOk">Confirm</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    dialog.style.display = 'block';
+    
+    document.getElementById('confirmOk').onclick = () => {
+        dialog.remove();
+        if (onConfirm) onConfirm();
+    };
+    
+    document.getElementById('confirmCancel').onclick = () => {
+        dialog.remove();
+        if (onCancel) onCancel();
+    };
+}
+
+// Prompt dialog system
+function showPromptDialog(message, placeholder, onSubmit, onCancel = null) {
+    const existingDialog = document.getElementById('promptDialog');
+    if (existingDialog) {
+        existingDialog.remove();
+    }
+    
+    const dialog = document.createElement('div');
+    dialog.className = 'modal';
+    dialog.id = 'promptDialog';
+    dialog.innerHTML = `
+        <div class="modal-content prompt-dialog">
+            <h3>${message}</h3>
+            <textarea class="prompt-input" id="promptInput" placeholder="${placeholder}" rows="4"></textarea>
+            <div class="prompt-actions">
+                <button class="btn-secondary" id="promptCancel">Cancel</button>
+                <button class="btn-primary" id="promptSubmit">Submit</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    dialog.style.display = 'block';
+    
+    const input = document.getElementById('promptInput');
+    input.focus();
+    
+    document.getElementById('promptSubmit').onclick = () => {
+        const value = input.value.trim();
+        if (!value) {
+            showToast('Please provide input', 'error');
+            return;
+        }
+        dialog.remove();
+        if (onSubmit) onSubmit(value);
+    };
+    
+    document.getElementById('promptCancel').onclick = () => {
+        dialog.remove();
+        if (onCancel) onCancel();
+    };
+}
 
 // Initialize messages functionality
 document.addEventListener('DOMContentLoaded', function() {
     console.log('💬 Messages page initializing...');
     
-    // Wait for user data to load
     onUserDataChange(({ user, userData }) => {
-        console.log('✅ User data loaded in messages page:', userData);
+        console.log('✅ User data loaded:', userData.userName);
         initializeMessaging(user, userData);
     });
     
-    // Check if user is already loaded
     const user = getCurrentUser();
     const userData = getCurrentUserData();
     
     if (user && userData) {
-        console.log('✅ User already loaded, initializing messaging');
+        console.log('✅ User already loaded');
         initializeMessaging(user, userData);
     }
 });
@@ -51,7 +174,17 @@ function initializeMessaging(user, userData) {
     
     loadConversations(user.uid);
     setupSearchFunctionality();
-    setupMessageInput();
+    // REMOVE this line: setupMediaInput();  <-- DELETE THIS
+    setupModals();
+}
+
+// Setup modal functionality
+function setupModals() {
+    window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
+        }
+    });
 }
 
 // Load conversations for current user
@@ -65,12 +198,12 @@ function loadConversations(userId) {
     
     conversationList.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">Loading conversations...</div>';
     
-    // Query conversations where user is a participant
     const conversationsRef = collection(db, COLLECTIONS.CONVERSATIONS);
     const q = query(
         conversationsRef,
         where('participants', 'array-contains', userId),
-        orderBy('lastMessageAt', 'desc')
+        where('conversationIsActive', '==', true),
+        orderBy('conversationUpdatedAt', 'desc')
     );
     
     if (conversationsListener) {
@@ -78,7 +211,7 @@ function loadConversations(userId) {
     }
     
     conversationsListener = onSnapshot(q, 
-        (snapshot) => {
+        async (snapshot) => {
             if (snapshot.empty) {
                 conversationList.innerHTML = `
                     <div style="text-align: center; padding: 20px; color: #888;">
@@ -91,17 +224,16 @@ function loadConversations(userId) {
             
             conversationList.innerHTML = '';
             
-            snapshot.forEach((doc) => {
-                const conversation = doc.data();
-                renderConversationItem(doc.id, conversation, userId);
-            });
+            for (const docSnap of snapshot.docs) {
+                const conversation = docSnap.data();
+                await renderConversationItem(docSnap.id, conversation, userId);
+            }
         },
         (error) => {
             console.error('Error loading conversations:', error);
             conversationList.innerHTML = `
                 <div style="text-align: center; padding: 20px; color: #e74c3c;">
                     <p>Error loading conversations</p>
-                    <p style="font-size: 12px;">${error.message}</p>
                 </div>
             `;
         }
@@ -111,11 +243,15 @@ function loadConversations(userId) {
 function renderConversationItem(conversationId, conversation, currentUserId) {
     const conversationList = document.getElementById('conversationList');
     
-    // Determine the other participant
     const otherParticipantId = conversation.participants.find(id => id !== currentUserId);
+    const currentUserDetails = conversation.participantDetails?.[currentUserId];
+    const otherParticipantDetails = conversation.participantDetails?.[otherParticipantId];
     
-    // Get other participant's name (you might want to fetch this from users collection)
-    const otherParticipantName = conversation.participantNames?.[otherParticipantId] || 'User';
+    const otherParticipantName = otherParticipantDetails?.participantName || 'User';
+    const otherParticipantType = otherParticipantDetails?.participantUserType || '';
+    
+    // Start with default profile picture
+    let otherParticipantImage = DEFAULT_PROFILE_PICTURE;
     
     const conversationItem = document.createElement('div');
     conversationItem.className = 'conversation-item';
@@ -123,50 +259,345 @@ function renderConversationItem(conversationId, conversation, currentUserId) {
         conversationItem.classList.add('active');
     }
     
-    const lastMessageTime = conversation.lastMessageAt ? 
-        formatTimestamp(conversation.lastMessageAt.toDate()) : 
+    // Check for unread messages
+    const currentUserLastRead = currentUserDetails?.participantLastReadAt;
+    const lastMessageTime = conversation.lastMessage?.lastMessageTimestamp;
+    const lastMessageSenderId = conversation.lastMessage?.lastMessageSenderId;
+    const hasUnread = lastMessageTime && currentUserLastRead && 
+                      lastMessageTime.toMillis() > currentUserLastRead.toMillis() &&
+                      lastMessageSenderId !== currentUserId;
+    
+    const lastMessageTimeFormatted = conversation.lastMessage?.lastMessageTimestamp ? 
+        formatTimestamp(conversation.lastMessage.lastMessageTimestamp.toDate()) : 
         'No messages';
     
+    let lastMessageText = conversation.lastMessage?.lastMessageText || 'Start a conversation';
+    
+    // Format media messages
+    if (lastMessageText === '📸 Photo') {
+        lastMessageText = '📸 Photo';
+    } else if (lastMessageText === '🎥 Video') {
+        lastMessageText = '🎥 Video';
+    }
+    
+    const userTypeBadge = otherParticipantType === 'swine_farmer' ? 
+        '<span class="user-badge farmer">Swine Farmer</span>' : 
+        '<span class="user-badge buyer">Fertilizer Buyer</span>';
+    
     conversationItem.innerHTML = `
-        <div class="conversation-header">
-            <span class="conversation-name">${otherParticipantName}</span>
-            <span class="conversation-time">${lastMessageTime}</span>
+        <div class="conversation-avatar">
+            <img src="${DEFAULT_PROFILE_PICTURE}" alt="${otherParticipantName}" onerror="this.src='${DEFAULT_PROFILE_PICTURE}'">
         </div>
-        <div class="conversation-preview">${conversation.lastMessage || 'Start a conversation'}</div>
+        <div class="conversation-content">
+            <div class="conversation-header">
+                <div class="conversation-name-wrapper">
+                    <span class="conversation-name">${otherParticipantName}</span>
+                    ${userTypeBadge}
+                </div>
+                <span class="conversation-time">${lastMessageTimeFormatted}</span>
+            </div>
+            <div class="conversation-preview ${hasUnread ? 'unread' : ''}">
+                ${lastMessageText}
+                ${hasUnread ? '<span class="unread-indicator">•</span>' : ''}
+            </div>
+        </div>
     `;
     
-    conversationItem.addEventListener('click', () => {
-        openConversation(conversationId, otherParticipantName);
+    conversationItem.addEventListener('click', (event) => {
+        openConversation(conversationId, otherParticipantId, otherParticipantName, otherParticipantDetails, conversation, event);
     });
     
     conversationList.appendChild(conversationItem);
+    
+    // NEW: Load profile picture asynchronously AFTER rendering
+    getDoc(doc(db, COLLECTIONS.USERS, otherParticipantId)).then(userDoc => {
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const profileUrl = userData.userProfilePictureUrl || DEFAULT_PROFILE_PICTURE;
+            const avatarImg = conversationItem.querySelector('.conversation-avatar img');
+            if (avatarImg) {
+                avatarImg.src = profileUrl;
+            }
+        }
+    }).catch(error => {
+        console.error('Error fetching profile picture:', error);
+    });
 }
 
-function openConversation(conversationId, participantName) {
+async function openConversation(conversationId, receiverId, participantName, participantDetails, conversationData, event) {
     console.log('💬 Opening conversation:', conversationId);
     
     currentConversationId = conversationId;
+    currentConversation = conversationData;
+    currentReceiverId = receiverId;
+    
+    // Load listing if available
+    if (conversationData.listingId) {
+        await loadListingForConversation(conversationData.listingId);
+    }
     
     // Update active state
     document.querySelectorAll('.conversation-item').forEach(item => {
         item.classList.remove('active');
     });
-    event.currentTarget?.classList.add('active');
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+    }
     
-    // Render chat UI
+    // Mark messages as read
+    const currentUser = getCurrentUser();
+    await updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, conversationId), {
+        [`participantDetails.${currentUser.uid}.participantLastReadAt`]: serverTimestamp()
+    });
+    
+    // IMPORTANT: Render the chat UI first (initial render)
+    renderChatUI(participantName, participantDetails, conversationData);
+    
+    // Setup message input handlers
+    setupMessageInputForConversation();
+    
+    // Load messages
+    loadMessages(conversationId);
+    
+    // THEN setup real-time listener for conversation changes (only updates header)
+    setupConversationListener(conversationId, participantName, participantDetails);
+}
+
+// NEW: Real-time conversation listener
+function setupConversationListener(conversationId, participantName, participantDetails) {
+    // Clean up existing listener
+    if (conversationDetailsListener) {
+        conversationDetailsListener();
+    }
+    
+    const conversationRef = doc(db, COLLECTIONS.CONVERSATIONS, conversationId);
+    
+    // Track previous state to avoid unnecessary re-renders
+    let previousCanProposeDeal = currentConversation?.canProposeDeal;
+    let previousBuyerStatus = currentConversation?.buyerTransactionStatus;
+    let previousSellerStatus = currentConversation?.sellerTransactionStatus;
+    
+    conversationDetailsListener = onSnapshot(conversationRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const updatedConversation = docSnap.data();
+            const newCanProposeDeal = updatedConversation.canProposeDeal;
+            const newBuyerStatus = updatedConversation.buyerTransactionStatus;
+            const newSellerStatus = updatedConversation.sellerTransactionStatus;
+            
+            // Check if any relevant field changed
+            const hasChanges = previousCanProposeDeal !== newCanProposeDeal ||
+                              previousBuyerStatus !== newBuyerStatus ||
+                              previousSellerStatus !== newSellerStatus;
+            
+            if (hasChanges) {
+                console.log('🔄 Conversation status changed');
+                console.log('  canProposeDeal:', previousCanProposeDeal, '->', newCanProposeDeal);
+                console.log('  buyerStatus:', previousBuyerStatus, '->', newBuyerStatus);
+                console.log('  sellerStatus:', previousSellerStatus, '->', newSellerStatus);
+                
+                currentConversation = updatedConversation;
+                previousCanProposeDeal = newCanProposeDeal;
+                previousBuyerStatus = newBuyerStatus;
+                previousSellerStatus = newSellerStatus;
+                
+                // Update only the header section, not the entire chat
+                updateChatHeader(participantName, participantDetails, updatedConversation);
+            } else {
+                // Just update the conversation object without re-rendering
+                currentConversation = updatedConversation;
+            }
+        }
+    }, (error) => {
+        console.error('Error listening to conversation updates:', error);
+    });
+}
+
+function updateConversationTransactionStatus(status) {
+    const updates = {
+        buyerTransactionStatus: status,
+        sellerTransactionStatus: status,
+        conversationUpdatedAt: serverTimestamp()
+    };
+    
+    updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId), updates)
+        .then(() => {
+            console.log('✅ Conversation transaction status updated:', status);
+        })
+        .catch(error => {
+            console.error('Error updating transaction status:', error);
+        });
+}
+
+function updateChatHeader(participantName, participantDetails, conversationData) {
+    const chatHeader = document.querySelector('.chat-header');
+    const transactionBanner = document.querySelector('.transaction-status-banner');
+    
+    if (!chatHeader) return;
+    
+    // Remove existing banner if it exists
+    if (transactionBanner) {
+        transactionBanner.remove();
+    }
+    
+    // Check if propose deal button exists
+    const existingProposeBtn = document.getElementById('proposeDealBtn');
+    const chatHeaderActions = document.querySelector('.chat-header-actions');
+    
+    if (conversationData.canProposeDeal === true && currentListing) {
+        // Show propose deal button if it doesn't exist
+        if (!existingProposeBtn && chatHeaderActions) {
+            chatHeaderActions.innerHTML = `
+                <button class="btn-propose-deal" id="proposeDealBtn">
+                    <img src="/images/deal-proposal.png" alt="Deal" style="width: 16px; height: 16px;">
+                    Propose Deal
+                </button>
+            `;
+            
+            // Re-attach event listener
+            const proposeDealBtn = document.getElementById('proposeDealBtn');
+            if (proposeDealBtn) {
+                proposeDealBtn.addEventListener('click', openDealProposalModal);
+            }
+        }
+    } else if (conversationData.canProposeDeal === false) {
+        // Remove button if it exists
+        if (existingProposeBtn) {
+            existingProposeBtn.remove();
+        }
+        
+        // Determine the appropriate status message based on transaction status
+        const currentUser = getCurrentUser();
+        const userData = getCurrentUserData();
+        const userType = userData?.userType || 'fertilizer_buyer';
+        const isBuyer = userType === 'fertilizer_buyer';
+        
+        const buyerStatus = conversationData.buyerTransactionStatus || 'none';
+        const sellerStatus = conversationData.sellerTransactionStatus || 'none';
+        
+        let statusMessage = 'Deal proposal in progress';
+        let statusIcon = '⏳';
+        
+        // Determine status message based on user role and transaction status
+        if (isBuyer) {
+            if (buyerStatus === 'confirmation_pending' && sellerStatus === 'ongoing') {
+                statusMessage = 'You confirmed. Waiting for seller to confirm';
+                statusIcon = '✓';
+            } else if (buyerStatus === 'ongoing' && sellerStatus === 'confirmation_pending') {
+                statusMessage = 'Seller confirmed. Please confirm transaction';
+                statusIcon = '⚠️';
+            } else if (buyerStatus === 'confirmation_pending' && sellerStatus === 'confirmation_pending') {
+                statusMessage = 'Both parties confirmed. Processing completion';
+                statusIcon = '✓✓';
+            } else if (buyerStatus === 'completed' && sellerStatus === 'completed') {
+                statusMessage = 'Transaction completed successfully';
+                statusIcon = '✅';
+            } else if (buyerStatus === 'ongoing' && sellerStatus === 'ongoing') {
+                statusMessage = 'Transaction in progress';
+                statusIcon = '⏳';
+            }
+        } else {
+            // Seller view
+            if (sellerStatus === 'confirmation_pending' && buyerStatus === 'ongoing') {
+                statusMessage = 'You confirmed. Waiting for buyer to confirm';
+                statusIcon = '✓';
+            } else if (sellerStatus === 'ongoing' && buyerStatus === 'confirmation_pending') {
+                statusMessage = 'Buyer confirmed. Please confirm transaction';
+                statusIcon = '⚠️';
+            } else if (sellerStatus === 'confirmation_pending' && buyerStatus === 'confirmation_pending') {
+                statusMessage = 'Both parties confirmed. Processing completion';
+                statusIcon = '✓✓';
+            } else if (sellerStatus === 'completed' && buyerStatus === 'completed') {
+                statusMessage = 'Transaction completed successfully';
+                statusIcon = '✅';
+            } else if (sellerStatus === 'ongoing' && buyerStatus === 'ongoing') {
+                statusMessage = 'Transaction in progress';
+                statusIcon = '⏳';
+            }
+        }
+        
+        // Add transaction status banner after chat header
+        const bannerHTML = `
+            <div class="transaction-status-banner">
+                <span class="status-icon">${statusIcon}</span>
+                <span>${statusMessage}</span>
+            </div>
+        `;
+        chatHeader.insertAdjacentHTML('afterend', bannerHTML);
+    } else {
+        // Remove button if canProposeDeal is neither true nor false
+        if (existingProposeBtn) {
+            existingProposeBtn.remove();
+        }
+    }
+}
+
+async function loadListingForConversation(listingId) {
+    try {
+        const listingDoc = await getDoc(doc(db, COLLECTIONS.LISTINGS, listingId));
+        if (listingDoc.exists()) {
+            currentListing = { id: listingDoc.id, ...listingDoc.data() };
+            console.log('✅ Listing loaded:', currentListing);
+        } else {
+            currentListing = null;
+            console.log('⚠️ Listing not found');
+        }
+    } catch (error) {
+        console.error('Error loading listing:', error);
+        currentListing = null;
+    }
+}
+
+function renderChatUI(participantName, participantDetails, conversationData) {
     const chatPanel = document.getElementById('chatPanel');
+    
+    if (!chatPanel) return;
+    
+    const currentUser = getCurrentUser();
+    const userData = getCurrentUserData();
+    
+    let transactionStatusHTML = '';
+    let dealProposalButtonHTML = '';
+    
+    if (conversationData.canProposeDeal === true && currentListing) {
+        dealProposalButtonHTML = `
+            <button class="btn-propose-deal" id="proposeDealBtn">
+                <img src="/images/deal-proposal.png" alt="Deal" style="width: 16px; height: 16px;">
+                Propose Deal
+            </button>
+        `;
+    } else if (conversationData.canProposeDeal === false) {
+        transactionStatusHTML = `
+            <div class="transaction-status-banner">
+                <span class="status-icon">⏳</span>
+                <span>Deal proposal in progress</span>
+            </div>
+        `;
+    }
+    
     chatPanel.innerHTML = `
         <div class="chat-header">
             <div class="chat-user-info">
-                <div class="chat-avatar">${participantName.charAt(0).toUpperCase()}</div>
+                <div class="chat-avatar">
+                    <img src="${DEFAULT_PROFILE_PICTURE}" alt="${participantName}" onerror="this.src='${DEFAULT_PROFILE_PICTURE}'">
+                </div>
                 <div class="chat-user-details">
                     <h3>${participantName}</h3>
-                    <p>Active now</p>
+                    <p class="user-type-label">${participantDetails?.participantUserType === 'swine_farmer' ? 'Swine Farmer' : 'Fertilizer Buyer'}</p>
                 </div>
             </div>
+            <div class="chat-header-actions">
+                ${dealProposalButtonHTML}
+            </div>
         </div>
+        ${transactionStatusHTML}
         <div class="messages-area" id="messagesArea"></div>
         <div class="message-input-container">
+            <input type="file" id="mediaInput" accept="image/*,video/*" style="display: none;">
+            <button class="attachment-btn" id="attachmentBtn" title="Attach image or video">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                </svg>
+            </button>
             <input type="text" 
                    class="message-input" 
                    id="messageInput" 
@@ -179,13 +610,32 @@ function openConversation(conversationId, participantName) {
                 </svg>
             </button>
         </div>
+        <div class="upload-progress" id="uploadProgress" style="display: none;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <span class="progress-text" id="progressText">Uploading... 0%</span>
+        </div>
     `;
     
-    // Load messages
-    loadMessages(conversationId);
+    const proposeDealBtn = document.getElementById('proposeDealBtn');
+    if (proposeDealBtn) {
+        proposeDealBtn.addEventListener('click', openDealProposalModal);
+    }
     
-    // Setup message input handlers
-    setupMessageInputForConversation();
+    // NEW: Load profile picture asynchronously AFTER rendering
+    getDoc(doc(db, COLLECTIONS.USERS, currentReceiverId)).then(userDoc => {
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const profileUrl = userData.userProfilePictureUrl || DEFAULT_PROFILE_PICTURE;
+            const avatarImg = chatPanel.querySelector('.chat-avatar img');
+            if (avatarImg) {
+                avatarImg.src = profileUrl;
+            }
+        }
+    }).catch(error => {
+        console.error('Error fetching profile picture:', error);
+    });
 }
 
 function loadMessages(conversationId) {
@@ -193,21 +643,29 @@ function loadMessages(conversationId) {
     
     if (!messagesArea) return;
     
-    messagesArea.innerHTML = '<div style="text-align: center; color: #888;">Loading messages...</div>';
+    // Only show loading on initial load
+    if (!messagesListener) {
+        messagesArea.innerHTML = '<div style="text-align: center; color: #888;">Loading messages...</div>';
+    }
     
-    const messagesRef = collection(db, COLLECTIONS.MESSAGES);
+    const messagesRef = collection(db, COLLECTIONS.CONVERSATIONS);
+    const conversationMessagesRef = collection(doc(messagesRef, conversationId), COLLECTIONS.MESSAGES);
     const q = query(
-        messagesRef,
-        where('conversationId', '==', conversationId),
-        orderBy('sentAt', 'asc')
+        conversationMessagesRef,
+        orderBy('messageCreatedAt', 'asc')
     );
     
     if (messagesListener) {
         messagesListener();
     }
     
+    let isInitialLoad = true;
+    
     messagesListener = onSnapshot(q,
         (snapshot) => {
+            // Store scroll state before update
+            const wasAtBottom = messagesArea.scrollHeight - messagesArea.scrollTop - messagesArea.clientHeight < 50;
+            
             messagesArea.innerHTML = '';
             
             if (snapshot.empty) {
@@ -221,13 +679,17 @@ function loadMessages(conversationId) {
             
             const currentUser = getCurrentUser();
             
-            snapshot.forEach((doc) => {
-                const message = doc.data();
+            snapshot.forEach((docSnap) => {
+                const message = { id: docSnap.id, ...docSnap.data() };
                 renderMessage(message, currentUser.uid);
             });
             
-            // Scroll to bottom
-            messagesArea.scrollTop = messagesArea.scrollHeight;
+            // Scroll to bottom only if was at bottom or initial load
+            if (wasAtBottom || isInitialLoad) {
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+            }
+            
+            isInitialLoad = false;
         },
         (error) => {
             console.error('Error loading messages:', error);
@@ -242,91 +704,1448 @@ function loadMessages(conversationId) {
 
 function renderMessage(message, currentUserId) {
     const messagesArea = document.getElementById('messagesArea');
-    const isSent = message.senderId === currentUserId;
+    const isSent = message.messageSenderId === currentUserId;
+    
+    // Handle different message types
+    if (message.messageType === 'deal_proposal') {
+        renderDealProposalMessage(message, currentUserId);
+        return;
+    }
+    
+    if (message.messageType === 'cancellation_request') {
+        renderCancellationRequestMessage(message, currentUserId);
+        return;
+    }
     
     const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${isSent ? 'sent' : ''}`;
+    messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
     
-    const senderInitial = message.senderName ? 
-        message.senderName.charAt(0).toUpperCase() : 
-        'U';
-    
-    const messageTime = message.sentAt ? 
-        formatMessageTime(message.sentAt.toDate()) : 
+    const messageTime = message.messageCreatedAt ? 
+        formatMessageTime(message.messageCreatedAt.toDate()) : 
         'Sending...';
     
+    // Status indicator for sent messages
+    let statusIndicator = '';
+    if (isSent && message.messageStatus) {
+        const statusIcons = {
+            'sent': '✓',
+            'delivered': '✓✓',
+            'read': '✓✓'
+        };
+        const statusColors = {
+            'sent': '#95a5a6',
+            'delivered': '#95a5a6',
+            'read': '#27ae60'
+        };
+        statusIndicator = `<span class="message-status" style="color: ${statusColors[message.messageStatus]}">${statusIcons[message.messageStatus] || ''}</span>`;
+    }
+    
+    // Handle different message types
+    if (message.messageType === 'image' && message.messageMediaUrl) {
+        messageDiv.innerHTML = `
+            <div class="message-content media-message">
+                <img src="${message.messageMediaUrl}" alt="Image" class="message-media" onclick="window.open('${message.messageMediaUrl}', '_blank')">
+                <div class="message-footer">
+                    <span class="message-time">${messageTime}</span>
+                    ${statusIndicator}
+                </div>
+            </div>
+        `;
+    } else if (message.messageType === 'video' && message.messageMediaUrl) {
+        messageDiv.innerHTML = `
+            <div class="message-content media-message">
+                <video src="${message.messageMediaUrl}" controls class="message-media"></video>
+                <div class="message-footer">
+                    <span class="message-time">${messageTime}</span>
+                    ${statusIndicator}
+                </div>
+            </div>
+        `;
+    } else {
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <div class="message-text">${escapeHtml(message.messageText)}</div>
+                <div class="message-footer">
+                    <span class="message-time">${messageTime}</span>
+                    ${statusIndicator}
+                </div>
+            </div>
+        `;
+    }
+    
+    messagesArea.appendChild(messageDiv);
+}
+
+function renderDealProposalMessage(message, currentUserId) {
+    const messagesArea = document.getElementById('messagesArea');
+    const metadata = message.messageMetadata || {};
+    const isSender = message.messageSenderId === currentUserId;
+    const status = metadata.proposalStatus || 'pending';
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message deal-proposal-message';
+    
+    const messageTime = message.messageCreatedAt ? 
+        formatMessageTime(message.messageCreatedAt.toDate()) : 
+        'Sending...';
+    
+    // Status badge configuration
+    const statusConfig = {
+        'pending': { text: 'Pending', color: '#f39c12', bg: '#fef5e7' },
+        'accepted': { text: 'Accepted', color: '#27ae60', bg: '#e8f8f5' },
+        'declined': { text: 'Declined', color: '#e74c3c', bg: '#fadbd8' },
+        'cancelled': { text: 'Cancelled', color: '#95a5a6', bg: '#ecf0f1' },
+        'completed': { text: 'Completed', color: '#3498db', bg: '#ebf5fb' }
+    };
+    
+    const statusInfo = statusConfig[status] || statusConfig['pending'];
+    
+    // Price comparison
+    const originalPrice = metadata.originalListingPrice || 0;
+    const offeredPrice = metadata.unitPrice || 0;
+    const isNegotiation = metadata.isNegotiation || false;
+    
+    let priceComparisonHTML = '';
+    if (isNegotiation && originalPrice > 0 && offeredPrice !== originalPrice) {
+        const difference = originalPrice - offeredPrice;
+        if (difference > 0) {
+            priceComparisonHTML = `
+                <div class="price-comparison savings">
+                    💰 ₱${formatNumber(difference)} less than listing
+                </div>
+            `;
+        } else if (difference < 0) {
+            priceComparisonHTML = `
+                <div class="price-comparison premium">
+                    ⬆️ ₱${formatNumber(Math.abs(difference))} above listing
+                </div>
+            `;
+        }
+    }
+    
+    // Meetup location
+    let meetupHTML = '';
+    if (metadata.meetupLocation) {
+        meetupHTML = `
+            <div class="proposal-meetup">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span class="proposal-meetup-text">${metadata.meetupLocation}</span>
+            </div>
+        `;
+    }
+    
+    // Action buttons
+    let actionButtonsHTML = '';
+    if (status === 'pending') {
+        if (!isSender) {
+            // Receiver can accept/decline
+            actionButtonsHTML = `
+                <div class="proposal-actions-row">
+                    <button class="btn-decline" onclick="declineDealProposal('${message.id}')">
+                        Decline
+                    </button>
+                    <button class="btn-accept" onclick="acceptDealProposal('${message.id}')">
+                        Accept Deal
+                    </button>
+                </div>
+            `;
+        } else {
+            // Sender can cancel
+            actionButtonsHTML = `
+                <button class="btn-cancel" onclick="cancelDealProposal('${message.id}')">
+                    Cancel Proposal
+                </button>
+            `;
+        }
+    } else if (status === 'accepted') {
+        const transactionId = metadata.transactionId;
+        if (transactionId) {
+            actionButtonsHTML = `
+                <button class="btn-complete" onclick="openTransactionConfirmation('${transactionId}')">
+                    Mark as Complete
+                </button>
+                <button class="btn-cancel-transaction" onclick="requestCancellation('${transactionId}')">
+                    Request Cancellation
+                </button>
+            `;
+        }
+    }
+    
+    // Status message
+    let statusMessageHTML = '';
+    if (status === 'accepted') {
+        statusMessageHTML = `<div class="proposal-status-message accepted">Deal accepted! Complete transaction when ready.</div>`;
+    } else if (status === 'declined') {
+        statusMessageHTML = `<div class="proposal-status-message declined">Deal proposal declined</div>`;
+    } else if (status === 'cancelled') {
+        statusMessageHTML = `<div class="proposal-status-message cancelled">Proposal cancelled</div>`;
+    } else if (status === 'completed') {
+        statusMessageHTML = `<div class="proposal-status-message accepted">Transaction completed! ✓</div>`;
+    }
+    
     messageDiv.innerHTML = `
-        <div class="message-avatar">${senderInitial}</div>
-        <div class="message-content">
-            <div class="message-text">${escapeHtml(message.text)}</div>
-            <div class="message-time">${messageTime}</div>
+        <div class="deal-proposal-card">
+            <div class="proposal-header">
+                <div class="proposal-title">
+                    <img src="/images/deal-proposal.png" alt="Deal">
+                    <span>Deal Proposal</span>
+                </div>
+                <div class="proposal-status" style="color: ${statusInfo.color}; background: ${statusInfo.bg};">
+                    ${statusInfo.text}
+                </div>
+            </div>
+            
+            <div class="proposal-product-info">
+                <div class="proposal-product-name">${metadata.productName || 'N/A'}</div>
+                <div class="proposal-product-details">
+                    ${metadata.quantity || 0}kg • ₱${formatNumber(metadata.unitPrice || 0)}/kg • ₱${formatNumber(metadata.totalAmount || 0)}
+                </div>
+                ${priceComparisonHTML}
+            </div>
+            
+            ${meetupHTML}
+            
+            <div class="proposal-actions">
+                ${actionButtonsHTML}
+            </div>
+            
+            ${statusMessageHTML}
+            
+            <!-- TIME AND STATUS MOVED INSIDE HERE -->
+            <div class="proposal-time">${messageTime}</div>
+            <div class="proposal-message-status">
+                <span class="proposal-message-status-text">${isSender ? 'Sent' : 'Received'}</span>
+                <svg class="proposal-message-status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
         </div>
     `;
     
     messagesArea.appendChild(messageDiv);
 }
 
+function renderCancellationRequestMessage(message, currentUserId) {
+    const messagesArea = document.getElementById('messagesArea');
+    const metadata = message.messageMetadata || {};
+    const isSender = message.messageSenderId === currentUserId;
+    const status = metadata.requestStatus || 'pending';
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message cancellation-request-message';
+    
+    const messageTime = message.messageCreatedAt ? 
+        formatMessageTime(message.messageCreatedAt.toDate()) : 
+        'Sending...';
+    
+    let actionButtonsHTML = '';
+    if (status === 'pending' && !isSender) {
+        actionButtonsHTML = `
+            <div class="cancellation-actions">
+                <button class="btn-approve" onclick="approveCancellation('${message.id}', '${metadata.transactionId}')">
+                    Approve
+                </button>
+                <button class="btn-reject" onclick="rejectCancellation('${message.id}', '${metadata.transactionId}')">
+                    Reject
+                </button>
+            </div>
+        `;
+    }
+    
+    const statusText = status === 'approved' ? 'Approved' : 
+                       status === 'rejected' ? 'Rejected' : 
+                       isSender ? 'Waiting for approval' : 'Pending your response';
+    
+    messageDiv.innerHTML = `
+        <div class="cancellation-card">
+            <div class="cancellation-header">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                <span>Cancellation Request</span>
+            </div>
+            <div class="cancellation-status">${statusText}</div>
+            ${metadata.reason ? `
+                <div class="cancellation-reason">
+                    <strong>Reason:</strong> ${escapeHtml(metadata.reason)}
+                </div>
+            ` : ''}
+            ${actionButtonsHTML}
+            <div class="cancellation-time">${messageTime}</div>
+        </div>
+    `;
+    
+    messagesArea.appendChild(messageDiv);
+}
+
+function openDealProposalModal() {
+    if (!currentListing) {
+        showToast('No listing associated with this conversation', 'error');
+        return;
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'dealProposalModal';
+    
+    const availableQuantity = parseFloat(currentListing.listingQuantityLeftKG || currentListing.listingQuantityKG || 0);
+    const listingPrice = parseFloat(currentListing.listingPricePerKG || 0);
+    
+    modal.innerHTML = `
+        <div class="modal-content deal-proposal-modal">
+            <div class="modal-header">
+                <h2>Propose Deal</h2>
+                <button class="close-btn" onclick="closeDealProposalModal()">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="listing-info">
+                    <div class="listing-image">
+                        ${currentListing.listingProductImages && currentListing.listingProductImages.length > 0 ? 
+                            `<img src="${currentListing.listingProductImages[0]}" alt="Product">` :
+                            '<div class="placeholder-image">📦</div>'
+                        }
+                    </div>
+                    <div class="listing-details">
+                        <h3>${currentListing.listingProductName || 'Product'}</h3>
+                        <p class="available-stock">Available: ${availableQuantity} kg</p>
+                        <p class="listing-price">Listing Price: ₱${formatNumber(listingPrice)}/kg</p>
+                    </div>
+                </div>
+                
+                <div class="proposal-form">
+                    <div class="form-group">
+                        <label>Quantity (kg) *</label>
+                        <input type="number" 
+                               id="proposalQuantity" 
+                               placeholder="Enter quantity" 
+                               min="1" 
+                               max="${availableQuantity}"
+                               oninput="updateProposalCalculation()">
+                        <span class="error-text" id="quantityError"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Your Price Offer (optional)</label>
+                        <input type="number" 
+                               id="proposalPrice" 
+                               placeholder="Leave empty to use listing price (₱${formatNumber(listingPrice)})" 
+                               min="0"
+                               oninput="updateProposalCalculation()">
+                        <span class="hint-text">If left empty, listing price will be used</span>
+                    </div>
+                    
+                    <!-- NEW: Location Picker Section -->
+                    <div class="location-picker-section">
+                        <div class="location-picker-header">
+                            <h4>Meetup Location</h4>
+                            <span class="optional-badge">Optional</span>
+                        </div>
+                        
+                        <input type="text" 
+                               id="locationSearchBox" 
+                               class="location-search-box"
+                               placeholder="Search for a location...">
+                        
+                        <div id="mapContainer" class="map-container"></div>
+                        
+                        <div id="selectedLocationDisplay" class="selected-location-display">
+                            <span class="location-icon">📍</span>
+                            <div class="location-details">
+                                <div class="location-name" id="selectedLocationName">Selected Location</div>
+                                <div class="location-subtext">Tap to change or clear</div>
+                            </div>
+                            <button class="btn-clear-location" onclick="clearSelectedLocation()">Clear</button>
+                        </div>
+                        
+                        <p class="location-hint">You can search for a place or click on the map to select a meetup location</p>
+                    </div>
+                    
+                    <div class="calculation-summary">
+                        <div class="calc-row">
+                            <span>Selected Quantity:</span>
+                            <strong id="calcQuantity">-- kg</strong>
+                        </div>
+                        <div class="calc-row">
+                            <span>Price per kg:</span>
+                            <strong id="calcPrice">₱--</strong>
+                        </div>
+                        <div class="calc-row total">
+                            <span>Total Amount:</span>
+                            <strong id="calcTotal">₱--</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeDealProposalModal()">Cancel</button>
+                <button class="btn-primary" id="sendProposalBtn" onclick="sendDealProposal()" disabled>
+                    Send Proposal
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'block';
+    
+    // Store listing price for calculation
+    window.proposalListingPrice = listingPrice;
+    window.proposalAvailableQuantity = availableQuantity;
+    
+    // Initialize map after modal is visible
+    setTimeout(() => {
+        initializeLocationPicker();
+    }, 100);
+}
+
+// Location picker variables
+let proposalMap = null;
+let proposalMarker = null;
+let proposalSelectedLocation = null;
+let proposalAutocomplete = null;
+
+function initializeLocationPicker() {
+    // Default location (Cebu City, Philippines)
+    const defaultLocation = { lat: 10.3157, lng: 123.8854 };
+    
+    // Initialize map
+    proposalMap = new google.maps.Map(document.getElementById('mapContainer'), {
+        center: defaultLocation,
+        zoom: 13,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false
+    });
+    
+    // Initialize marker
+    proposalMarker = new google.maps.Marker({
+        map: proposalMap,
+        position: defaultLocation,
+        draggable: true,
+        animation: google.maps.Animation.DROP
+    });
+    
+    // Handle marker drag
+    proposalMarker.addListener('dragend', () => {
+        const position = proposalMarker.getPosition();
+        reverseGeocode(position.lat(), position.lng());
+    });
+    
+    // Handle map click
+    proposalMap.addListener('click', (event) => {
+        const position = event.latLng;
+        proposalMarker.setPosition(position);
+        proposalMap.panTo(position);
+        reverseGeocode(position.lat(), position.lng());
+    });
+    
+    // Initialize autocomplete
+    const searchBox = document.getElementById('locationSearchBox');
+    proposalAutocomplete = new google.maps.places.Autocomplete(searchBox, {
+        componentRestrictions: { country: 'ph' },
+        fields: ['place_id', 'geometry', 'name', 'formatted_address'],
+        types: ['establishment', 'geocode']
+    });
+    
+    // Bias autocomplete results to Central Visayas
+    const centralVisayasBounds = new google.maps.LatLngBounds(
+        new google.maps.LatLng(9.0, 123.0),  // Southwest
+        new google.maps.LatLng(11.5, 125.0)   // Northeast
+    );
+    proposalAutocomplete.setBounds(centralVisayasBounds);
+    
+    // Handle place selection
+    proposalAutocomplete.addListener('place_changed', () => {
+        const place = proposalAutocomplete.getPlace();
+        
+        if (!place.geometry || !place.geometry.location) {
+            showToast('Place details not found', 'error');
+            return;
+        }
+        
+        const location = place.geometry.location;
+        proposalMarker.setPosition(location);
+        proposalMap.panTo(location);
+        proposalMap.setZoom(16);
+        
+        // Store selected location
+        proposalSelectedLocation = {
+            name: place.name || place.formatted_address || 'Selected Location',
+            latitude: location.lat(),
+            longitude: location.lng(),
+            placeId: place.place_id || ''
+        };
+        
+        updateLocationDisplay();
+    });
+    
+    // Try to get user's current location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                proposalMap.setCenter(userLocation);
+                proposalMarker.setPosition(userLocation);
+            },
+            () => {
+                // Silently fail - default location already set
+                console.log('Geolocation not available, using default location');
+            }
+        );
+    }
+}
+
+function reverseGeocode(lat, lng) {
+    const geocoder = new google.maps.Geocoder();
+    const latlng = { lat: lat, lng: lng };
+    
+    geocoder.geocode({ location: latlng }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+            const locationName = findBestLocationName(results);
+            
+            proposalSelectedLocation = {
+                name: locationName,
+                latitude: lat,
+                longitude: lng,
+                placeId: results[0].place_id || ''
+            };
+            
+            updateLocationDisplay();
+        } else {
+            proposalSelectedLocation = {
+                name: `Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`,
+                latitude: lat,
+                longitude: lng,
+                placeId: ''
+            };
+            
+            updateLocationDisplay();
+        }
+    });
+}
+
+function findBestLocationName(results) {
+    // Try to find the most meaningful location name
+    for (const result of results) {
+        const addressComponents = result.address_components;
+        
+        // Priority 1: Establishment name
+        const establishment = addressComponents.find(c => c.types.includes('establishment'));
+        if (establishment && establishment.long_name.length > 3) {
+            return establishment.long_name;
+        }
+        
+        // Priority 2: Point of interest
+        const poi = addressComponents.find(c => c.types.includes('point_of_interest'));
+        if (poi && poi.long_name.length > 3) {
+            return poi.long_name;
+        }
+        
+        // Priority 3: Premise (building)
+        const premise = addressComponents.find(c => c.types.includes('premise'));
+        if (premise && premise.long_name.length > 3) {
+            return premise.long_name;
+        }
+    }
+    
+    // Fallback to first result's formatted address
+    const firstResult = results[0];
+    const route = firstResult.address_components.find(c => c.types.includes('route'));
+    const sublocality = firstResult.address_components.find(c => c.types.includes('sublocality') || c.types.includes('sublocality_level_1'));
+    
+    if (route && sublocality) {
+        return `${route.long_name}, ${sublocality.long_name}`;
+    }
+    
+    if (route) {
+        return route.long_name;
+    }
+    
+    const locality = firstResult.address_components.find(c => c.types.includes('locality'));
+    if (locality) {
+        return locality.long_name;
+    }
+    
+    return 'Selected Location';
+}
+
+function updateLocationDisplay() {
+    const display = document.getElementById('selectedLocationDisplay');
+    const locationName = document.getElementById('selectedLocationName');
+    
+    if (proposalSelectedLocation) {
+        display.classList.add('active');
+        locationName.textContent = proposalSelectedLocation.name;
+    }
+}
+
+window.clearSelectedLocation = function() {
+    proposalSelectedLocation = null;
+    const display = document.getElementById('selectedLocationDisplay');
+    display.classList.remove('active');
+    
+    // Clear search box
+    const searchBox = document.getElementById('locationSearchBox');
+    if (searchBox) {
+        searchBox.value = '';
+    }
+    
+    showToast('Location cleared', 'info');
+};
+
+window.closeDealProposalModal = function() {
+    const modal = document.getElementById('dealProposalModal');
+    if (modal) {
+        modal.remove();
+    }
+};
+
+window.updateProposalCalculation = function() {
+    const quantityInput = document.getElementById('proposalQuantity');
+    const priceInput = document.getElementById('proposalPrice');
+    const quantityError = document.getElementById('quantityError');
+    const sendBtn = document.getElementById('sendProposalBtn');
+    
+    const quantity = parseFloat(quantityInput.value) || 0;
+    const customPrice = parseFloat(priceInput.value) || 0;
+    const price = customPrice > 0 ? customPrice : window.proposalListingPrice;
+    
+    // Validate quantity
+    if (quantity > window.proposalAvailableQuantity) {
+        quantityError.textContent = `Cannot exceed available stock (${window.proposalAvailableQuantity} kg)`;
+        sendBtn.disabled = true;
+    } else if (quantity <= 0) {
+        quantityError.textContent = '';
+        sendBtn.disabled = true;
+    } else {
+        quantityError.textContent = '';
+        sendBtn.disabled = false;
+    }
+    
+    // Update calculation
+    document.getElementById('calcQuantity').textContent = quantity > 0 ? `${quantity} kg` : '-- kg';
+    document.getElementById('calcPrice').textContent = price > 0 ? `₱${formatNumber(price)}` : '₱--';
+    
+    const total = quantity * price;
+    document.getElementById('calcTotal').textContent = total > 0 ? `₱${formatNumber(total)}` : '₱--';
+};
+
+window.sendDealProposal = async function() {
+    const quantityInput = document.getElementById('proposalQuantity');
+    const priceInput = document.getElementById('proposalPrice');
+    const sendBtn = document.getElementById('sendProposalBtn');
+    
+    const quantity = parseInt(quantityInput.value);
+    const customPrice = parseFloat(priceInput.value) || 0;
+    const unitPrice = customPrice > 0 ? customPrice : window.proposalListingPrice;
+    const totalAmount = quantity * unitPrice;
+    
+    if (quantity <= 0 || quantity > window.proposalAvailableQuantity) {
+        showToast('Please enter a valid quantity', 'error');
+        return;
+    }
+    
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending...';
+    
+    try {
+        const currentUser = getCurrentUser();
+        const proposalData = {
+            listingId: currentListing.listingId || currentListing.id,
+            productName: currentListing.listingProductName,
+            quantity: quantity,
+            unitPrice: unitPrice,
+            originalListingPrice: window.proposalListingPrice,
+            totalAmount: totalAmount,
+            meetupLocation: proposalSelectedLocation?.name || '',
+            meetupLocationId: proposalSelectedLocation?.placeId || '',
+            meetupLatitude: proposalSelectedLocation?.latitude || null,
+            meetupLongitude: proposalSelectedLocation?.longitude || null,
+            proposalStatus: 'pending',
+            isNegotiation: customPrice > 0 && customPrice !== window.proposalListingPrice
+        };
+        
+        const messageData = {
+            messageSenderId: currentUser.uid,
+            messageReceiverId: currentReceiverId,
+            messageText: customPrice > 0 && customPrice !== window.proposalListingPrice ? 
+                'Sent a price offer' : 'Sent a deal proposal',
+            messageType: 'deal_proposal',
+            messageStatus: 'sent',
+            messageCreatedAt: serverTimestamp(),
+            messageDeliveredAt: null,
+            messageReadAt: null,
+            messageMediaUrl: null,
+            messageMetadata: proposalData
+        };
+        
+        const messagesRef = collection(db, COLLECTIONS.CONVERSATIONS);
+        const conversationMessagesRef = collection(doc(messagesRef, currentConversationId), COLLECTIONS.MESSAGES);
+        
+        await addDoc(conversationMessagesRef, messageData);
+        
+        await updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId), {
+            'lastMessage': {
+                lastMessageText: messageData.messageText,
+                lastMessageTimestamp: serverTimestamp(),
+                lastMessageSenderId: currentUser.uid
+            },
+            conversationUpdatedAt: serverTimestamp(),
+            canProposeDeal: false
+        });
+        
+        closeDealProposalModal();
+        showToast('Deal proposal sent successfully!', 'success');
+        
+    } catch (error) {
+        console.error('Error sending proposal:', error);
+        showToast('Failed to send proposal. Please try again.', 'error');
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Proposal';
+    }
+};
+
+// Deal Proposal Actions
+window.acceptDealProposal = async function(messageId) {
+    showConfirmDialog('Accept this deal proposal?', async () => {
+        try {
+            const messageRef = doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId, COLLECTIONS.MESSAGES, messageId);
+            const messageDoc = await getDoc(messageRef);
+            
+            if (!messageDoc.exists()) {
+                showToast('Proposal not found', 'error');
+                return;
+            }
+            
+            const message = messageDoc.data();
+            const metadata = message.messageMetadata;
+            
+            // Get listing to determine roles
+            const listingDoc = await getDoc(doc(db, COLLECTIONS.LISTINGS, metadata.listingId));
+            if (!listingDoc.exists()) {
+                showToast('Listing not found', 'error');
+                return;
+            }
+            
+            const listing = listingDoc.data();
+            const currentUser = getCurrentUser();
+            
+            // Determine buyer and seller
+            const sellerId = listing.listingSellerID;
+            const buyerId = sellerId === currentUser.uid ? message.messageSenderId : currentUser.uid;
+            
+            // Create transaction
+            const transactionData = {
+                transactionBuyerID: buyerId,
+                transactionSellerID: sellerId,
+                transactionListingID: metadata.listingId,
+                transactionQuantityOrdered: metadata.quantity,
+                transactionUnitPrice: metadata.unitPrice,
+                transactionTotalAmount: metadata.totalAmount,
+                transactionOrderDate: serverTimestamp(),
+                transactionStatus: 'agreed',
+                sellerConfirmed: false,
+                buyerConfirmed: false,
+                buyerRequestedCancellation: false,
+                sellerRequestedCancellation: false,
+                agreedQuantity: metadata.quantity,
+                agreedUnitPrice: metadata.unitPrice,
+                agreedTotalAmount: metadata.totalAmount,
+                agreedMeetupLocation: metadata.meetupLocation || null,
+                agreedMeetupLocationId: metadata.meetupLocationId || null
+            };
+            
+            const transactionRef = await addDoc(collection(db, COLLECTIONS.TRANSACTIONS), transactionData);
+            
+            // Update proposal message
+            await updateDoc(messageRef, {
+                'messageMetadata.proposalStatus': 'accepted',
+                'messageMetadata.transactionId': transactionRef.id,
+                'messageMetadata.finalNegotiatedPrice': metadata.unitPrice,
+                messageUpdatedAt: serverTimestamp()
+            });
+            
+            // Update conversation - set transaction status to ongoing
+            await updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId), {
+                conversationUpdatedAt: serverTimestamp(),
+                buyerTransactionStatus: 'ongoing',
+                sellerTransactionStatus: 'ongoing'
+            });
+            
+            showToast('Deal accepted! Transaction created.', 'success');
+            
+        } catch (error) {
+            console.error('Error accepting proposal:', error);
+            showToast('Failed to accept proposal. Please try again.', 'error');
+        }
+    });
+};
+
+window.declineDealProposal = async function(messageId) {
+    showConfirmDialog('Decline this deal proposal?', async () => {
+        try {
+            const messageRef = doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId, COLLECTIONS.MESSAGES, messageId);
+            
+            await updateDoc(messageRef, {
+                'messageMetadata.proposalStatus': 'declined',
+                messageUpdatedAt: serverTimestamp()
+            });
+            
+            // Re-enable proposals - SET canProposeDeal to TRUE
+            await updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId), {
+                canProposeDeal: true,
+                conversationUpdatedAt: serverTimestamp()
+            });
+            
+            showToast('Deal proposal declined', 'info');
+            
+        } catch (error) {
+            console.error('Error declining proposal:', error);
+            showToast('Failed to decline proposal. Please try again.', 'error');
+        }
+    });
+};
+
+window.cancelDealProposal = async function(messageId) {
+    showConfirmDialog('Cancel this deal proposal?', async () => {
+        try {
+            const messageRef = doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId, COLLECTIONS.MESSAGES, messageId);
+            
+            await updateDoc(messageRef, {
+                'messageMetadata.proposalStatus': 'cancelled',
+                messageUpdatedAt: serverTimestamp()
+            });
+            
+            // Re-enable proposals - SET canProposeDeal to TRUE
+            await updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId), {
+                canProposeDeal: true,
+                conversationUpdatedAt: serverTimestamp()
+            });
+            
+            showToast('Deal proposal cancelled', 'info');
+            
+        } catch (error) {
+            console.error('Error cancelling proposal:', error);
+            showToast('Failed to cancel proposal. Please try again.', 'error');
+        }
+    });
+};
+
+// Transaction Confirmation with real-time updates
+window.openTransactionConfirmation = async function(transactionId) {
+    try {
+        const transactionDoc = await getDoc(doc(db, COLLECTIONS.TRANSACTIONS, transactionId));
+        
+        if (!transactionDoc.exists()) {
+            showToast('Transaction not found', 'error');
+            return;
+        }
+        
+        const transaction = { id: transactionDoc.id, ...transactionDoc.data() };
+        
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = 'transactionModal';
+        modal.setAttribute('data-transaction-id', transactionId);
+        
+        document.body.appendChild(modal);
+        modal.style.display = 'block';
+        
+        // Set up real-time listener
+        const transactionRef = doc(db, COLLECTIONS.TRANSACTIONS, transactionId);
+        const unsubscribe = onSnapshot(transactionRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const updatedTransaction = { id: docSnap.id, ...docSnap.data() };
+                renderTransactionModal(updatedTransaction);
+            }
+        });
+        
+        // Store unsubscribe function for cleanup
+        modal.unsubscribeTransaction = unsubscribe;
+        
+    } catch (error) {
+        console.error('Error opening transaction:', error);
+        showToast('Failed to load transaction details', 'error');
+    }
+};
+
+function renderTransactionModal(transaction) {
+    const modal = document.getElementById('transactionModal');
+    if (!modal) return;
+    
+    const currentUser = getCurrentUser();
+    const isBuyer = transaction.transactionBuyerID === currentUser.uid;
+    
+    const buyerConfirmed = transaction.buyerConfirmed || false;
+    const sellerConfirmed = transaction.sellerConfirmed || false;
+    const userConfirmed = isBuyer ? buyerConfirmed : sellerConfirmed;
+    const otherConfirmed = isBuyer ? sellerConfirmed : buyerConfirmed;
+    const isCompleted = transaction.transactionStatus === 'completed';
+    
+    let statusMessage = '';
+    let actionButton = '';
+    
+    if (isCompleted) {
+        statusMessage = '<div class="status-completed">✓ Transaction Completed</div>';
+    } else if (userConfirmed && otherConfirmed) {
+        statusMessage = '<div class="status-completed">✓ Both Confirmed - Completing...</div>';
+    } else if (userConfirmed) {
+        statusMessage = `<div class="status-waiting">⏳ Waiting for ${isBuyer ? 'seller' : 'buyer'} confirmation</div>`;
+    } else if (otherConfirmed) {
+        statusMessage = `<div class="status-action">⚠️ ${isBuyer ? 'Seller' : 'Buyer'} has confirmed. Please confirm to complete!</div>`;
+        actionButton = `
+            <button class="btn-primary btn-confirm" onclick="confirmTransaction('${transaction.id}', ${isBuyer})">
+                ${isBuyer ? 'Confirm Receipt' : 'Confirm Delivery'}
+            </button>
+        `;
+    } else {
+        statusMessage = '<div class="status-pending">⏳ Waiting for confirmations from both parties</div>';
+        actionButton = `
+            <button class="btn-primary btn-confirm" onclick="confirmTransaction('${transaction.id}', ${isBuyer})">
+                ${isBuyer ? 'Confirm Receipt' : 'Confirm Delivery'}
+            </button>
+        `;
+    }
+    
+    modal.innerHTML = `
+        <div class="modal-content transaction-modal">
+            <div class="modal-header">
+                <h2>Transaction Details</h2>
+                <button class="close-btn" onclick="closeTransactionModal()">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                ${statusMessage}
+                
+                <div class="transaction-details">
+                    <div class="detail-row">
+                        <span>Transaction ID:</span>
+                        <strong>#${transaction.id.slice(-8)}</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Quantity:</span>
+                        <strong>${transaction.transactionQuantityOrdered} kg</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Unit Price:</span>
+                        <strong>₱${formatNumber(transaction.transactionUnitPrice)}/kg</strong>
+                    </div>
+                    <div class="detail-row total">
+                        <span>Total Amount:</span>
+                        <strong>₱${formatNumber(transaction.transactionTotalAmount)}</strong>
+                    </div>
+                    ${transaction.agreedMeetupLocation ? `
+                        <div class="detail-row">
+                            <span>📍 Meetup Location:</span>
+                            <strong>${transaction.agreedMeetupLocation}</strong>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div class="confirmation-status">
+                    <div class="confirmation-item ${buyerConfirmed ? 'confirmed' : ''}">
+                        <span class="confirmation-icon">${buyerConfirmed ? '✓' : '○'}</span>
+                        <span>Buyer Confirmation</span>
+                    </div>
+                    <div class="confirmation-item ${sellerConfirmed ? 'confirmed' : ''}">
+                        <span class="confirmation-icon">${sellerConfirmed ? '✓' : '○'}</span>
+                        <span>Seller Confirmation</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                ${!isCompleted && !userConfirmed ? actionButton : ''}
+                <button class="btn-secondary" onclick="closeTransactionModal()">Close</button>
+            </div>
+        </div>
+    `;
+}
+
+window.closeTransactionModal = function() {
+    const modal = document.getElementById('transactionModal');
+    if (modal) {
+        // Clean up listener
+        if (modal.unsubscribeTransaction) {
+            modal.unsubscribeTransaction();
+        }
+        modal.remove();
+    }
+};
+
+window.confirmTransaction = async function(transactionId, isBuyer) {
+    showConfirmDialog(
+        `Confirm that you have ${isBuyer ? 'received the items' : 'delivered the items'}?`,
+        async () => {
+            try {
+                const transactionRef = doc(db, COLLECTIONS.TRANSACTIONS, transactionId);
+                const transactionDoc = await getDoc(transactionRef);
+                
+                if (!transactionDoc.exists()) {
+                    showToast('Transaction not found', 'error');
+                    return;
+                }
+                
+                const transaction = transactionDoc.data();
+                const updates = {};
+                const now = Timestamp.now();
+                
+                if (isBuyer) {
+                    updates.buyerConfirmed = true;
+                    updates.buyerConfirmedAt = now;
+                } else {
+                    updates.sellerConfirmed = true;
+                    updates.sellerConfirmedAt = now;
+                }
+                
+                // Check if both will be confirmed after this update
+                const bothConfirmed = (transaction.buyerConfirmed || isBuyer) && 
+                                     (transaction.sellerConfirmed || !isBuyer);
+                
+                if (bothConfirmed) {
+                    updates.transactionStatus = 'completed';
+                    updates.completedTransactionAt = now;
+                    
+                    console.log('✅ Both parties confirmed - marking as completed');
+                    
+                    // Use Firestore transaction to update everything atomically
+                    await runTransaction(db, async (firestoreTransaction) => {
+                        // Read listing first
+                        const listingRef = doc(db, COLLECTIONS.LISTINGS, transaction.transactionListingID);
+                        const listingDoc = await firestoreTransaction.get(listingRef);
+                        
+                        // Update transaction
+                        firestoreTransaction.update(transactionRef, updates);
+                        
+                        // Update listing inventory
+                        if (listingDoc.exists()) {
+                            const listing = listingDoc.data();
+                            const currentQuantity = parseFloat(listing.listingQuantityLeftKG || listing.listingQuantityKG || 0);
+                            const soldQuantity = transaction.transactionQuantityOrdered;
+                            const newQuantity = Math.max(0, currentQuantity - soldQuantity);
+                            
+                            firestoreTransaction.update(listingRef, {
+                                listingQuantityLeftKG: newQuantity.toString(),
+                                listingUpdatedAt: serverTimestamp()
+                            });
+                            
+                            console.log(`📦 Updated listing inventory: ${currentQuantity} -> ${newQuantity} kg`);
+                        }
+                    });
+                    
+                    // Update conversation to completed status
+                    await updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId), {
+                        buyerTransactionStatus: 'completed',
+                        sellerTransactionStatus: 'completed',
+                        conversationUpdatedAt: serverTimestamp()
+                    });
+                    
+                    // After 3 seconds, clear status and re-enable proposals
+                    setTimeout(async () => {
+                        await updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId), {
+                            canProposeDeal: true,
+                            buyerTransactionStatus: 'none',
+                            sellerTransactionStatus: 'none',
+                            conversationUpdatedAt: serverTimestamp()
+                        });
+                        console.log('✅ Transaction status cleared - ready for new proposals');
+                    }, 3000);
+                    
+                    // Update all related deal proposal messages to completed
+                    await updateRelatedProposalsToCompleted(transactionId);
+                    
+                    showToast('Transaction completed! Both parties have confirmed.', 'success');
+                    
+                } else {
+                    // Only one party confirmed - update conversation status
+                    await updateDoc(transactionRef, updates);
+                    
+                    const conversationUpdates = {};
+                    if (isBuyer) {
+                        conversationUpdates.buyerTransactionStatus = 'confirmation_pending';
+                    } else {
+                        conversationUpdates.sellerTransactionStatus = 'confirmation_pending';
+                    }
+                    conversationUpdates.conversationUpdatedAt = serverTimestamp();
+                    
+                    await updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId), conversationUpdates);
+                    
+                    showToast('Your confirmation recorded. Waiting for the other party.', 'info');
+                }
+                
+            } catch (error) {
+                console.error('Error confirming transaction:', error);
+                showToast('Failed to confirm transaction. Please try again.', 'error');
+            }
+        }
+    );
+};
+
+// Add this new helper function
+async function updateRelatedProposalsToCompleted(transactionId) {
+    try {
+        console.log('📝 Updating related proposals to completed...');
+        
+        const messagesRef = collection(db, COLLECTIONS.CONVERSATIONS, currentConversationId, COLLECTIONS.MESSAGES);
+        const q = query(
+            messagesRef,
+            where('messageType', '==', 'deal_proposal'),
+            where('messageMetadata.transactionId', '==', transactionId)
+        );
+        
+        const querySnapshot = await getDocs(q);
+        
+        console.log(`Found ${querySnapshot.size} proposals to update`);
+        
+        const updatePromises = [];
+        querySnapshot.forEach((docSnap) => {
+            const messageRef = doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId, COLLECTIONS.MESSAGES, docSnap.id);
+            updatePromises.push(
+                updateDoc(messageRef, {
+                    'messageMetadata.proposalStatus': 'completed',
+                    messageUpdatedAt: serverTimestamp()
+                })
+            );
+        });
+        
+        await Promise.all(updatePromises);
+        console.log('✅ All proposals updated to completed');
+        
+    } catch (error) {
+        console.error('Error updating proposals:', error);
+    }
+}
+// Cancellation Request
+window.requestCancellation = async function(transactionId) {
+    showPromptDialog(
+        'Request Cancellation',
+        'Please provide a reason for cancellation...',
+        async (reason) => {
+            try {
+                const currentUser = getCurrentUser();
+                const userData = getCurrentUserData();
+                
+                const requestData = {
+                    transactionId: transactionId,
+                    reason: reason,
+                    requestStatus: 'pending',
+                    requesterName: userData.userName,
+                    requestedAt: serverTimestamp()
+                };
+                
+                const messageData = {
+                    messageSenderId: currentUser.uid,
+                    messageReceiverId: currentReceiverId,
+                    messageText: 'Transaction cancellation requested',
+                    messageType: 'cancellation_request',
+                    messageStatus: 'sent',
+                    messageCreatedAt: serverTimestamp(),
+                    messageMetadata: requestData
+                };
+                
+                const messagesRef = collection(db, COLLECTIONS.CONVERSATIONS);
+                const conversationMessagesRef = collection(doc(messagesRef, currentConversationId), COLLECTIONS.MESSAGES);
+                
+                await addDoc(conversationMessagesRef, messageData);
+                
+                // Update transaction status
+                await updateDoc(doc(db, COLLECTIONS.TRANSACTIONS, transactionId), {
+                    transactionStatus: 'cancellation_requested'
+                });
+                
+                // Update conversation
+                await updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId), {
+                    'lastMessage': {
+                        lastMessageText: messageData.messageText,
+                        lastMessageTimestamp: serverTimestamp(),
+                        lastMessageSenderId: currentUser.uid
+                    },
+                    conversationUpdatedAt: serverTimestamp()
+                });
+                
+                showToast('Cancellation request sent', 'info');
+                
+            } catch (error) {
+                console.error('Error requesting cancellation:', error);
+                showToast('Failed to send cancellation request', 'error');
+            }
+        }
+    );
+};
+
+window.approveCancellation = async function(messageId, transactionId) {
+    showConfirmDialog('Approve this cancellation request?', async () => {
+        try {
+            const messageRef = doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId, COLLECTIONS.MESSAGES, messageId);
+            
+            await updateDoc(messageRef, {
+                'messageMetadata.requestStatus': 'approved',
+                messageUpdatedAt: serverTimestamp()
+            });
+            
+            // Update transaction
+            await updateDoc(doc(db, COLLECTIONS.TRANSACTIONS, transactionId), {
+                transactionStatus: 'cancelled',
+                completedTransactionAt: serverTimestamp()
+            });
+            
+            // RE-ENABLE proposals after cancellation - SET canProposeDeal to TRUE
+            setTimeout(async () => {
+                await updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId), {
+                    canProposeDeal: true,
+                    conversationUpdatedAt: serverTimestamp()
+                });
+            }, 1000);
+            
+            showToast('Cancellation approved', 'success');
+            
+        } catch (error) {
+            console.error('Error approving cancellation:', error);
+            showToast('Failed to approve cancellation', 'error');
+        }
+    });
+};
+
+window.rejectCancellation = async function(messageId, transactionId) {
+    showConfirmDialog('Reject this cancellation request?', async () => {
+        try {
+            const messageRef = doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId, COLLECTIONS.MESSAGES, messageId);
+            
+            await updateDoc(messageRef, {
+                'messageMetadata.requestStatus': 'rejected',
+                messageUpdatedAt: serverTimestamp()
+            });
+            
+            // Restore transaction to agreed status
+            await updateDoc(doc(db, COLLECTIONS.TRANSACTIONS, transactionId), {
+                transactionStatus: 'agreed'
+            });
+            
+            showToast('Cancellation request rejected', 'info');
+            
+        } catch (error) {
+            console.error('Error rejecting cancellation:', error);
+            showToast('Failed to reject cancellation', 'error');
+        }
+    });
+};
+
+
 function setupMessageInputForConversation() {
     const messageInput = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendBtn');
+    const attachmentBtn = document.getElementById('attachmentBtn');
+    const mediaInput = document.getElementById('mediaInput');
     
     if (!messageInput || !sendBtn) return;
     
-    messageInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
+    // Setup message input enter key
+    if (!messageInput.hasAttribute('data-listener-bound')) {
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        messageInput.setAttribute('data-listener-bound', 'true');
+    }
     
-    sendBtn.addEventListener('click', sendMessage);
+    // Setup send button
+    if (!sendBtn.hasAttribute('data-listener-bound')) {
+        sendBtn.addEventListener('click', sendMessage);
+        sendBtn.setAttribute('data-listener-bound', 'true');
+    }
+    
+    // Setup attachment button - FIXED
+    if (attachmentBtn && mediaInput && !attachmentBtn.hasAttribute('data-listener-bound')) {
+        attachmentBtn.addEventListener('click', () => {
+            console.log('📎 Attachment button clicked');
+            mediaInput.click();
+        });
+        attachmentBtn.setAttribute('data-listener-bound', 'true');
+    }
+    
+    // Setup media input change listener - FIXED
+    if (mediaInput && !mediaInput.hasAttribute('data-listener-bound')) {
+        mediaInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            
+            if (!file) return;
+            
+            const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const validVideoTypes = ['video/mp4', 'video/webm', 'video/ogg'];
+            
+            const isImage = validImageTypes.includes(file.type);
+            const isVideo = validVideoTypes.includes(file.type);
+            
+            if (!isImage && !isVideo) {
+                showToast('Please select a valid image or video file', 'error');
+                mediaInput.value = '';
+                return;
+            }
+            
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showToast('File size must be less than 10MB', 'error');
+                mediaInput.value = '';
+                return;
+            }
+            
+            await uploadMedia(file, isImage ? 'image' : 'video');
+            mediaInput.value = '';
+        });
+        mediaInput.setAttribute('data-listener-bound', 'true');
+    }
+    
+    messageInput.focus();
+}
+
+
+async function uploadMedia(file, mediaType) {
+    if (uploadInProgress) {
+        showToast('Please wait for the current upload to complete', 'info');
+        return;
+    }
+    
+    if (!currentConversationId || !currentReceiverId) {
+        showToast('Please select a conversation first', 'error');
+        return;
+    }
+    
+    uploadInProgress = true;
+    
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const attachmentBtn = document.getElementById('attachmentBtn');
+    
+    if (messageInput) messageInput.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+    if (attachmentBtn) attachmentBtn.disabled = true;
+    
+    if (uploadProgress) uploadProgress.style.display = 'block';
+    
+    try {
+        const currentUser = getCurrentUser();
+        const timestamp = Date.now();
+        const fileName = `${mediaType}_${timestamp}_${currentUser.uid}`;
+        const storageReference = ref(storage, `chat_media/${currentConversationId}/${fileName}`);
+        
+        const uploadTask = uploadBytesResumable(storageReference, file);
+        
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                if (progressFill) progressFill.style.width = `${progress}%`;
+                if (progressText) progressText.textContent = `Uploading... ${Math.round(progress)}%`;
+            },
+            (error) => {
+                console.error('Upload error:', error);
+                showToast('Failed to upload media. Please try again.', 'error');
+                uploadInProgress = false;
+                if (uploadProgress) uploadProgress.style.display = 'none';
+                if (messageInput) messageInput.disabled = false;
+                if (sendBtn) sendBtn.disabled = false;
+                if (attachmentBtn) attachmentBtn.disabled = false;
+            },
+            async () => {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                await sendMediaMessage(downloadURL, mediaType);
+                
+                uploadInProgress = false;
+                if (uploadProgress) uploadProgress.style.display = 'none';
+                if (messageInput) messageInput.disabled = false;
+                if (sendBtn) sendBtn.disabled = false;
+                if (attachmentBtn) attachmentBtn.disabled = false;
+            }
+        );
+        
+    } catch (error) {
+        console.error('Error uploading media:', error);
+        showToast('Failed to upload media. Please try again.', 'error');
+        uploadInProgress = false;
+        if (uploadProgress) uploadProgress.style.display = 'none';
+        if (messageInput) messageInput.disabled = false;
+        if (sendBtn) sendBtn.disabled = false;
+        if (attachmentBtn) attachmentBtn.disabled = false;
+    }
+}
+
+async function sendMediaMessage(mediaUrl, mediaType) {
+    const messageText = mediaType === 'image' ? '📸 Photo' : '🎥 Video';
+    await sendMessageToFirestore(messageText, mediaType, mediaUrl);
 }
 
 async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
-    const sendBtn = document.getElementById('sendBtn');
     
-    if (!messageInput || !currentConversationId) return;
+    if (!messageInput || !currentConversationId || !currentReceiverId) return;
     
     const messageText = messageInput.value.trim();
     
     if (!messageText) return;
     
-    const currentUser = getCurrentUser();
-    const currentUserData = getCurrentUserData();
+    messageInput.value = '';
     
-    if (!currentUser || !currentUserData) {
-        console.error('No user data available');
+    await sendMessageToFirestore(messageText, 'text', null);
+}
+
+async function sendMessageToFirestore(messageText, messageType, mediaUrl) {
+    const currentUser = getCurrentUser();
+    
+    if (!currentUser) {
+        console.error('No user logged in');
         return;
     }
     
-    // Disable input while sending
-    messageInput.disabled = true;
-    sendBtn.disabled = true;
-    
     try {
+        const now = serverTimestamp();
+        
         const messageData = {
-            conversationId: currentConversationId,
-            senderId: currentUser.uid,
-            senderName: currentUserData.userName,
-            text: messageText,
-            sentAt: serverTimestamp(),
-            isRead: false
+            messageSenderId: currentUser.uid,
+            messageReceiverId: currentReceiverId,
+            messageText: messageText,
+            messageType: messageType,
+            messageStatus: 'sent',
+            messageCreatedAt: now,
+            messageDeliveredAt: null,
+            messageReadAt: null,
+            messageMediaUrl: mediaUrl,
+            messageMetadata: null
         };
         
-        await addDoc(collection(db, COLLECTIONS.MESSAGES), messageData);
+        const messagesRef = collection(db, COLLECTIONS.CONVERSATIONS);
+        const conversationMessagesRef = collection(doc(messagesRef, currentConversationId), COLLECTIONS.MESSAGES);
         
-        // Clear input
-        messageInput.value = '';
+        await addDoc(conversationMessagesRef, messageData);
+        
+        await updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId), {
+            'lastMessage': {
+                lastMessageText: messageText,
+                lastMessageTimestamp: now,
+                lastMessageSenderId: currentUser.uid
+            },
+            conversationUpdatedAt: now
+        });
         
         console.log('✅ Message sent successfully');
         
     } catch (error) {
         console.error('Error sending message:', error);
-        alert('Failed to send message. Please try again.');
-    } finally {
-        messageInput.disabled = false;
-        sendBtn.disabled = false;
-        messageInput.focus();
+        showToast('Failed to send message. Please try again.', 'error');
     }
 }
 
@@ -352,37 +2171,16 @@ function setupSearchFunctionality() {
     });
 }
 
-function setupMessageInput() {
-    // This is handled per conversation in setupMessageInputForConversation
-}
-
 // Utility functions
 function formatTimestamp(date) {
     const now = new Date();
     const diff = now - date;
     
-    // Less than 1 minute
     if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
     
-    // Less than 1 hour
-    if (diff < 3600000) {
-        const minutes = Math.floor(diff / 60000);
-        return `${minutes}m ago`;
-    }
-    
-    // Less than 24 hours
-    if (diff < 86400000) {
-        const hours = Math.floor(diff / 3600000);
-        return `${hours}h ago`;
-    }
-    
-    // Less than 7 days
-    if (diff < 604800000) {
-        const days = Math.floor(diff / 86400000);
-        return `${days}d ago`;
-    }
-    
-    // Show date
     return date.toLocaleDateString();
 }
 
@@ -394,10 +2192,21 @@ function formatMessageTime(date) {
     });
 }
 
+function formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
-console.log('💬 Messages.js loaded with user manager integration');
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    if (conversationsListener) conversationsListener();
+    if (messagesListener) messagesListener();
+    if (conversationDetailsListener) conversationDetailsListener();
+});
+
+console.log('💬 Messages.js loaded with real-time updates and proper canProposeDeal logic');
