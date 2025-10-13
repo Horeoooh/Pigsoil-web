@@ -162,7 +162,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             animation: slideUp 0.8s ease-out;
         }
 
@@ -292,7 +292,7 @@
             justify-content: center;
             gap: 0.5rem;
             transition: all 0.3s ease;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             text-decoration: none;
             font-family: 'Poppins', sans-serif;
         }
@@ -314,6 +314,63 @@
 
         .login-btn:hover::before {
             transform: rotate(10deg);
+        }
+
+        /* Phone Login Button */
+        .phone-login-btn {
+            width: 100%;
+            background: transparent;
+            color: #4a6741;
+            border: 2px solid #4a6741;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .phone-login-btn:hover {
+            background: #4a6741;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(74, 103, 65, 0.2);
+        }
+
+        .phone-login-btn::before {
+            content: "📱";
+            transition: transform 0.3s ease;
+        }
+
+        .phone-login-btn:hover::before {
+            transform: scale(1.1);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .divider span {
+            padding: 0 1rem;
         }
 
         .signup-link {
@@ -416,7 +473,6 @@
     <header class="header">
         <div class="nav-container">
             <div class="logo">
-                <!-- Fixed paths for your project structure -->
                 <img src="/images/pig logo.png" alt="PigSoil Logo" class="logo-img">
                 <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
             </div>
@@ -485,6 +541,14 @@
                 </button>
             </form>
 
+            <div class="divider">
+                <span>or</span>
+            </div>
+
+            <a href="/phone-registration.html" class="phone-login-btn" id="phoneLoginButton">
+                <span>Continue with Phone</span>
+            </a>
+
             <div style="text-align: center; margin-top: 1rem; color: #666;">
                 Don't have an account? 
                 <a href="/signup.html" class="signup-link" style="display: inline;">Sign up here</a>
@@ -492,7 +556,6 @@
         </div>
     </main>
 
-    <!-- Import the login JavaScript with correct path for your structure -->
     <script type="module" src="/js/login.js"></script>
 </body>
 </html>

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listing Details - PigSoil+</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDxldiepJaqTaCW9kxCr-3cYgSlVD0fQYg&libraries=places"></script>
     <style>
         * {
             margin: 0;
@@ -96,22 +97,6 @@
             color: #4CAF50;
         }
 
-        .cart-count {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: #e74c3c;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 11px;
-            font-weight: 600;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-
         .user-profile {
             display: flex;
             align-items: center;
@@ -177,7 +162,7 @@
             color: #4CAF50;
         }
 
-        /* Listing Details Container */
+        /* Listing Container */
         .listing-container {
             background: white;
             border-radius: 20px;
@@ -192,63 +177,92 @@
             margin-bottom: 40px;
         }
 
-        /* Image Gallery */
-        .image-gallery {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+        /* Image Carousel */
+        .image-carousel {
+            position: relative;
         }
 
-        .main-image {
+        .carousel-container {
             width: 100%;
             height: 400px;
             border-radius: 16px;
             overflow: hidden;
             background: linear-gradient(45deg, #4A6741, #6B8E5F);
-            display: flex;
-            align-items: center;
-            justify-content: center;
             position: relative;
         }
 
-        .main-image img {
+        .carousel-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: none;
         }
 
-        .main-image-placeholder {
-            font-size: 80px;
+        .carousel-container img.active {
+            display: block;
         }
 
-        .thumbnail-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-        }
-
-        .thumbnail {
-            height: 80px;
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all 0.3s;
-            background: #f5f5f5;
+        .carousel-placeholder {
+            width: 100%;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 80px;
         }
 
-        .thumbnail:hover,
-        .thumbnail.active {
-            border-color: #4CAF50;
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #333;
+            transition: all 0.3s;
+            z-index: 10;
         }
 
-        .thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .carousel-btn:hover {
+            background: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .carousel-btn.prev {
+            left: 16px;
+        }
+
+        .carousel-btn.next {
+            right: 16px;
+        }
+
+        .carousel-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ddd;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .indicator.active {
+            background: #4CAF50;
+            width: 24px;
+            border-radius: 4px;
         }
 
         /* Listing Info */
@@ -333,64 +347,6 @@
             color: #333;
         }
 
-        /* Quantity Selector */
-        .quantity-selector {
-            margin: 24px 0;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
-        }
-
-        .quantity-selector label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: #333;
-        }
-
-        .quantity-controls {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 8px;
-        }
-
-        .qty-btn {
-            width: 40px;
-            height: 40px;
-            border: 2px solid #ddd;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            color: #666;
-            transition: all 0.3s;
-        }
-
-        .qty-btn:hover {
-            border-color: #4CAF50;
-            color: #4CAF50;
-        }
-
-        #quantityInput {
-            width: 100px;
-            text-align: center;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .qty-note {
-            font-size: 14px;
-            color: #666;
-            font-style: italic;
-        }
-
         /* Action Buttons */
         .action-buttons {
             display: flex;
@@ -442,7 +398,7 @@
             background: #f0f8e8;
         }
 
-        /* Seller Info */
+        /* Seller Card */
         .seller-card {
             background: #f8f9fa;
             padding: 20px;
@@ -481,7 +437,25 @@
             font-weight: 600;
         }
 
-        /* Description */
+        .view-reviews-btn {
+            background: none;
+            border: none;
+            color: #4CAF50;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0;
+            margin-top: 8px;
+        }
+
+        .view-reviews-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* Section Styling */
         .description-section {
             margin-top: 40px;
             padding-top: 40px;
@@ -501,27 +475,252 @@
             font-size: 15px;
         }
 
-        /* Location Map */
+        /* Location Section */
         .location-section {
             margin-top: 32px;
         }
 
-        .location-map {
-            width: 100%;
-            height: 300px;
+        .location-info {
+            background: #f8f9fa;
+            padding: 16px;
             border-radius: 12px;
+            margin-top: 12px;
+        }
+
+        .location-map-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .location-map-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
             overflow: hidden;
-            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #666;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: 16px;
+            border-radius: 50%;
+            transition: all 0.3s;
         }
 
-        .location-map img {
-            width: 100%;
+        .modal-close:hover {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* Review Stats */
+        .review-stats {
+            background: #f8f9fa;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .rating-summary {
+            text-align: center;
+        }
+
+        .rating-number {
+            font-size: 48px;
+            font-weight: 700;
+            color: #4CAF50;
+        }
+
+        .rating-stars {
+            color: #FF9800;
+            font-size: 24px;
+            margin: 8px 0;
+        }
+
+        .rating-count {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .rating-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .rating-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rating-label {
+            font-size: 14px;
+            color: #666;
+            width: 60px;
+        }
+
+        .rating-bar {
+            flex: 1;
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .rating-bar-fill {
+            background: #4CAF50;
             height: 100%;
-            object-fit: cover;
+            transition: width 0.3s;
+        }
+
+        .rating-value {
+            font-size: 14px;
+            color: #666;
+            width: 40px;
+            text-align: right;
+        }
+
+        /* Review Item */
+        .review-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .review-header {
+            display: flex;
+            align-items: start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .reviewer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .review-info {
+            flex: 1;
+        }
+
+        .reviewer-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .review-rating {
+            color: #FF9800;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .review-date {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .review-text {
+            color: #666;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .no-reviews {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        /* Map Modal */
+        #mapModal .modal-content {
+            max-width: 1000px;
+        }
+
+        #mapContainer {
+            width: 100%;
+            height: 500px;
+            border-radius: 12px;
+            overflow: hidden;
         }
 
         /* Loading State */
@@ -555,10 +754,116 @@
                 flex-direction: column;
             }
 
-            .thumbnail-grid {
-                grid-template-columns: repeat(3, 1fr);
+            .review-stats {
+                grid-template-columns: 1fr;
             }
         }
+
+        /* Contact Section with Message Input */
+.contact-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 24px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    border: 2px solid #e0e0e0;
+}
+
+.contact-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.message-input-group {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.message-input-field {
+    flex: 1;
+    padding: 14px 16px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: 'Poppins', Arial, sans-serif;
+    transition: all 0.3s;
+    background: white;
+}
+
+.message-input-field:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.message-input-field::placeholder {
+    color: #999;
+}
+
+.btn-send-message {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.btn-send-message:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.btn-send-message:active {
+    transform: translateY(0);
+}
+
+.btn-send-message:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.contact-note {
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Loading state for button */
+.btn-send-message.loading {
+    background: #999;
+    cursor: wait;
+}
+
+.btn-send-message.loading svg {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
     </style>
 </head>
 <body>
@@ -583,7 +888,6 @@
                         <circle cx="20" cy="21" r="1"></circle>
                         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                     </svg>
-                    <span class="cart-count">0</span>
                 </button>
                 <button class="icon-btn" id="notificationBtn" aria-label="View notifications">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -615,11 +919,37 @@
             <p>Please wait while we fetch the product information</p>
         </div>
 
-        <!-- Listing Container (Hidden initially) -->
+        <!-- Listing Container -->
         <div class="listing-container" id="listingContainer" style="display: none;">
             <!-- Content will be populated by JavaScript -->
         </div>
     </main>
+
+    <!-- Reviews Modal -->
+    <div class="modal" id="reviewsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Swine Farmer Reviews</h2>
+                <button class="modal-close" onclick="closeReviewsModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="reviewsModalBody">
+                <!-- Reviews content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Modal -->
+    <div class="modal" id="mapModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="mapModalTitle">Pickup Location</h2>
+                <button class="modal-close" onclick="closeMapModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="mapContainer"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- Firebase and App Scripts -->
     <script type="module" src="../js/listing-details.js"></script>

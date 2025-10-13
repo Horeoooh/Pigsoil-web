@@ -336,6 +336,16 @@
             background: linear-gradient(45deg, #2E7D32, #388E3C);
         }
 
+        .listing-image.sold-out {
+    background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+    filter: grayscale(50%);
+}
+
+.listing-image.sold-out::before {
+    content: '📦';
+    opacity: 0.5;
+}
+
         .listing-image::before {
             content: '🌱';
             font-size: 48px;
@@ -475,6 +485,103 @@
                 flex-direction: column;
                 gap: 8px;
             }
+
+            /* Badge Styling */
+.listing-badges {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 10;
+}
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.badge-icon {
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+}
+
+.badge.available {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+}
+
+.badge.sold-out {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+/* Update existing listing-image styles */
+.listing-image {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+    background: linear-gradient(45deg, #4a4a4a, #666);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.listing-image.compost {
+    background: linear-gradient(45deg, #8B4513, #A0522D);
+}
+
+.listing-image.sold-out-bg {
+    background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+    filter: grayscale(30%);
+}
+
+.listing-image.sold-out-bg::before {
+    content: '📦';
+    font-size: 48px;
+    opacity: 0.3;
+    position: absolute;
+    z-index: 1;
+}
+
+/* Remove old status-badge styles */
+.status-badge {
+    display: none;
+}
+
+/* Update listing meta to support two rows */
+.listing-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: #888;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.meta-icon {
+    font-size: 14px;
+    width: 18px;
+}
         }
     </style>
 </head>
@@ -543,112 +650,17 @@
         </section>
 
         <!-- Listings Section -->
-        <section class="listings-section">
-            <h2>My Listings</h2>
-            <div class="listings-grid">
-                <!-- Active Listing 1 -->
-                <div class="listing-card">
-                    <div class="listing-image compost">
-                        <div class="status-badge active">Active</div>
-                    </div>
-                    <div class="listing-details">
-                        <div class="listing-header">
-                            <h3 class="listing-title">My Premium Pig Compost</h3>
-                            <span class="listing-price">P75/kg</span>
-                        </div>
-                        <div class="listing-stats">
-                            <div class="stat-item">
-                                <span class="stat-icon">📦</span>
-                                <span>35kg remaining</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-icon">👁️</span>
-                                <span>12 views today</span>
-                            </div>
-                        </div>
-                        <div class="listing-meta">
-                            <div class="meta-item">
-                                <span class="meta-icon">📅</span>
-                                <span>Posted 3 days ago</span>
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-icon">💬</span>
-                                <span>2 inquiries</span>
-                            </div>
-                        </div>
-                        <a href="/View.html" class="btn-view">View</a>
-                    </div>
-                </div>
-
-                <!-- Sold Out Listing -->
-                <div class="listing-card">
-                    <div class="listing-image compost">
-                        <div class="status-badge sold">Sold Out</div>
-                    </div>
-                    <div class="listing-details">
-                        <div class="listing-header">
-                            <h3 class="listing-title">Pig Compost Hot Method</h3>
-                            <span class="listing-price">P90/kg</span>
-                        </div>
-                        <div class="listing-stats">
-                            <div class="stat-item">
-                                <span class="stat-icon">✅</span>
-                                <span>30kg completely sold</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-icon">👁️</span>
-                                <span>5 views today</span>
-                            </div>
-                        </div>
-                        <div class="listing-meta">
-                            <div class="meta-item">
-                                <span class="meta-icon">📅</span>
-                                <span>Sold out last week</span>
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-icon">💵</span>
-                                <span>P 2,550 earned</span>
-                            </div>
-                        </div>
-                        <a href="/View.html" class="btn-view">View</a>
-                    </div>
-                </div>
-
-                <!-- Active Listing 2 -->
-                <div class="listing-card">
-                    <div class="listing-image organic">
-                        <div class="status-badge active">Active</div>
-                    </div>
-                    <div class="listing-details">
-                        <div class="listing-header">
-                            <h3 class="listing-title">Organic Fertilizer Mix</h3>
-                            <span class="listing-price">P65/kg</span>
-                        </div>
-                        <div class="listing-stats">
-                            <div class="stat-item">
-                                <span class="stat-icon">📦</span>
-                                <span>50kg remaining</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-icon">👁️</span>
-                                <span>8 views today</span>
-                            </div>
-                        </div>
-                        <div class="listing-meta">
-                            <div class="meta-item">
-                                <span class="meta-icon">📅</span>
-                                <span>Posted 1 day ago</span>
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-icon">💬</span>
-                                <span>1 inquiry</span>
-                            </div>
-                        </div>
-                        <a href="/View.html" class="btn-view">View</a>
-                    </div>
-                </div>
-            </div>
-        </section>
+<section class="listings-section">
+    <h2>My Listings</h2>
+    <div class="listings-grid">
+        <!-- Dynamic listings will be loaded here by JavaScript -->
+        <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
+            <div style="font-size: 60px; margin-bottom: 16px;">📦</div>
+            <h3 style="font-size: 20px; margin-bottom: 8px; color: #333;">Loading your swine compost listings...</h3>
+            <p style="color: #666; font-size: 14px;">Please wait while we fetch your products from the marketplace</p>
+        </div>
+    </div>
+</section>
     </main>
     <script type="module" src="/js/farmermarket.js"></script>
     <script type="module" src="/js/shared-user-manager.js"></script>

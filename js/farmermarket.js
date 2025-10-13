@@ -116,38 +116,44 @@ function createListingCard(listing) {
     card.className = 'listing-card';
     card.dataset.listingId = listing.id;
     
-    // Extract listing data
-    const compostType = listing.compostTechnique || 'basic_swine_manure';
-    const imageClass = compostType === 'hot_composting' ? 'organic' : 'compost';
-    
     const productName = listing.listingProductName || 'Swine Compost';
     const pricePerKg = parseFloat(listing.listingPricePerKG || 0);
-    const quantity = parseFloat(listing.listingQuantityKG || 0);
+    const quantityLeft = parseFloat(listing.listingQuantityLeftKG || listing.listingQuantityKG || 0);
+    const originalQuantity = parseFloat(listing.listingQuantityKG || 0);
     
-    const isAvailable = listing.listingIsAvailable !== false;
-    const statusClass = isAvailable ? 'active' : 'sold';
-    const statusText = isAvailable ? 'Active' : 'Sold Out';
+    const isAvailable = listing.listingIsAvailable !== false && quantityLeft > 0;
+    const statusClass = isAvailable ? 'available' : 'sold-out';
+    const statusText = isAvailable ? 'Available' : 'Sold Out';
+    const statusIcon = isAvailable ? '✓' : '✗';
     
-    // Mock stats (replace with actual data from Firebase)
-    const views = listing.listingViews || Math.floor(Math.random() * 50) + 5;
-    const inquiries = listing.listingInquiries || Math.floor(Math.random() * 10);
+    // Calculate sold amount
+    const soldAmount = originalQuantity - quantityLeft;
     
     // Date formatting
     const createdDate = listing.listingCreatedAt 
-        ? formatTimeAgo(listing.listingCreatedAt) 
-        : 'Recently';
+        ? formatDate(listing.listingCreatedAt) 
+        : 'Unknown';
+    
+    const updatedDate = listing.listingUpdatedAt 
+        ? formatDate(listing.listingUpdatedAt) 
+        : null;
     
     const mainImage = listing.listingProductImages && listing.listingProductImages.length > 0 
         ? listing.listingProductImages[0] 
         : null;
     
     card.innerHTML = `
-        <div class="listing-image ${imageClass}">
-            <div class="status-badge ${statusClass}">${statusText}</div>
+        <div class="listing-image ${isAvailable ? 'compost' : 'sold-out-bg'}">
             ${mainImage ? 
                 `<img src="${mainImage}" alt="${productName}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">` :
                 ''
             }
+            <div class="listing-badges">
+                <div class="badge ${statusClass}">
+                    <span class="badge-icon">${statusIcon}</span>
+                    ${statusText}
+                </div>
+            </div>
         </div>
         <div class="listing-details">
             <div class="listing-header">
@@ -157,28 +163,48 @@ function createListingCard(listing) {
             <div class="listing-stats">
                 <div class="stat-item">
                     <span class="stat-icon">📦</span>
-                    <span>${quantity}kg ${isAvailable ? 'remaining' : 'sold'}</span>
+                    <span>${quantityLeft.toFixed(1)}kg ${isAvailable ? 'remaining' : 'sold out'}</span>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-icon">👁️</span>
-                    <span>${views} views total</span>
-                </div>
+                ${soldAmount > 0 ? `
+                    <div class="stat-item">
+                        <span class="stat-icon">✅</span>
+                        <span>${soldAmount.toFixed(1)}kg sold</span>
+                    </div>
+                ` : ''}
             </div>
             <div class="listing-meta">
                 <div class="meta-item">
                     <span class="meta-icon">📅</span>
-                    <span>Posted ${createdDate}</span>
+                    <span>Created: ${createdDate}</span>
                 </div>
-                <div class="meta-item">
-                    <span class="meta-icon">💬</span>
-                    <span>${inquiries} inquiries</span>
-                </div>
+                ${updatedDate && updatedDate !== createdDate ? `
+                    <div class="meta-item">
+                        <span class="meta-icon">🔄</span>
+                        <span>Updated: ${updatedDate}</span>
+                    </div>
+                ` : ''}
             </div>
             <button class="btn-view" onclick="viewListing('${listing.id}')">View & Manage</button>
         </div>
     `;
     
     return card;
+}
+
+function formatDate(timestamp) {
+    if (!timestamp) return 'Unknown';
+    
+    let date;
+    if (timestamp.toDate) {
+        date = timestamp.toDate();
+    } else if (timestamp instanceof Date) {
+        date = timestamp;
+    } else {
+        date = new Date(timestamp);
+    }
+    
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
 }
 
 function formatTimeAgo(timestamp) {

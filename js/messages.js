@@ -176,6 +176,7 @@ function initializeMessaging(user, userData) {
     setupSearchFunctionality();
     // REMOVE this line: setupMediaInput();  <-- DELETE THIS
     setupModals();
+    handleUrlParameters();
 }
 
 // Setup modal functionality
@@ -1043,7 +1044,7 @@ function openDealProposalModal() {
                     <!-- NEW: Location Picker Section -->
                     <div class="location-picker-section">
                         <div class="location-picker-header">
-                            <h4>Meetup Location</h4>
+                            <h4>Preferred Meetup Location</h4>
                             <span class="optional-badge">Optional</span>
                         </div>
                         
@@ -1916,6 +1917,52 @@ window.approveCancellation = async function(messageId, transactionId) {
         }
     });
 };
+
+function handleUrlParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const conversationId = urlParams.get('conversation');
+    
+    if (conversationId) {
+        console.log('📌 Opening conversation from URL:', conversationId);
+        
+        // Wait for conversations to load, then open the specified one
+        setTimeout(async () => {
+            try {
+                const conversationDoc = await getDoc(doc(db, COLLECTIONS.CONVERSATIONS, conversationId));
+                
+                if (!conversationDoc.exists()) {
+                    console.error('❌ Conversation not found:', conversationId);
+                    showToast('Conversation not found', 'error');
+                    return;
+                }
+                
+                const conversation = conversationDoc.data();
+                const currentUser = getCurrentUser();
+                const otherParticipantId = conversation.participants.find(id => id !== currentUser.uid);
+                const otherParticipantDetails = conversation.participantDetails?.[otherParticipantId];
+                const otherParticipantName = otherParticipantDetails?.participantName || 'User';
+                
+                // Open the conversation
+                await openConversation(
+                    conversationId, 
+                    otherParticipantId, 
+                    otherParticipantName, 
+                    otherParticipantDetails, 
+                    conversation,
+                    null
+                );
+                
+                // Clear URL parameter
+                window.history.replaceState({}, '', '/messages.html');
+                
+            } catch (error) {
+                console.error('❌ Error opening conversation from URL:', error);
+                showToast('Failed to open conversation', 'error');
+            }
+        }, 1000);
+    }
+}
+
 
 window.rejectCancellation = async function(messageId, transactionId) {
     showConfirmDialog('Reject this cancellation request?', async () => {

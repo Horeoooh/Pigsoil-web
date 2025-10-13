@@ -212,7 +212,7 @@ async function completeUserProfile(profileData) {
             if (profileData.userType === 'swine_farmer') {
                 window.location.href = '/dashboard.html';
             } else {
-                window.location.href = '/marketplace.html';
+                window.location.href = '/buyer-dashboard.html';
             }
         }, 2000);
         

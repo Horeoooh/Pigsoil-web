@@ -12,6 +12,7 @@
             box-sizing: border-box;
         }
 
+        
         body {
             font-family: 'Poppins', Arial, sans-serif;
             background: linear-gradient(103deg, #FFEED0 0%, #FFC7B8 170%);
@@ -803,21 +804,33 @@
         </div>
     </div>
 
-    <!-- *** GOOGLE MAPS MODAL - ADDED *** -->
-    <div id="locationModal" class="modal-overlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h2 class="modal-title">Select Pickup Location</h2>
-                <button class="modal-close" id="modalClose">&times;</button>
-            </div>
-            <input type="text" id="locationSearch" class="location-search" placeholder="Search for your farm location...">
-            <div id="mapContainer" class="map-container"></div>
-            <div class="modal-buttons">
-                <button class="btn-secondary" id="cancelLocation">Cancel</button>
-                <button class="btn-primary" id="confirmLocation">Confirm Location</button>
+<!-- *** GOOGLE MAPS MODAL - UPDATED WITH PREVIEW *** -->
+<div id="locationModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Select Pickup Location</h2>
+            <button class="modal-close" id="modalClose">&times;</button>
+        </div>
+        <input type="text" id="locationSearch" class="location-search" placeholder="Search for your farm location...">
+        <div id="mapContainer" class="map-container"></div>
+        
+        <!-- Location Preview -->
+        <div id="locationPreview" style="background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: start; gap: 12px;">
+                <span style="font-size: 24px;">📍</span>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 16px; color: #333; margin-bottom: 4px;" id="previewLocationName">Select a location</div>
+                    <div style="font-size: 14px; color: #666; line-height: 1.5;" id="previewLocationAddress">Click on the map or search to select your farm location</div>
+                </div>
             </div>
         </div>
+        
+        <div class="modal-buttons">
+            <button class="btn-secondary" id="cancelLocation">Cancel</button>
+            <button class="btn-primary" id="confirmLocation">Confirm Location</button>
+        </div>
     </div>
+</div>
 
     <!-- Header -->
     <header class="header">
@@ -935,24 +948,7 @@
                     </div>
                 </div>
 
-                <!-- Composting Technique Selection -->
-                <div class="form-group">
-                    <label class="form-label">Composting Technique Used *</label>
-                    <div class="technique-section">
-                        <p style="font-size: 14px; color: #666; margin-bottom: 8px;">Select the composting method you used for this batch:</p>
-                        <div class="technique-options">
-                            <div class="technique-option selected" data-technique="basic_swine_manure">
-                                <div class="technique-title">Basic Swine Manure</div>
-                                <div class="technique-description">Traditional composting method using swine manure with natural decomposition process</div>
-                            </div>
-                            <div class="technique-option" data-technique="hot_composting">
-                                <div class="technique-title">Hot Composting Method</div>
-                                <div class="technique-description">Advanced composting with temperature monitoring and controlled decomposition</div>
-                            </div>
-                        </div>
-                        <input type="hidden" id="compostTechnique" value="basic_swine_manure">
-                    </div>
-                </div>
+                
 
                 <!-- *** UPDATED LOCATION SECTION *** -->
                 <div class="form-group">
@@ -961,8 +957,8 @@
                         <div class="location-map" id="locationMapPreview">
                             <div id="staticMap" style="width: 100%; height: 100%; border-radius: 8px; overflow: hidden;">
                                 <div style="display: flex; align-items: center; justify-content: center; height: 100%; text-align: center; color: #999;">
-                                    🗺️ Click "Change" to set your farm location<br>
-                                    <small>Select your swine farm pickup location</small>
+                                    🗺️ Click "Change" to set your meetup location<br>
+                                    <small></small>
                                 </div>
                             </div>
                         </div>
@@ -983,7 +979,7 @@
                     <textarea 
                         id="description" 
                         class="form-input form-textarea" 
-                        placeholder="Describe your swine compost: composting technique used, age of compost, quality, and any special features. Example: 'High-quality organic compost made from swine manure using basic composting method. Aged for 3 months, rich in nutrients, perfect for vegetable gardens and organic farming. Direct communication preferred for pickup arrangements.'"
+                        placeholder="Describe your swine compost"
                         maxlength="500"
                     ></textarea>
                     <div id="descriptionCounter" style="font-size: 12px; color: #666; text-align: right; margin-top: 4px;">0/500 characters</div>
@@ -1054,7 +1050,8 @@
         lng: 123.8854,
         name: 'Select farm location',
         address: 'Click "Change" to choose pickup location',
-        formattedAddress: 'Cebu City, Philippines'
+        formattedAddress: 'Cebu City, Philippines',
+        placeId: '' // Add placeId field
     };
     let geocoder;
     let autocomplete;
@@ -1074,7 +1071,7 @@
         setupFormValidation();
         setupCharacterCounters();
         setupLocationHandler();
-        setupCompostTechnique();
+
         setupLocationModal(); // Added Google Maps setup
     });
 
@@ -1112,14 +1109,14 @@
     }
 
     function openLocationPicker() {
-        const locationModal = document.getElementById('locationModal');
-        if (locationModal) {
-            locationModal.classList.add('show');
-            setTimeout(() => {
-                initializeMap();
-            }, 300);
-        }
+    const locationModal = document.getElementById('locationModal');
+    if (locationModal) {
+        locationModal.classList.add('show');
+        setTimeout(() => {
+            initializeMap();
+        }, 300);
     }
+}
 
     function closeLocationPicker() {
         const locationModal = document.getElementById('locationModal');
@@ -1189,6 +1186,7 @@
             marker.setPosition(location);
             reverseGeocode(location);
         });
+            updateLocationPreview();
     }
 
     function updateMapLocation(location, place = null) {
@@ -1199,15 +1197,40 @@
             selectedLocation.formattedAddress = place.formatted_address;
             selectedLocation.name = place.name || 'Selected Location';
             selectedLocation.address = place.formatted_address;
+            selectedLocation.placeId = place.place_id || '';
         }
         
         if (map && marker) {
             map.setCenter(location);
             marker.setPosition(location);
         }
+        
+        // Update preview
+        updateLocationPreview();
     }
 
-    function reverseGeocode(location) {
+    function updateLocationPreview() {
+    const previewName = document.getElementById('previewLocationName');
+    const previewAddress = document.getElementById('previewLocationAddress');
+    
+    if (previewName && selectedLocation) {
+        previewName.textContent = selectedLocation.name || 'Selected Location';
+        previewName.style.color = '#4CAF50';
+        
+        // Animate update
+        previewName.style.transition = 'all 0.3s';
+        previewName.style.transform = 'scale(1.05)';
+        setTimeout(() => {
+            previewName.style.transform = 'scale(1)';
+        }, 300);
+    }
+    
+    if (previewAddress && selectedLocation) {
+        previewAddress.textContent = selectedLocation.formattedAddress || selectedLocation.address || 'Location selected';
+    }
+}
+
+   function reverseGeocode(location) {
         if (!geocoder) return;
         
         geocoder.geocode({ location: location }, (results, status) => {
@@ -1218,10 +1241,13 @@
                 selectedLocation.formattedAddress = result.formatted_address;
                 selectedLocation.name = extractLocationName(result);
                 selectedLocation.address = result.formatted_address;
+                selectedLocation.placeId = result.place_id || '';
+                
+                // Update preview
+                updateLocationPreview();
             }
         });
     }
-
    function extractLocationName(result) {
     console.log('📍 Extracting location from:', result.address_components.map(c => ({
         name: c.long_name,
@@ -1414,21 +1440,6 @@
             console.error('Error fetching user data:', error);
             throw error;
         }
-    }
-
-    // Setup composting technique selection
-    function setupCompostTechnique() {
-        const techniqueOptions = document.querySelectorAll('.technique-option');
-        const hiddenInput = document.getElementById('compostTechnique');
-        
-        techniqueOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                techniqueOptions.forEach(opt => opt.classList.remove('selected'));
-                this.classList.add('selected');
-                selectedTechnique = this.getAttribute('data-technique');
-                hiddenInput.value = selectedTechnique;
-            });
-        });
     }
 
     // Setup photo upload
@@ -1690,7 +1701,6 @@
         const quantity = document.getElementById('quantity').value;
         const price = document.getElementById('price').value;
         const description = document.getElementById('description').value.trim();
-        const technique = document.getElementById('compostTechnique').value;
         
         const photos = [];
         uploadedPhotos.forEach((file, index) => {
@@ -1708,7 +1718,6 @@
             quantity: parseFloat(quantity),
             price: parseFloat(price),
             description,
-            technique,
             photos,
             location: selectedLocation, // Added location data
             sellerId: currentUser?.uid,
@@ -1716,61 +1725,75 @@
         };
     }
 
-    // *** UPDATED SUBMIT TO FIREBASE - ADDED LOCATION DATA ***
     async function submitListingToFirebase(formData) {
-        try {
-            // Upload photos
-            updateProgress('Uploading compost photos...', 25);
-            const photoUrls = await uploadPhotosToFirebase(formData.photos);
-            
-            // Create listing data
-            updateProgress('Creating swine compost listing...', 50);
-            const listingData = {
-                listingAddressId: 'default_address',
-                listingBatchID: 'batch_' + Date.now(),
-                listingCreatedAt: serverTimestamp(),
-                listingDescription: formData.description,
-                listingIsAvailable: true,
-                listingPricePerKG: formData.price.toString(),
-                listingProductImages: photoUrls.map(photo => photo.url),
-                listingProductName: formData.title,
-                listingQuantityKG: formData.quantity.toString(),
-                listingSellerID: formData.sellerId,
-                listingTotalPrice: formData.quantity * formData.price,
-                listingUpdatedAt: serverTimestamp(),
-                // Added location data
-                listingLocation: {
-                    lat: formData.location.lat,
-                    lng: formData.location.lng,
-                    name: formData.location.name,
-                    address: formData.location.address,
-                    formattedAddress: formData.location.formattedAddress
-                },
-                compostTechnique: formData.technique
+    try {
+        // Upload photos
+        updateProgress('Uploading compost photos...', 25);
+        const photoUrls = await uploadPhotosToFirebase(formData.photos);
+        
+        // Create address document in the root addresses collection
+        updateProgress('Saving location...', 40);
+        let addressId = 'default_address';
+        
+        if (formData.location && formData.location.lat && formData.location.lng) {
+            const addressData = {
+                addressCreatedAt: serverTimestamp(),
+                addressLatitude: formData.location.lat,
+                addressLongitude: formData.location.lng,
+                addressName: formData.location.name || 'Selected Location',
+                addressPlaceId: formData.location.placeId || ''
             };
             
-            // Save to Firestore
-            updateProgress('Saving to database...', 75);
-            const docRef = await addDoc(collection(db, COLLECTIONS.PRODUCT_LISTINGS), listingData);
-            
-            updateProgress('Listing created successfully!', 100);
+            // Save to root-level addresses collection
+            const addressRef = await addDoc(collection(db, 'addresses'), addressData);
+            addressId = addressRef.id;
+            console.log('✅ Address saved to addresses collection with ID:', addressId);
+        }
+        
+        // Create listing data
+        updateProgress('Creating swine compost listing...', 60);
+        const listingData = {
+            listingAddressId: addressId,
+            listingBatchID: '',
+            listingCreatedAt: serverTimestamp(),
+            listingDescription: formData.description,
+            listingIsAvailable: true,
+            listingMinimumOrderKG: NaN,
+            listingPricePerKG: formData.price.toFixed(1),
+            listingProductImages: photoUrls.map(photo => photo.url),
+            listingProductName: formData.title,
+            listingQuantityKG: formData.quantity.toFixed(1),
+            listingQuantityLeftKG: formData.quantity.toFixed(1), // Same as listingQuantityKG
+            listingSellerID: formData.sellerId,
+            listingTotalPrice: formData.quantity * formData.price,
+            listingUpdatedAt: serverTimestamp(),
+        };
+        
+        // Save to Firestore
+        updateProgress('Saving to database...', 85);
+        const docRef = await addDoc(collection(db, COLLECTIONS.PRODUCT_LISTINGS), listingData);
+        
+        console.log('✅ Listing created with ID:', docRef.id);
+        console.log('✅ Address reference:', addressId);
+        
+        updateProgress('Listing created successfully!', 100);
+        
+        setTimeout(() => {
+            hideLoadingOverlay();
+            showNotification('Swine compost listing posted successfully!', 'success');
             
             setTimeout(() => {
-                hideLoadingOverlay();
-                showNotification('Swine compost listing posted successfully!', 'success');
-                
-                setTimeout(() => {
-                    window.location.href = 'farmermarket.html';
-                }, 2000);
-            }, 1000);
-            
-        } catch (error) {
-            console.error('Error creating listing:', error);
-            hideLoadingOverlay();
-            showNotification('Error creating listing: ' + error.message, 'error');
-            isFormSubmitting = false;
-        }
+                window.location.href = 'farmermarket.html';
+            }, 2000);
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Error creating listing:', error);
+        hideLoadingOverlay();
+        showNotification('Error creating listing: ' + error.message, 'error');
+        isFormSubmitting = false;
     }
+}
 
     // Upload photos to Firebase Storage
     async function uploadPhotosToFirebase(photos) {
