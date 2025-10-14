@@ -1,5 +1,5 @@
-// farmer-listing-view.js - View and manage farmer's own listing (with inline editing)
-import { auth, db } from './init.js';
+// farmer-listing-view.js - View and manage farmer's own listing (with inline editing and image carousel)
+import { auth, db, storage } from './init.js';
 import '../js/shared-user-manager.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
@@ -9,6 +9,12 @@ import {
     deleteDoc,
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
+import {
+    ref,
+    uploadBytes,
+    getDownloadURL,
+    deleteObject
+} from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-storage.js';
 
 const COLLECTIONS = {
     PRODUCT_LISTINGS: 'product_listings',
@@ -91,8 +97,8 @@ function renderListingDetails() {
     const productName = currentListing.listingProductName || 'Premium Swine Compost';
     const description = currentListing.listingDescription || 'High-quality organic fertilizer from swine farming.';
     const pricePerKg = parseFloat(currentListing.listingPricePerKG || 0);
-    const originalQuantity = parseFloat(currentListing.listingQuantityKG || 0);
-    const quantityLeft = parseFloat(currentListing.listingQuantityLeftKG || originalQuantity);
+    const totalProduced = parseFloat(currentListing.listingQuantityKG || 0);
+    const quantityLeft = parseFloat(currentListing.listingQuantityLeftKG || totalProduced);
     
     const isAvailable = currentListing.listingIsAvailable !== false && quantityLeft > 0;
     const statusBadge = isAvailable ? 
@@ -113,28 +119,85 @@ function renderListingDetails() {
         ? formatDate(currentListing.listingUpdatedAt) 
         : createdDate;
     
-    const soldAmount = originalQuantity - quantityLeft;
+    const soldAmount = totalProduced - quantityLeft;
     
     container.innerHTML = `
         <div class="listing-grid">
-            <!-- Image Gallery -->
+            <!-- Image Carousel -->
             <div class="image-gallery">
-                <div class="main-image" id="mainImage">
-                    ${hasImages ? 
-                        `<img src="${images[0]}" alt="${productName}" onerror="this.parentElement.innerHTML='<div class=\\'main-image-placeholder\\'>🌱</div>'">` :
-                        `<div class="main-image-placeholder">🌱</div>`
-                    }
+                <div class="carousel-container" id="carouselContainer">
+                    ${images.length > 0 ? images.map((img, index) => `
+                        <div class="carousel-slide ${index === 0 ? 'active' : ''}" data-index="${index}">
+                            <img src="${img}" alt="${productName} image ${index + 1}" onerror="handleImageError(this)">
+                        </div>
+                    `).join('') : `
+                        <div class="carousel-slide active">
+                            <div class="main-image-placeholder">🌱</div>
+                        </div>
+                    `}
+                    
+                    <!-- Navigation Arrows -->
+                    ${images.length > 1 ? `
+                        <button class="carousel-nav carousel-prev" onclick="navigateCarousel(-1)" aria-label="Previous image">
+                            ‹
+                        </button>
+                        <button class="carousel-nav carousel-next" onclick="navigateCarousel(1)" aria-label="Next image">
+                            ›
+                        </button>
+                    ` : ''}
+                    
+                    <!-- Image Counter -->
+                    ${images.length > 0 ? `
+                        <div class="image-counter">
+                            ${selectedImageIndex + 1} / ${images.length}
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Edit Actions -->
+                    <div class="image-edit-actions ${isEditMode ? 'visible' : ''}" id="imageEditActions">
+                        <button class="image-action-btn delete" onclick="deleteCurrentImage()" title="Delete this image">
+                            🗑️
+                        </button>
+                        <button class="image-action-btn add" onclick="triggerImageUpload()" title="Add new image">
+                            ➕
+                        </button>
+                    </div>
+                    
+                    <!-- Indicators -->
+                    ${images.length > 1 ? `
+                        <div class="carousel-indicators" id="carouselIndicators">
+                            ${images.map((_, index) => `
+                                <button class="carousel-indicator ${index === 0 ? 'active' : ''}" 
+                                        onclick="goToSlide(${index})"
+                                        aria-label="Go to image ${index + 1}">
+                                </button>
+                            `).join('')}
+                        </div>
+                    ` : ''}
                 </div>
                 
-                ${images.length > 1 ? `
-                    <div class="thumbnail-grid">
-                        ${images.map((img, index) => `
-                            <div class="thumbnail ${index === 0 ? 'active' : ''}" onclick="selectImage(${index})">
-                                <img src="${img}" alt="Product image ${index + 1}" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;font-size:24px;\\'>🌱</div>'">
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : ''}
+                <!-- Thumbnail Grid with Add Button -->
+                <div class="thumbnail-grid" id="thumbnailGrid">
+                    ${images.map((img, index) => `
+                        <div class="thumbnail ${index === 0 ? 'active' : ''}" onclick="goToSlide(${index})">
+                            <img src="${img}" alt="Thumbnail ${index + 1}" onerror="handleThumbnailError(this)">
+                            ${isEditMode ? `
+                                <button class="thumbnail-delete" onclick="event.stopPropagation(); deleteImage(${index})" title="Delete image">
+                                    ×
+                                </button>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                    
+                    ${isEditMode ? `
+                        <div class="thumbnail add-new" onclick="triggerImageUpload()" title="Add new image">
+                            ➕
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <!-- Hidden File Input -->
+                <input type="file" id="imageUploadInput" accept="image/*" multiple style="display: none;">
             </div>
             
             <!-- Listing Info -->
@@ -142,7 +205,7 @@ function renderListingDetails() {
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px;">
                     <h1 id="productTitle">${productName}</h1>
                     <button class="btn-edit-toggle" onclick="toggleEditMode()" id="editToggleBtn">
-                        ✏️ Edit
+                        ${isEditMode ? '💾 Save Changes' : '✏️ Edit Listing'}
                     </button>
                 </div>
                 
@@ -157,10 +220,10 @@ function renderListingDetails() {
                 
                 <div class="info-grid">
                     <div class="info-item">
-                        <span class="info-icon">📦</span>
+                        <span class="info-icon">🏭</span>
                         <div class="info-content">
-                            <div class="info-label">Original Quantity</div>
-                            <div class="info-value">${originalQuantity.toFixed(1)} kg</div>
+                            <div class="info-label">Total Produced</div>
+                            <div class="info-value" id="totalProducedDisplay">${totalProduced.toFixed(1)} kg</div>
                         </div>
                     </div>
                     
@@ -244,7 +307,243 @@ function renderListingDetails() {
             </div>
         </div>
     `;
+    
+    // Initialize image upload handler
+    initializeImageUpload();
+    
+    // If in edit mode, enable editing
+    if (isEditMode) {
+        enableEditMode();
+    }
 }
+
+// Carousel Functions
+window.navigateCarousel = function(direction) {
+    const images = currentListing.listingProductImages || [];
+    if (images.length <= 1) return;
+    
+    let newIndex = selectedImageIndex + direction;
+    
+    // Wrap around
+    if (newIndex < 0) newIndex = images.length - 1;
+    if (newIndex >= images.length) newIndex = 0;
+    
+    goToSlide(newIndex);
+};
+
+window.goToSlide = function(index) {
+    const images = currentListing.listingProductImages || [];
+    if (index < 0 || index >= images.length) return;
+    
+    selectedImageIndex = index;
+    
+    // Update slides
+    document.querySelectorAll('.carousel-slide').forEach(slide => {
+        slide.classList.remove('active');
+    });
+    
+    const targetSlide = document.querySelector(`.carousel-slide[data-index="${index}"]`);
+    if (targetSlide) {
+        targetSlide.classList.add('active');
+    }
+    
+    // Update indicators
+    document.querySelectorAll('.carousel-indicator').forEach((indicator, i) => {
+        indicator.classList.toggle('active', i === index);
+    });
+    
+    // Update thumbnails
+    document.querySelectorAll('.thumbnail').forEach((thumb, i) => {
+        if (!thumb.classList.contains('add-new')) {
+            thumb.classList.toggle('active', i === index);
+        }
+    });
+    
+    // Update counter
+    const counter = document.querySelector('.image-counter');
+    if (counter) {
+        counter.textContent = `${index + 1} / ${images.length}`;
+    }
+    
+    // Update navigation buttons
+    updateNavigationButtons();
+};
+
+function updateNavigationButtons() {
+    const images = currentListing.listingProductImages || [];
+    const prevBtn = document.querySelector('.carousel-prev');
+    const nextBtn = document.querySelector('.carousel-next');
+    
+    if (prevBtn) prevBtn.disabled = images.length <= 1;
+    if (nextBtn) nextBtn.disabled = images.length <= 1;
+}
+
+// Image Management Functions
+window.deleteCurrentImage = function() {
+    deleteImage(selectedImageIndex);
+};
+
+window.deleteImage = async function(index) {
+    const images = currentListing.listingProductImages || [];
+    
+    if (images.length <= 1) {
+        alert('❌ You must have at least one image in your listing.');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this image?')) {
+        return;
+    }
+    
+    try {
+        // Remove from array
+        const updatedImages = [...images];
+        updatedImages.splice(index, 1);
+        
+        // Update Firestore
+        const listingRef = doc(db, COLLECTIONS.PRODUCT_LISTINGS, currentListing.id);
+        await updateDoc(listingRef, {
+            listingProductImages: updatedImages,
+            listingUpdatedAt: serverTimestamp()
+        });
+        
+        // Update local state
+        currentListing.listingProductImages = updatedImages;
+        
+        // Adjust selected index if needed
+        if (selectedImageIndex >= updatedImages.length) {
+            selectedImageIndex = Math.max(0, updatedImages.length - 1);
+        }
+        
+        // Re-render
+        renderListingDetails();
+        
+        console.log('✅ Image deleted successfully');
+        
+    } catch (error) {
+        console.error('❌ Error deleting image:', error);
+        alert('Failed to delete image. Please try again.');
+    }
+};
+
+window.triggerImageUpload = function() {
+    const fileInput = document.getElementById('imageUploadInput');
+    if (fileInput) {
+        fileInput.click();
+    }
+};
+
+function initializeImageUpload() {
+    const fileInput = document.getElementById('imageUploadInput');
+    if (fileInput) {
+        fileInput.onchange = handleImageUpload;
+    }
+}
+
+async function handleImageUpload(event) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    
+    try {
+        const uploadedUrls = [];
+        
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('❌ Please select only image files.');
+                continue;
+            }
+            
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('❌ Image size should be less than 5MB.');
+                continue;
+            }
+            
+            // Upload to Firebase Storage
+            const imageUrl = await uploadImageToStorage(file);
+            if (imageUrl) {
+                uploadedUrls.push(imageUrl);
+            }
+        }
+        
+        if (uploadedUrls.length > 0) {
+            await addImagesToListing(uploadedUrls);
+        }
+        
+        // Reset file input
+        event.target.value = '';
+        
+    } catch (error) {
+        console.error('❌ Error uploading images:', error);
+        alert('Failed to upload images. Please try again.');
+    }
+}
+
+async function uploadImageToStorage(file) {
+    const timestamp = Date.now();
+    const fileName = `product_${currentUser.uid}_${timestamp}_${file.name}`;
+    const storageRef = ref(storage, `product_images/${fileName}`);
+    
+    try {
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        return downloadURL;
+    } catch (error) {
+        console.error('❌ Error uploading to storage:', error);
+        throw error;
+    }
+}
+
+async function addImagesToListing(newImageUrls) {
+    try {
+        const currentImages = currentListing.listingProductImages || [];
+        const updatedImages = [...currentImages, ...newImageUrls];
+        
+        // Update Firestore
+        const listingRef = doc(db, COLLECTIONS.PRODUCT_LISTINGS, currentListing.id);
+        await updateDoc(listingRef, {
+            listingProductImages: updatedImages,
+            listingUpdatedAt: serverTimestamp()
+        });
+        
+        // Update local state
+        currentListing.listingProductImages = updatedImages;
+        
+        // Select the first new image
+        selectedImageIndex = currentImages.length;
+        
+        // Re-render
+        renderListingDetails();
+        
+        console.log('✅ Images added successfully');
+        
+    } catch (error) {
+        console.error('❌ Error adding images to listing:', error);
+        throw error;
+    }
+}
+
+// Error handling for images
+window.handleImageError = function(img) {
+    img.style.display = 'none';
+    const slide = img.closest('.carousel-slide');
+    if (slide && !slide.querySelector('.main-image-placeholder')) {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'main-image-placeholder';
+        placeholder.innerHTML = '🌱';
+        slide.appendChild(placeholder);
+    }
+};
+
+window.handleThumbnailError = function(img) {
+    const thumb = img.closest('.thumbnail');
+    if (thumb) {
+        thumb.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:24px;">🌱</div>';
+    }
+};
 
 // Global variables for location editing
 let editMap = null;
@@ -256,6 +555,7 @@ let selectedEditLocation = null;
 function enableEditMode() {
     const titleEl = document.getElementById('productTitle');
     const priceEl = document.getElementById('priceDisplay');
+    const totalProducedEl = document.getElementById('totalProducedDisplay');
     const quantityLeftEl = document.getElementById('quantityLeftDisplay');
     const descEl = document.getElementById('descriptionDisplay');
     const locationEl = document.getElementById('locationDisplay');
@@ -267,6 +567,8 @@ function enableEditMode() {
     titleEl.style.borderRadius = '8px';
     
     priceEl.innerHTML = `<input type="number" id="priceInput" value="${currentListing.listingPricePerKG}" style="width: 150px; padding: 8px; font-size: 24px; font-weight: 700; border: 2px solid #4CAF50; border-radius: 8px;" step="0.01" min="0"><span style="font-size: 18px; font-weight: 400; color: #666;">/kg</span>`;
+    
+    totalProducedEl.innerHTML = `<input type="number" id="totalProducedInput" value="${currentListing.listingQuantityKG}" style="width: 100px; padding: 8px; font-size: 16px; font-weight: 600; border: 2px solid #4CAF50; border-radius: 8px;" step="0.1" min="0"> kg`;
     
     quantityLeftEl.innerHTML = `<input type="number" id="quantityLeftInput" value="${currentListing.listingQuantityLeftKG || currentListing.listingQuantityKG}" style="width: 100px; padding: 8px; font-size: 16px; font-weight: 600; border: 2px solid #4CAF50; border-radius: 8px;" step="0.1" min="0"> kg`;
     
@@ -292,6 +594,55 @@ function enableEditMode() {
         formattedAddress: 'Cebu City, Philippines',
         placeId: ''
     };
+    
+    // Show image edit actions
+    showImageEditActions();
+}
+
+function showImageEditActions() {
+    const actions = document.getElementById('imageEditActions');
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    
+    if (actions) actions.classList.add('visible');
+    
+    // Add delete buttons to thumbnails
+    thumbnails.forEach(thumb => {
+        if (!thumb.classList.contains('add-new')) {
+            if (!thumb.querySelector('.thumbnail-delete')) {
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'thumbnail-delete';
+                deleteBtn.innerHTML = '×';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const index = Array.from(thumb.parentElement.children).indexOf(thumb);
+                    if (index >= 0) deleteImage(index);
+                };
+                thumb.appendChild(deleteBtn);
+            }
+        }
+    });
+    
+    // Add add-new thumbnail if it doesn't exist
+    const thumbnailGrid = document.getElementById('thumbnailGrid');
+    if (thumbnailGrid && !thumbnailGrid.querySelector('.add-new')) {
+        const addThumb = document.createElement('div');
+        addThumb.className = 'thumbnail add-new';
+        addThumb.innerHTML = '➕';
+        addThumb.onclick = triggerImageUpload;
+        addThumb.title = 'Add new image';
+        thumbnailGrid.appendChild(addThumb);
+    }
+}
+
+function hideImageEditActions() {
+    const actions = document.getElementById('imageEditActions');
+    const deleteButtons = document.querySelectorAll('.thumbnail-delete');
+    const addThumbs = document.querySelectorAll('.thumbnail.add-new');
+    
+    if (actions) actions.classList.remove('visible');
+    
+    deleteButtons.forEach(btn => btn.remove());
+    addThumbs.forEach(thumb => thumb.remove());
 }
 
 window.openLocationEditor = function() {
@@ -560,18 +911,6 @@ function formatDescription(description) {
     return description.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
 }
 
-window.selectImage = function(index) {
-    selectedImageIndex = index;
-    const images = currentListing.listingProductImages || [];
-    if (images[index]) {
-        const mainImage = document.getElementById('mainImage');
-        mainImage.innerHTML = `<img src="${images[index]}" alt="Product image ${index + 1}" onerror="this.parentElement.innerHTML='<div class=\\'main-image-placeholder\\'>🌱</div>'">`;
-        document.querySelectorAll('.thumbnail').forEach((thumb, i) => {
-            thumb.classList.toggle('active', i === index);
-        });
-    }
-};
-
 window.toggleEditMode = function() {
     isEditMode = !isEditMode;
     const editBtn = document.getElementById('editToggleBtn');
@@ -586,16 +925,27 @@ window.toggleEditMode = function() {
     }
 };
 
-
 async function saveChanges() {
     const editBtn = document.getElementById('editToggleBtn');
     editBtn.disabled = true;
     editBtn.textContent = '💾 Saving...';
     
     try {
+        // Validate quantity inputs
+        const totalProducedInput = parseFloat(document.getElementById('totalProducedInput').value);
+        const quantityLeftInput = parseFloat(document.getElementById('quantityLeftInput').value);
+        
+        if (quantityLeftInput > totalProducedInput) {
+            alert('❌ Quantity left cannot be greater than total produced!');
+            editBtn.disabled = false;
+            editBtn.textContent = '💾 Save Changes';
+            return;
+        }
+        
         const updatedData = {
             listingProductName: document.getElementById('productTitle').textContent.trim(),
             listingPricePerKG: parseFloat(document.getElementById('priceInput').value).toFixed(1),
+            listingQuantityKG: parseFloat(document.getElementById('totalProducedInput').value).toFixed(1),
             listingQuantityLeftKG: parseFloat(document.getElementById('quantityLeftInput').value).toFixed(1),
             listingDescription: document.getElementById('descriptionDisplay').innerText.trim(),
             listingUpdatedAt: serverTimestamp()
@@ -632,7 +982,7 @@ async function saveChanges() {
         console.error('❌ Error saving changes:', error);
         alert('Failed to save changes. Please try again.');
         editBtn.disabled = false;
-        editBtn.textContent = '✏️ Edit';
+        editBtn.textContent = '✏️ Edit Listing';
     }
 }
 
@@ -715,4 +1065,4 @@ function showError(message) {
     }
 }
 
-console.log('🐷✅ PigSoil+ Farmer Listing View with Inline Editing loaded!');
+console.log('🐷✅ PigSoil+ Farmer Listing View with Carousel and Image Editing loaded!');

@@ -1,5 +1,4 @@
-// buyer-marketplace.js - COMPLETE Firebase Version
-// Displays ALL listings from farmers (product_listings collection)
+// buyer-marketplace.js - COMPLETE Firebase Version with Filter Dialog
 import { auth, db } from './init.js';
 import '../js/shared-user-manager.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
@@ -16,7 +15,8 @@ import {
 
 const COLLECTIONS = {
     PRODUCT_LISTINGS: 'product_listings',
-    USERS: 'users'
+    USERS: 'users',
+    ADDRESSES: 'addresses'
 };
 
 let allListings = [];
@@ -82,7 +82,6 @@ function setupRealtimeListingsListener() {
     const listingsRef = collection(db, COLLECTIONS.PRODUCT_LISTINGS);
     const q = query(
         listingsRef,
-        where('listingIsAvailable', '==', true),
         orderBy('listingCreatedAt', 'desc')
     );
     
@@ -116,22 +115,47 @@ function setupRealtimeListingsListener() {
                     listing.sellerInfo = {
                         userName: sellerData.userName || 'Swine Farmer',
                         userEmail: sellerData.userEmail || '',
-                        userPhone: sellerData.userPhone || '',
-                        sellerRating: calculateSellerRating(sellerData)
+                        userPhone: sellerData.userPhone || ''
                     };
                 } else {
                     listing.sellerInfo = {
                         userName: 'Swine Farmer',
                         userEmail: '',
-                        userPhone: '',
-                        sellerRating: 4.5
+                        userPhone: ''
                     };
                 }
             } catch (error) {
                 console.error('Error loading seller info:', error);
                 listing.sellerInfo = {
-                    userName: 'Swine Farmer',
-                    sellerRating: 4.5
+                    userName: 'Swine Farmer'
+                };
+            }
+            
+            // Fetch address info
+            try {
+                if (listing.listingAddressId) {
+                    const addressDocRef = doc(db, COLLECTIONS.ADDRESSES, listing.listingAddressId);
+                    const addressDoc = await getDoc(addressDocRef);
+                    
+                    if (addressDoc.exists()) {
+                        const addressData = addressDoc.data();
+                        listing.addressInfo = {
+                            addressName: addressData.addressName || 'Location not specified'
+                        };
+                    } else {
+                        listing.addressInfo = {
+                            addressName: 'Location not specified'
+                        };
+                    }
+                } else {
+                    listing.addressInfo = {
+                        addressName: 'Location not specified'
+                    };
+                }
+            } catch (error) {
+                console.error('Error loading address info:', error);
+                listing.addressInfo = {
+                    addressName: 'Location not specified'
                 };
             }
             
@@ -139,66 +163,25 @@ function setupRealtimeListingsListener() {
         });
         
         allListings = await Promise.all(listingPromises);
-        filteredListings = [...allListings];
+        
+        // Apply default filter (All Available Listings)
+        applyFilter(0);
         
         hideLoadingState();
-        displayListings(filteredListings);
         
-        // Debug: Log location data for verification
-        console.log(`✅ Loaded and displayed ${allListings.length} listings`);
+        console.log(`✅ Loaded ${allListings.length} listings`);
         if (allListings.length > 0) {
-            console.log('📍 Sample listing location data:', {
+            console.log('📍 Sample listing data:', {
                 listingId: allListings[0].id,
-                locationObject: allListings[0].listingLocation,
-                extractedLocation: extractLocationDisplay(allListings[0])
+                addressInfo: allListings[0].addressInfo,
+                sellerName: allListings[0].sellerInfo?.userName,
+                isAvailable: allListings[0].listingIsAvailable
             });
         }
     }, (error) => {
         console.error('❌ Error in real-time listener:', error);
         displayErrorState('Failed to load listings: ' + error.message);
     });
-}
-
-// Helper function to extract location for display
-function extractLocationDisplay(listing) {
-    if (!listing.listingLocation) {
-        return 'Cebu, Philippines';
-    }
-    
-    const loc = listing.listingLocation;
-    
-    // Priority 1: Use name if it's not the default
-    if (loc.name && loc.name !== 'Select farm location' && loc.name !== 'Farm Location') {
-        return loc.name;
-    }
-    
-    // Priority 2: Use formatted address, extract city/province
-    if (loc.formattedAddress && loc.formattedAddress !== 'Cebu City, Philippines') {
-        const parts = loc.formattedAddress.split(',').map(p => p.trim());
-        if (parts.length >= 2) {
-            return `${parts[0]}, ${parts[1]}`; // City, Province
-        }
-        return parts[0]; // Just city
-    }
-    
-    // Priority 3: Use address field
-    if (loc.address && loc.address !== 'Click "Change" to choose pickup location') {
-        const parts = loc.address.split(',').map(p => p.trim());
-        return parts[0]; // First part usually most relevant
-    }
-    
-    // Fallback
-    return 'Cebu, Philippines';
-}
-
-function calculateSellerRating(sellerData) {
-    // Calculate rating based on seller's stats
-    if (sellerData.sellerRating) {
-        return sellerData.sellerRating;
-    }
-    
-    // Default to 4.5 if no rating
-    return 4.5;
 }
 
 function displayListings(listings) {
@@ -255,19 +238,13 @@ function createProductCard(listing) {
     card.style.animation = 'fadeIn 0.3s forwards';
     
     // Extract listing data with fallbacks
-    const compostType = listing.compostTechnique || 'basic_swine_manure';
-    const compostLabel = compostType === 'hot_composting' ? 'Hot Composting Method' : 'Basic Swine Manure';
-    const badgeClass = compostType === 'hot_composting' ? 'hot' : 'basic';
-    
     const sellerName = listing.sellerInfo?.userName || 'Swine Farmer';
-    const sellerRating = listing.sellerInfo?.sellerRating || 4.5;
-    
-    // UPDATED: Use helper function for better location extraction
-    const location = extractLocationDisplay(listing);
+    const location = listing.addressInfo?.addressName || 'Location not specified';
     
     const pricePerKg = parseFloat(listing.listingPricePerKG || 0);
-    const quantity = parseFloat(listing.listingQuantityKG || 0);
+    const quantity = parseFloat(listing.listingQuantityLeftKG || 0);
     const productName = listing.listingProductName || 'Premium Swine Compost';
+    const isAvailable = listing.listingIsAvailable && quantity > 0;
     
     // Get main image
     const mainImage = listing.listingProductImages && listing.listingProductImages.length > 0 
@@ -275,21 +252,20 @@ function createProductCard(listing) {
         : null;
     
     card.innerHTML = `
-        <div class="product-image">
+        <div class="product-image ${!isAvailable ? 'sold-out' : ''}">
             ${mainImage ? 
                 `<img src="${mainImage}" 
                      alt="${productName}"
-                     onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(45deg, ${badgeClass === 'hot' ? '#C44536, #e74c3c' : '#4A6741, #6B8E5F'})'; this.parentElement.innerHTML+='<div style=\\'display: flex; align-items: center; justify-content: center; height: 100%; font-size:48px;opacity:0.8\\'>🌱</div><span class=\\'product-badge ${badgeClass}\\'>${compostLabel}</span>'">` :
-                `<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(45deg, ${badgeClass === 'hot' ? '#C44536, #e74c3c' : '#4A6741, #6B8E5F'}); font-size: 48px; opacity: 0.8;">🌱</div>`
+                     onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(45deg, #4A6741, #6B8E5F)'; this.parentElement.innerHTML+='<div style=\\'display: flex; align-items: center; justify-content: center; height: 100%; font-size:48px;opacity:0.8\\'>🌱</div>'">` :
+                `<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(45deg, #4A6741, #6B8E5F); font-size: 48px; opacity: 0.8;">🌱</div>`
             }
-            <span class="product-badge ${badgeClass}">${compostLabel}</span>
+            ${!isAvailable ? '<div class="sold-out-badge">SOLD OUT</div>' : ''}
         </div>
         <div class="product-info">
             <h3>${productName}</h3>
             <div class="seller-info">
                 <span>👨‍🌾</span>
                 <span class="seller-name">${sellerName}</span>
-                <span class="seller-rating">⭐ ${sellerRating.toFixed(1)}</span>
             </div>
             <div class="product-details">
                 <div class="detail-item">
@@ -298,7 +274,7 @@ function createProductCard(listing) {
                 </div>
                 <div class="detail-item">
                     <span>📦</span>
-                    <span>${quantity}kg available</span>
+                    <span>${isAvailable ? `${quantity}kg available` : 'Sold out'}</span>
                 </div>
             </div>
             <div class="product-footer">
@@ -349,19 +325,11 @@ function displayErrorState(message) {
 }
 
 function setupEventListeners() {
-    // Quick filter tabs
-    const filterTags = document.querySelectorAll('.tab-btn');
-    filterTags.forEach(tag => {
-        tag.addEventListener('click', function() {
-            if (isLoading) return;
-            
-            filterTags.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            
-            const filterText = this.textContent.trim();
-            applyQuickFilter(filterText);
-        });
-    });
+    // Filter button
+    const filterBtn = document.getElementById('filterBtn');
+    if (filterBtn) {
+        filterBtn.addEventListener('click', showFilterDialog);
+    }
     
     // Search functionality
     const searchInput = document.querySelector('.search-input');
@@ -372,7 +340,7 @@ function setupEventListeners() {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 performSearch(e.target.value);
-            }, 300); // Debounce search
+            }, 300);
         });
         
         searchInput.addEventListener('keypress', (e) => {
@@ -384,39 +352,135 @@ function setupEventListeners() {
     }
 }
 
-function applyQuickFilter(filterText) {
-    currentFilter = filterText;
+// Show filter dialog (matches Android)
+function showFilterDialog() {
+    const dialog = document.createElement('div');
+    dialog.className = 'filter-dialog-overlay';
+    dialog.innerHTML = `
+        <div class="filter-dialog">
+            <div class="filter-dialog-header">
+                <h3>Filter & Sort Listings</h3>
+                <button class="close-dialog" onclick="closeFilterDialog()">✕</button>
+            </div>
+            <div class="filter-dialog-body">
+                <div class="filter-option" data-filter="0">
+                    <span>All Available Listings</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="filter-option" data-filter="1">
+                    <span>Available Only</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="filter-option" data-filter="2">
+                    <span>Price: Low to High</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="filter-option" data-filter="3">
+                    <span>Price: High to Low</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="filter-option" data-filter="4">
+                    <span>Newest First</span>
+                    <span class="check-icon">✓</span>
+                </div>
+            </div>
+        </div>
+    `;
     
-    console.log('🔍 Applying filter:', filterText);
+    document.body.appendChild(dialog);
     
-    if (filterText === 'All') {
-        filteredListings = [...allListings];
-    } else if (filterText === 'Basic Swine Manure') {
-        filteredListings = allListings.filter(listing => {
-            const technique = listing.compostTechnique || 'basic_swine_manure';
-            return technique.toLowerCase().includes('basic') || 
-                   technique.toLowerCase().includes('swine') ||
-                   technique === 'basic_swine_manure';
+    // Add click handlers to filter options
+    const filterOptions = dialog.querySelectorAll('.filter-option');
+    filterOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const filterIndex = parseInt(this.dataset.filter);
+            applyFilter(filterIndex);
+            closeFilterDialog();
         });
-    } else if (filterText === 'Hot Composting') {
-        filteredListings = allListings.filter(listing => {
-            const technique = listing.compostTechnique || '';
-            return technique.toLowerCase().includes('hot') ||
-                   technique === 'hot_composting';
-        });
-    } else if (filterText === 'Nearby') {
-        // For now, show all. Can implement location-based filtering later
-        filteredListings = [...allListings];
+    });
+    
+    // Close on overlay click
+    dialog.addEventListener('click', function(e) {
+        if (e.target === dialog) {
+            closeFilterDialog();
+        }
+    });
+    
+    // Animate in
+    setTimeout(() => {
+        dialog.classList.add('active');
+    }, 10);
+}
+
+window.closeFilterDialog = function() {
+    const dialog = document.querySelector('.filter-dialog-overlay');
+    if (dialog) {
+        dialog.classList.remove('active');
+        setTimeout(() => {
+            dialog.remove();
+        }, 300);
+    }
+};
+
+function applyFilter(filterType) {
+    console.log('🔍 Applying filter:', filterType);
+    
+    let sortedListings = [...allListings];
+    
+    switch(filterType) {
+        case 0: // All Available Listings
+            sortedListings = allListings.filter(listing => listing.listingIsAvailable);
+            break;
+            
+        case 1: // Available Only (same as 0, but explicit)
+            sortedListings = allListings.filter(listing => {
+                const quantity = parseFloat(listing.listingQuantityLeftKG || 0);
+                return listing.listingIsAvailable && quantity > 0;
+            });
+            break;
+            
+        case 2: // Price: Low to High
+            sortedListings.sort((a, b) => {
+                const priceA = parseFloat(a.listingPricePerKG || 0);
+                const priceB = parseFloat(b.listingPricePerKG || 0);
+                return priceA - priceB;
+            });
+            break;
+            
+        case 3: // Price: High to Low
+            sortedListings.sort((a, b) => {
+                const priceA = parseFloat(a.listingPricePerKG || 0);
+                const priceB = parseFloat(b.listingPricePerKG || 0);
+                return priceB - priceA;
+            });
+            break;
+            
+        case 4: // Newest First
+            sortedListings.sort((a, b) => {
+                const dateA = a.listingCreatedAt?.toMillis() || 0;
+                const dateB = b.listingCreatedAt?.toMillis() || 0;
+                return dateB - dateA;
+            });
+            break;
     }
     
+    filteredListings = sortedListings;
     displayListings(filteredListings);
-    console.log(`✅ Filtered to ${filteredListings.length} listings`);
+    
+    const filterNames = [
+        'All available listings',
+        'Available only',
+        'Price: Low to High',
+        'Price: High to Low',
+        'Newest first'
+    ];
+    
+    console.log(`✅ Filtered by: ${filterNames[filterType]} (${filteredListings.length} listings)`);
 }
 
 function performSearch(searchTerm) {
     if (!searchTerm.trim()) {
-        filteredListings = [...allListings];
-        displayListings(filteredListings);
+        applyFilter(0); // Reset to default filter
         return;
     }
     
@@ -427,9 +491,7 @@ function performSearch(searchTerm) {
         return (
             (listing.listingProductName || '').toLowerCase().includes(term) ||
             (listing.listingDescription || '').toLowerCase().includes(term) ||
-            (listing.compostTechnique || '').toLowerCase().includes(term) ||
-            (listing.listingLocation?.formattedAddress || '').toLowerCase().includes(term) ||
-            (listing.listingLocation?.address || '').toLowerCase().includes(term) ||
+            (listing.addressInfo?.addressName || '').toLowerCase().includes(term) ||
             (listing.sellerInfo?.userName || '').toLowerCase().includes(term)
         );
     });
@@ -452,7 +514,7 @@ window.addEventListener('beforeunload', () => {
     }
 });
 
-// Add CSS animations
+// Add CSS animations and styles
 const style = document.createElement('style');
 style.textContent = `
     @keyframes spin {
@@ -465,32 +527,141 @@ style.textContent = `
         to { opacity: 1; transform: translateY(0); }
     }
     
-    .product-badge {
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-weight: 600;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .product-badge.basic {
-        background: rgba(74, 103, 65, 0.9);
-        color: white;
-    }
-    
-    .product-badge.hot {
-        background: rgba(196, 69, 54, 0.9);
-        color: white;
-    }
-    
     .empty-state {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
     }
+    
+    /* Filter Dialog Styles */
+    .filter-dialog-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .filter-dialog-overlay.active {
+        opacity: 1;
+    }
+    
+    .filter-dialog {
+        background: white;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 400px;
+        max-height: 80vh;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        transform: scale(0.9);
+        transition: transform 0.3s;
+    }
+    
+    .filter-dialog-overlay.active .filter-dialog {
+        transform: scale(1);
+    }
+    
+    .filter-dialog-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .filter-dialog-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .close-dialog {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #666;
+        cursor: pointer;
+        padding: 4px 8px;
+        line-height: 1;
+        transition: color 0.2s;
+    }
+    
+    .close-dialog:hover {
+        color: #333;
+    }
+    
+    .filter-dialog-body {
+        padding: 8px 0;
+        max-height: calc(80vh - 80px);
+        overflow-y: auto;
+    }
+    
+    .filter-option {
+        padding: 16px 24px;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 15px;
+        color: #333;
+    }
+    
+    .filter-option:hover {
+        background: #f5f5f5;
+    }
+    
+    .filter-option .check-icon {
+        color: #4CAF50;
+        font-size: 18px;
+        font-weight: bold;
+        opacity: 0;
+    }
+    
+    .filter-option:hover .check-icon {
+        opacity: 1;
+    }
+    
+    /* Sold Out Styles */
+    .product-image.sold-out {
+        position: relative;
+    }
+    
+    .product-image.sold-out::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+    }
+    
+    .sold-out-badge {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(231, 76, 60, 0.95);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 14px;
+        z-index: 10;
+        letter-spacing: 1px;
+    }
 `;
 document.head.appendChild(style);
 
-console.log('🐷✅ PigSoil+ Buyer Marketplace with REAL-TIME updates loaded!');
+console.log('🐷✅ PigSoil+ Buyer Marketplace with Filter Dialog loaded!');

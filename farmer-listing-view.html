@@ -13,6 +13,220 @@
             box-sizing: border-box;
         }
 
+        /* Carousel Styles */
+.carousel-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: linear-gradient(45deg, #4A6741, #6B8E5F);
+}
+
+.carousel-slide {
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: relative;
+}
+
+.carousel-slide.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.carousel-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #333;
+    transition: all 0.3s;
+    z-index: 10;
+}
+
+.carousel-nav:hover {
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.carousel-prev {
+    left: 16px;
+}
+
+.carousel-next {
+    right: 16px;
+}
+
+.carousel-indicators {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.carousel-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    padding: 0;
+}
+
+.carousel-indicator:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.carousel-indicator.active {
+    background: white;
+    width: 24px;
+    border-radius: 4px;
+}
+
+.image-counter {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 10;
+}
+
+.image-edit-actions {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: none;
+    gap: 8px;
+    z-index: 10;
+}
+
+.image-edit-actions.visible {
+    display: flex;
+}
+
+.image-action-btn {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.image-action-btn:hover {
+    background: white;
+    transform: scale(1.1);
+}
+
+.image-action-btn.delete {
+    color: #e74c3c;
+}
+
+.image-action-btn.delete:hover {
+    background: #fee;
+}
+
+.image-action-btn.add {
+    background: #4CAF50;
+    color: white;
+}
+
+.image-action-btn.add:hover {
+    background: #45a049;
+}
+
+.thumbnail {
+    position: relative;
+}
+
+.thumbnail-delete {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.thumbnail-delete:hover {
+    background: #c0392b;
+    transform: scale(1.1);
+}
+
+.thumbnail.add-new {
+    background: #f0f8e8;
+    border: 2px dashed #4CAF50;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: #4CAF50;
+    transition: all 0.3s;
+}
+
+.thumbnail.add-new:hover {
+    background: #e8f5e9;
+    border-color: #45a049;
+    transform: scale(1.05);
+}
+
+#imageUploadInput {
+    display: none;
+}
+
         body {
             font-family: 'Poppins', Arial, sans-serif;
             background: linear-gradient(103deg, #FFEED0 0%, #FFC7B8 170%);

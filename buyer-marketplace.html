@@ -12,6 +12,31 @@
             box-sizing: border-box;
         }
 
+        .filter-btn {
+    background: white;
+    border: 2px solid #4CAF50;
+    color: #4CAF50;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.filter-btn:hover {
+    background: #4CAF50;
+    color: white;
+}
+
+.filter-btn svg {
+    flex-shrink: 0;
+}
+
         body {
             font-family: 'Poppins', Arial, sans-serif;
             background: linear-gradient(103deg, #FFEED0 0%, #FFC7B8 170%);
@@ -492,19 +517,28 @@
             </div>
         </section>
 
-        <!-- Filter Section -->
-        <section class="filter-section">
-            <div class="filter-tabs">
-                <button class="tab-btn active">All</button>
-                <button class="tab-btn">Basic Swine Manure</button>
-                <button class="tab-btn">Hot Composting</button>
-                <button class="tab-btn">Nearby</button>
-            </div>
-            <div class="search-container">
-                <input type="text" class="search-input" placeholder="Search for swine compost, location, or farmer...">
-            </div>
-        </section>
-
+        <!-- Filter Section - WITH DIALOG BUTTON -->
+<section class="filter-section">
+    <div style="display: flex; gap: 12px; align-items: center;">
+        <button id="filterBtn" class="filter-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="21" x2="4" y2="14"></line>
+                <line x1="4" y1="10" x2="4" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="3"></line>
+                <line x1="20" y1="21" x2="20" y2="16"></line>
+                <line x1="20" y1="12" x2="20" y2="3"></line>
+                <line x1="1" y1="14" x2="7" y2="14"></line>
+                <line x1="9" y1="8" x2="15" y2="8"></line>
+                <line x1="17" y1="16" x2="23" y2="16"></line>
+            </svg>
+            Filter & Sort
+        </button>
+        <div class="search-container" style="flex: 1;">
+            <input type="text" class="search-input" placeholder="Search for swine compost, location, or farmer...">
+        </div>
+    </div>
+</section>
         <!-- Products Section -->
         <section class="products-section">
             <h2>Available Listings from Swine Farmers</h2>
