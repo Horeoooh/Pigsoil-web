@@ -1,11 +1,13 @@
 // Signup functionality for PigSoil+ - Firebase Version (Email/Password Only)
 import { auth, db } from './init.js';
 import { 
-    createUserWithEmailAndPassword
+    createUserWithEmailAndPassword,
+    onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     doc, 
-    setDoc, 
+    setDoc,
+    getDoc, 
     collection, 
     query, 
     where, 
@@ -212,6 +214,49 @@ if (signupForm) {
         await handleSignup(userData);
     });
 }
+
+// Check if user is already logged in and redirect
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        console.log('👤 User already logged in:', user.uid);
+        
+        try {
+            // Get user data from Firestore
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                const userType = userData.userType;
+                
+                console.log('🔍 User type detected:', userType);
+                
+                // Store user data in localStorage
+                localStorage.setItem('pigsoil_user', JSON.stringify({
+                    uid: user.uid,
+                    userName: userData.userName,
+                    userType: userType,
+                    userPhone: userData.userPhone,
+                    userPhoneVerified: userData.userPhoneVerified
+                }));
+                
+                // Redirect based on user type
+                if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
+                    console.log('🐷 Redirecting logged-in swine farmer to dashboard');
+                    window.location.href = '/dashboard.html';
+                } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+                    console.log('🌿 Redirecting logged-in fertilizer buyer to buyer dashboard');
+                    window.location.href = '/buyer-dashboard.html';
+                } else {
+                    console.log('⚠️ Unknown user type, defaulting to farmer dashboard');
+                    window.location.href = '/dashboard.html';
+                }
+            }
+        } catch (error) {
+            console.error('Error checking user data:', error);
+        }
+    }
+});
 
 // Input animations and interactions
 if (inputs.length > 0) {

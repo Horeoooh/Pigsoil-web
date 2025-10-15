@@ -2,7 +2,8 @@
 import { auth, db } from './init.js';
 import { 
     signInWithPhoneNumber,
-    RecaptchaVerifier
+    RecaptchaVerifier,
+    onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     doc, 
@@ -32,11 +33,68 @@ const profileAlertMessage = document.getElementById('profileAlertMessage');
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
+    checkIfAlreadyLoggedIn();
     loadPendingVerificationData();
     setupCodeInputs();
     setupEventListeners();
     initializeRecaptcha();
 });
+
+// Check if user is already logged in and redirect to appropriate dashboard
+function checkIfAlreadyLoggedIn() {
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            console.log('👤 User already logged in:', user.uid);
+            
+            try {
+                // Get user data from Firestore
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const userType = userData.userType;
+                    
+                    console.log('🔍 User type detected:', userType);
+                    
+                    // Store user data in localStorage
+                    localStorage.setItem('pigsoil_user', JSON.stringify({
+                        uid: user.uid,
+                        userName: userData.userName,
+                        userType: userType,
+                        userPhone: userData.userPhone,
+                        userPhoneVerified: userData.userPhoneVerified
+                    }));
+                    
+                    // Redirect based on user type
+                    if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
+                        console.log('🐷 Redirecting swine farmer to dashboard');
+                        showSuccess('Already logged in! Redirecting to dashboard...');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard.html';
+                        }, 1500);
+                    } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+                        console.log('🌿 Redirecting fertilizer buyer to buyer dashboard');
+                        showSuccess('Already logged in! Redirecting to buyer dashboard...');
+                        setTimeout(() => {
+                            window.location.href = '/buyer-dashboard.html';
+                        }, 1500);
+                    } else {
+                        console.log('⚠️ Unknown user type, defaulting to farmer dashboard');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard.html';
+                        }, 1500);
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking user data:', error);
+                // Continue with verification process if error occurs
+            }
+        } else {
+            console.log('👤 No user logged in, continue with verification');
+        }
+    });
+}
 
 // Load pending verification data from localStorage
 function loadPendingVerificationData() {
