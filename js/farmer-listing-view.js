@@ -1,6 +1,13 @@
 // farmer-listing-view.js - View and manage farmer's own listing (with inline editing and image carousel)
 import { auth, db, storage } from './init.js';
-import '../js/shared-user-manager.js';
+import { 
+    getCurrentUser, 
+    getCurrentUserData, 
+    getCachedUserData, 
+    getCachedProfilePic, 
+    DEFAULT_PROFILE_PIC, 
+    onUserDataChange 
+} from '../js/shared-user-manager.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     doc,
@@ -29,6 +36,9 @@ let isEditMode = false;
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('📄 Farmer Listing View Page initialized');
     
+    // Load user profile from cache immediately
+    loadUserProfile();
+    
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             console.log('✅ Farmer authenticated:', user.uid);
@@ -49,6 +59,110 @@ document.addEventListener('DOMContentLoaded', async function() {
             window.location.href = '/login.html';
         }
     });
+});
+
+// Load user profile from cache with fallbacks
+async function loadUserProfile() {
+    const headerUserName = document.getElementById('headerUserName');
+    const headerUserRole = document.getElementById('headerUserRole');
+    const headerUserAvatar = document.getElementById('headerUserAvatar');
+
+    if (!headerUserName || !headerUserRole || !headerUserAvatar) {
+        console.warn('⚠️ Header elements not found');
+        return;
+    }
+
+    try {
+        // Try to get current user data first
+        const userData = await getCurrentUserData();
+        
+        if (userData) {
+            console.log('✅ User data loaded:', userData);
+            updateHeaderUI(userData, headerUserName, headerUserRole, headerUserAvatar);
+            return;
+        }
+
+        // Fallback to current user if no userData
+        const user = await getCurrentUser();
+        if (user) {
+            console.log('✅ Current user loaded:', user.email);
+            const fallbackData = {
+                username: user.displayName || user.email?.split('@')[0] || 'User',
+                userType: 'swine_farmer',
+                profilePicture: user.photoURL || null
+            };
+            updateHeaderUI(fallbackData, headerUserName, headerUserRole, headerUserAvatar);
+            return;
+        }
+
+        // Final fallback to cached data
+        const cachedData = getCachedUserData();
+        if (cachedData) {
+            console.log('✅ Cached user data loaded');
+            updateHeaderUI(cachedData, headerUserName, headerUserRole, headerUserAvatar);
+            return;
+        }
+
+        console.log('⚠️ No user data available, using defaults');
+        headerUserName.textContent = 'User';
+        headerUserRole.textContent = 'Please wait...';
+        headerUserAvatar.textContent = 'U';
+    } catch (error) {
+        console.error('❌ Error loading user profile:', error);
+        headerUserName.textContent = 'User';
+        headerUserRole.textContent = 'Error loading';
+        headerUserAvatar.textContent = 'U';
+    }
+}
+
+function updateHeaderUI(userData, headerUserName, headerUserRole, headerUserAvatar) {
+    // Update username
+    const displayName = userData.username || userData.displayName || 'User';
+    headerUserName.textContent = displayName;
+
+    // Update user role
+    let roleText = 'User';
+    if (userData.userType === 'swine_farmer') {
+        roleText = 'Swine Farmer';
+    } else if (userData.userType === 'fertilizer_buyer') {
+        roleText = 'Organic Fertilizer Buyer';
+    }
+    headerUserRole.textContent = roleText;
+
+    // Update avatar
+    const profilePicUrl = userData.profilePicture || getCachedProfilePic() || DEFAULT_PROFILE_PIC;
+    
+    if (profilePicUrl && profilePicUrl !== DEFAULT_PROFILE_PIC) {
+        const img = document.createElement('img');
+        img.src = profilePicUrl;
+        img.alt = 'Profile Picture';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '50%';
+        
+        img.onerror = () => {
+            console.log('⚠️ Failed to load profile picture, using initials');
+            headerUserAvatar.textContent = displayName.charAt(0).toUpperCase();
+            headerUserAvatar.style.display = 'flex';
+            headerUserAvatar.style.alignItems = 'center';
+            headerUserAvatar.style.justifyContent = 'center';
+        };
+        
+        headerUserAvatar.innerHTML = '';
+        headerUserAvatar.appendChild(img);
+    } else {
+        headerUserAvatar.textContent = displayName.charAt(0).toUpperCase();
+        headerUserAvatar.style.display = 'flex';
+        headerUserAvatar.style.alignItems = 'center';
+        headerUserAvatar.style.justifyContent = 'center';
+    }
+}
+
+// Listen for user data changes
+onUserDataChange((userData) => {
+    console.log('👤 User data changed, reloading profile');
+    loadUserProfile();
 });
 
 async function loadListingDetails(listingId) {

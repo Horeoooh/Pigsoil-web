@@ -62,11 +62,88 @@ window.initMap = function() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🐷 PigSoil+ CreateListing.js loaded with Google Maps integration');
     
+    // Load cached profile immediately
+    loadUserProfileFromCache();
+    
     // Wait a bit for HTML to initialize first
     setTimeout(() => {
         initializePigSoilCreateListing();
     }, 100);
 });
+
+// Load user profile from cache immediately for faster UI
+function loadUserProfileFromCache() {
+    const userData = getCurrentUserData() || getCachedUserData();
+    const user = getCurrentUser();
+    
+    if (!userData && !user) {
+        console.log('⏳ No cached user data available yet');
+        return;
+    }
+    
+    updateUserProfileUI(userData, user);
+}
+
+// Update user profile UI elements
+function updateUserProfileUI(userData, user) {
+    const userName = userData?.userName || user?.displayName || 'User';
+    const userType = userData?.userType || 'swine_farmer';
+    
+    // Get profile picture with proper fallback chain
+    let profilePicUrl = userData?.userProfilePictureUrl || user?.photoURL || getCachedProfilePic();
+    
+    // If still no profile pic or it's the default, use the DEFAULT_PROFILE_PIC
+    if (!profilePicUrl || profilePicUrl === DEFAULT_PROFILE_PIC) {
+        profilePicUrl = DEFAULT_PROFILE_PIC;
+    }
+    
+    // Determine user role display
+    let roleDisplay = 'Swine Farmer'; // Default
+    if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
+        roleDisplay = 'Swine Farmer';
+    } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+        roleDisplay = 'Organic Fertilizer Buyer';
+    }
+    
+    // Generate initials
+    const initials = userName.split(' ')
+        .map(word => word.charAt(0))
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+    
+    // Update header elements
+    const userNameElement = document.getElementById('headerUserName');
+    const userRoleElement = document.getElementById('headerUserRole');
+    const userAvatarElement = document.getElementById('headerUserAvatar');
+    
+    if (userNameElement) userNameElement.textContent = userName;
+    if (userRoleElement) userRoleElement.textContent = roleDisplay;
+    
+    if (userAvatarElement) {
+        // Always use background image with either user's pic or default pic
+        userAvatarElement.style.backgroundImage = `url(${profilePicUrl})`;
+        userAvatarElement.style.backgroundSize = 'cover';
+        userAvatarElement.style.backgroundPosition = 'center';
+        userAvatarElement.style.backgroundRepeat = 'no-repeat';
+        userAvatarElement.textContent = '';
+        
+        // Fallback to initials if image fails to load
+        const img = new Image();
+        img.onerror = () => {
+            userAvatarElement.style.backgroundImage = 'none';
+            userAvatarElement.textContent = initials;
+        };
+        img.src = profilePicUrl;
+    }
+    
+    console.log('👤 User profile loaded on CreateListing:', { 
+        userName, 
+        roleDisplay, 
+        profilePicUrl, 
+        usingDefault: profilePicUrl === DEFAULT_PROFILE_PIC 
+    });
+}
 
 // Initialize PigSoil+ create listing functionality
 function initializePigSoilCreateListing() {
@@ -77,11 +154,23 @@ function initializePigSoilCreateListing() {
     setupLocationHandlers();
     setupFirebaseFormSubmission();
     setupCompostTechnique();
+    setupUserDataListener();
     
     // Test Firebase connection
     testFirebaseConnection();
     
     console.log('✅ PigSoil+ Create Listing with Google Maps ready!');
+}
+
+// Setup listener for user data changes
+function setupUserDataListener() {
+    onUserDataChange((userInfo) => {
+        const { user, userData } = userInfo;
+        if (user && userData) {
+            console.log('CreateListing: User data updated', userData);
+            updateUserProfileUI(userData, user);
+        }
+    });
 }
 
 // Test Firebase connection using your collections

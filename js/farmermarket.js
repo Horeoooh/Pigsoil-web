@@ -1,6 +1,13 @@
 // farmermarket.js - Farmer's marketplace for managing their own listings
 import { auth, db } from './init.js';
-import '../js/shared-user-manager.js';
+import { 
+    getCurrentUser, 
+    getCurrentUserData, 
+    getCachedUserData,
+    getCachedProfilePic,
+    DEFAULT_PROFILE_PIC,
+    onUserDataChange
+} from './shared-user-manager.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     collection, 
@@ -13,7 +20,8 @@ import {
 
 const COLLECTIONS = {
     PRODUCT_LISTINGS: 'product_listings',
-    USERS: 'users'
+    USERS: 'users',
+    CONVERSATIONS: 'conversations'
 };
 
 let allListings = [];
@@ -21,9 +29,18 @@ let filteredListings = [];
 let currentFilter = 'My Listings';
 let currentUser = null;
 let unsubscribeListings = null;
+let unsubscribeUnreadCount = null;
 
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🛒 Farmer Market initialized');
+    
+    // Load user profile immediately
+    loadUserProfile();
+    
+    // Listen for user data changes
+    onUserDataChange(() => {
+        loadUserProfile();
+    });
     
     // Show loading immediately
     showLoadingState();
@@ -36,6 +53,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             try {
                 setupRealtimeListingsListener();
                 setupEventListeners();
+                setupUnreadMessagesListener();
             } catch (error) {
                 console.error('❌ Error initializing farmer market:', error);
                 hideLoadingState();
@@ -47,6 +65,75 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 });
+
+// Load user profile from cache or current data
+function loadUserProfile() {
+    const userData = getCurrentUserData() || getCachedUserData();
+    const user = getCurrentUser();
+    
+    if (!userData && !user) {
+        console.log('⏳ No user data available yet');
+        return;
+    }
+    
+    const userName = userData?.userName || user?.displayName || 'User';
+    const userType = userData?.userType || 'swine_farmer';
+    
+    // Get profile picture with proper fallback chain
+    let profilePicUrl = userData?.userProfilePictureUrl || user?.photoURL || getCachedProfilePic();
+    
+    // If still no profile pic or it's the default, use the DEFAULT_PROFILE_PIC
+    if (!profilePicUrl || profilePicUrl === DEFAULT_PROFILE_PIC) {
+        profilePicUrl = DEFAULT_PROFILE_PIC;
+    }
+    
+    // Determine user role display
+    let roleDisplay = 'Active Farmer';
+    if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
+        roleDisplay = 'Swine Farmer';
+    } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+        roleDisplay = 'Organic Fertilizer Buyer';
+    }
+    
+    // Generate initials
+    const initials = userName.split(' ')
+        .map(word => word.charAt(0))
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+    
+    // Update header elements
+    const userNameElement = document.getElementById('headerUserName');
+    const userRoleElement = document.getElementById('headerUserRole');
+    const userAvatarElement = document.getElementById('headerUserAvatar');
+    
+    if (userNameElement) userNameElement.textContent = userName;
+    if (userRoleElement) userRoleElement.textContent = roleDisplay;
+    
+    if (userAvatarElement) {
+        // Always use background image with either user's pic or default pic
+        userAvatarElement.style.backgroundImage = `url(${profilePicUrl})`;
+        userAvatarElement.style.backgroundSize = 'cover';
+        userAvatarElement.style.backgroundPosition = 'center';
+        userAvatarElement.style.backgroundRepeat = 'no-repeat';
+        userAvatarElement.textContent = '';
+        
+        // Fallback to initials if image fails to load
+        const img = new Image();
+        img.onerror = () => {
+            userAvatarElement.style.backgroundImage = 'none';
+            userAvatarElement.textContent = initials;
+        };
+        img.src = profilePicUrl;
+    }
+    
+    console.log('👤 User profile loaded:', { 
+        userName, 
+        roleDisplay, 
+        profilePicUrl, 
+        usingDefault: profilePicUrl === DEFAULT_PROFILE_PIC 
+    });
+}
 
 // Set up REAL-TIME listener for farmer's own listings
 function setupRealtimeListingsListener() {
@@ -143,9 +230,9 @@ function createListingCard(listing) {
         : null;
     
     card.innerHTML = `
-        <div class="listing-image ${isAvailable ? 'compost' : 'sold-out-bg'}">
+        <div class="listing-image ${!isAvailable ? 'sold-out-bg' : ''}">
             ${mainImage ? 
-                `<img src="${mainImage}" alt="${productName}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">` :
+                `<img src="${mainImage}" alt="${productName}">` :
                 ''
             }
             <div class="listing-badges">
@@ -361,11 +448,97 @@ window.viewListing = function(listingId) {
     window.location.href = `/farmer-listing-view.html?id=${listingId}`;
 };
 
+// Set up REAL-TIME listener for unread messages count (like Android getTotalUnreadMessagesCount)
+function setupUnreadMessagesListener() {
+    if (!currentUser) {
+        console.warn('⚠️ Cannot setup unread messages listener - no user');
+        return;
+    }
+    
+    console.log('🔔 Setting up real-time unread messages listener...');
+    
+    const conversationsRef = collection(db, COLLECTIONS.CONVERSATIONS);
+    const q = query(
+        conversationsRef,
+        where('participants', 'array-contains', currentUser.uid),
+        where('conversationIsActive', '==', true)
+    );
+    
+    // Listen for real-time updates to conversations
+    unsubscribeUnreadCount = onSnapshot(q, (snapshot) => {
+        let totalUnreadCount = 0;
+        
+        snapshot.docs.forEach(doc => {
+            const conversation = doc.data();
+            const unreadCount = getUnreadMessageCount(conversation, currentUser.uid);
+            totalUnreadCount += unreadCount;
+        });
+        
+        updateMessageCountBadge(totalUnreadCount);
+        console.log(`📬 Total unread messages: ${totalUnreadCount}`);
+    }, (error) => {
+        console.error('❌ Error in unread messages listener:', error);
+    });
+}
+
+// Calculate unread message count for a conversation (like Android getUnreadMessageCount)
+function getUnreadMessageCount(conversation, currentUserId) {
+    const lastMessage = conversation.lastMessage;
+    
+    if (!lastMessage) {
+        return 0;
+    }
+    
+    // If the last message is from current user, there are no unread messages
+    if (lastMessage.lastMessageSenderId === currentUserId) {
+        return 0;
+    }
+    
+    const participantDetails = conversation.participantDetails || {};
+    const currentUserDetails = participantDetails[currentUserId];
+    const lastReadAt = currentUserDetails?.participantLastReadAt;
+    
+    // If never read any messages, and there's a last message from someone else
+    if (!lastReadAt) {
+        return 1;
+    }
+    
+    // If last message is after last read time, there's 1 unread message
+    const lastMessageTime = lastMessage.lastMessageTimestamp;
+    if (lastMessageTime && lastMessageTime.toMillis() > lastReadAt.toMillis()) {
+        return 1;
+    }
+    
+    return 0;
+}
+
+// Update the message count badge in the UI
+function updateMessageCountBadge(count) {
+    const messageCountElement = document.getElementById('messageCount');
+    
+    if (!messageCountElement) {
+        console.warn('⚠️ Message count element not found');
+        return;
+    }
+    
+    if (count > 0) {
+        messageCountElement.textContent = count;
+        messageCountElement.classList.add('has-unread');
+    } else {
+        messageCountElement.textContent = '';
+        messageCountElement.classList.remove('has-unread');
+    }
+}
+
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {
     if (unsubscribeListings) {
         unsubscribeListings();
-        console.log('🔄 Unsubscribed from real-time listener');
+        console.log('🔄 Unsubscribed from listings listener');
+    }
+    if (unsubscribeUnreadCount) {
+        unsubscribeUnreadCount();
+        console.log('🔄 Unsubscribed from unread count listener');
     }
 });
 

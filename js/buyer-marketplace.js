@@ -1,6 +1,13 @@
 // buyer-marketplace.js - COMPLETE Firebase Version with Filter Dialog
 import { auth, db } from './init.js';
-import '../js/shared-user-manager.js';
+import { 
+    getCurrentUser, 
+    getCurrentUserData, 
+    getCachedUserData,
+    getCachedProfilePic,
+    DEFAULT_PROFILE_PIC,
+    onUserDataChange
+} from './shared-user-manager.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     collection, 
@@ -53,6 +60,14 @@ function hideLoadingState() {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🛒 Buyer Marketplace initialized');
     
+    // Load cached user profile immediately for fast UI
+    loadUserProfile();
+    
+    // Listen for user data changes
+    onUserDataChange(() => {
+        loadUserProfile();
+    });
+    
     // Show loading immediately
     showLoadingState();
     
@@ -74,6 +89,73 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 });
+
+// Load user profile from cache or current data
+function loadUserProfile() {
+    const userData = getCurrentUserData() || getCachedUserData();
+    const user = getCurrentUser();
+    
+    if (!userData && !user) {
+        console.log('⏳ No user data available yet');
+        return;
+    }
+    
+    const userName = userData?.userName || user?.displayName || 'User';
+    const userType = userData?.userType || 'fertilizer_buyer';
+    
+    // Get profile picture with proper fallback chain
+    let profilePicUrl = userData?.userProfilePictureUrl || user?.photoURL || getCachedProfilePic();
+    
+    // If still no profile pic or it's the default, use the DEFAULT_PROFILE_PIC
+    if (!profilePicUrl || profilePicUrl === DEFAULT_PROFILE_PIC) {
+        profilePicUrl = DEFAULT_PROFILE_PIC;
+    }
+    
+    // Determine user role display
+    let roleDisplay = 'Active Buyer';
+    if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+        roleDisplay = 'Organic Fertilizer Buyer';
+    }
+    
+    // Generate initials
+    const initials = userName.split(' ')
+        .map(word => word.charAt(0))
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+    
+    // Update header elements
+    const userNameElement = document.getElementById('headerUserName');
+    const userRoleElement = document.getElementById('headerUserRole');
+    const userAvatarElement = document.getElementById('headerUserAvatar');
+    
+    if (userNameElement) userNameElement.textContent = userName;
+    if (userRoleElement) userRoleElement.textContent = roleDisplay;
+    
+    if (userAvatarElement) {
+        // Always use background image with either user's pic or default pic
+        userAvatarElement.style.backgroundImage = `url(${profilePicUrl})`;
+        userAvatarElement.style.backgroundSize = 'cover';
+        userAvatarElement.style.backgroundPosition = 'center';
+        userAvatarElement.style.backgroundRepeat = 'no-repeat';
+        userAvatarElement.textContent = '';
+        
+        // Fallback to initials if image fails to load
+        const img = new Image();
+        img.onerror = () => {
+            userAvatarElement.style.backgroundImage = 'none';
+            userAvatarElement.textContent = initials;
+        };
+        img.src = profilePicUrl;
+    }
+    
+    console.log('👤 User profile loaded:', { 
+        userName, 
+        roleDisplay, 
+        profilePicUrl, 
+        usingDefault: profilePicUrl === DEFAULT_PROFILE_PIC 
+    });
+}
 
 // Set up REAL-TIME listener for product listings
 function setupRealtimeListingsListener() {
@@ -428,14 +510,43 @@ function applyFilter(filterType) {
     let sortedListings = [...allListings];
     
     switch(filterType) {
-        case 0: // All Available Listings
-            sortedListings = allListings.filter(listing => listing.listingIsAvailable);
+        case 0: // All Available Listings - Available first (newest), then Sold Out (newest)
+            // Separate available and sold out
+            const available = allListings.filter(listing => {
+                const quantity = parseFloat(listing.listingQuantityLeftKG || 0);
+                return listing.listingIsAvailable && quantity > 0;
+            });
+            const soldOut = allListings.filter(listing => {
+                const quantity = parseFloat(listing.listingQuantityLeftKG || 0);
+                return !listing.listingIsAvailable || quantity <= 0;
+            });
+            
+            // Sort both by newest first
+            available.sort((a, b) => {
+                const dateA = a.listingCreatedAt?.toMillis() || 0;
+                const dateB = b.listingCreatedAt?.toMillis() || 0;
+                return dateB - dateA;
+            });
+            soldOut.sort((a, b) => {
+                const dateA = a.listingCreatedAt?.toMillis() || 0;
+                const dateB = b.listingCreatedAt?.toMillis() || 0;
+                return dateB - dateA;
+            });
+            
+            // Combine: available first, then sold out
+            sortedListings = [...available, ...soldOut];
             break;
             
-        case 1: // Available Only (same as 0, but explicit)
+        case 1: // Available Only
             sortedListings = allListings.filter(listing => {
                 const quantity = parseFloat(listing.listingQuantityLeftKG || 0);
                 return listing.listingIsAvailable && quantity > 0;
+            });
+            // Sort by newest first
+            sortedListings.sort((a, b) => {
+                const dateA = a.listingCreatedAt?.toMillis() || 0;
+                const dateB = b.listingCreatedAt?.toMillis() || 0;
+                return dateB - dateA;
             });
             break;
             
@@ -455,7 +566,7 @@ function applyFilter(filterType) {
             });
             break;
             
-        case 4: // Newest First
+        case 4: // Newest First (all items)
             sortedListings.sort((a, b) => {
                 const dateA = a.listingCreatedAt?.toMillis() || 0;
                 const dateB = b.listingCreatedAt?.toMillis() || 0;
@@ -468,11 +579,11 @@ function applyFilter(filterType) {
     displayListings(filteredListings);
     
     const filterNames = [
-        'All available listings',
-        'Available only',
+        'All listings (available first, newest)',
+        'Available only (newest first)',
         'Price: Low to High',
         'Price: High to Low',
-        'Newest first'
+        'Newest first (all)'
     ];
     
     console.log(`✅ Filtered by: ${filterNames[filterType]} (${filteredListings.length} listings)`);

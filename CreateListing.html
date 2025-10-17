@@ -841,8 +841,8 @@
             </div>
             
             <ul class="nav-menu">
-                <li><a href="/buyer-dashboard.html" data-nav="dashboard" class="active">Dashboard</a></li>
-                <li><a href="/buyer-marketplace.html" data-nav="market">Market</a></li>
+                <li><a href="/dashboard.html" data-nav="dashboard">Dashboard</a></li>
+                <li><a href="/farmermarket.html" data-nav="market">Market</a></li>
                 <li><a href="/guides.html" data-nav="guides">Guides</a></li>
             </ul>
             
@@ -855,10 +855,10 @@
                 </button>
                 <a href="/setting-acc.html" class="user-profile">
                     <div class="user-info">
-                        <span class="user-name">Juan Dela Cruz</span>
-                        <span class="user-role">Swine Farmer</span>
+                        <span class="user-name" id="headerUserName">Loading...</span>
+                        <span class="user-role" id="headerUserRole">Loading...</span>
                     </div>
-                    <div class="user-avatar">JD</div>
+                    <div class="user-avatar" id="headerUserAvatar">...</div>
                 </a>
             </div>
         </nav>
@@ -1028,6 +1028,14 @@
     } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
     import { ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-storage.js';
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
+    import { 
+        getCurrentUser, 
+        getCurrentUserData,
+        getCachedUserData,
+        getCachedProfilePic,
+        DEFAULT_PROFILE_PIC,
+        onUserDataChange
+    } from '/js/shared-user-manager.js';
 
     // Collection names matching your Firebase structure
     const COLLECTIONS = {
@@ -1063,16 +1071,104 @@
         setupLocationModal();
     };
 
+    // Load user profile from cache immediately for faster UI
+    function loadUserProfileFromCache() {
+        const userData = getCurrentUserData() || getCachedUserData();
+        const user = getCurrentUser();
+        
+        if (!userData && !user) {
+            console.log('⏳ No cached user data available yet');
+            return;
+        }
+        
+        updateUserProfileUI(userData, user);
+    }
+
+    // Update user profile UI elements
+    function updateUserProfileUI(userData, user) {
+        const userName = userData?.userName || user?.displayName || 'User';
+        const userType = userData?.userType || 'swine_farmer';
+        
+        // Get profile picture with proper fallback chain
+        let profilePicUrl = userData?.userProfilePictureUrl || user?.photoURL || getCachedProfilePic();
+        
+        // If still no profile pic or it's the default, use the DEFAULT_PROFILE_PIC
+        if (!profilePicUrl || profilePicUrl === DEFAULT_PROFILE_PIC) {
+            profilePicUrl = DEFAULT_PROFILE_PIC;
+        }
+        
+        // Determine user role display
+        let roleDisplay = 'Swine Farmer'; // Default
+        if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
+            roleDisplay = 'Swine Farmer';
+        } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+            roleDisplay = 'Organic Fertilizer Buyer';
+        }
+        
+        // Generate initials
+        const initials = userName.split(' ')
+            .map(word => word.charAt(0))
+            .join('')
+            .substring(0, 2)
+            .toUpperCase();
+        
+        // Update header elements
+        const userNameElement = document.getElementById('headerUserName');
+        const userRoleElement = document.getElementById('headerUserRole');
+        const userAvatarElement = document.getElementById('headerUserAvatar');
+        
+        if (userNameElement) userNameElement.textContent = userName;
+        if (userRoleElement) userRoleElement.textContent = roleDisplay;
+        
+        if (userAvatarElement) {
+            // Always use background image with either user's pic or default pic
+            userAvatarElement.style.backgroundImage = `url(${profilePicUrl})`;
+            userAvatarElement.style.backgroundSize = 'cover';
+            userAvatarElement.style.backgroundPosition = 'center';
+            userAvatarElement.style.backgroundRepeat = 'no-repeat';
+            userAvatarElement.textContent = '';
+            
+            // Fallback to initials if image fails to load
+            const img = new Image();
+            img.onerror = () => {
+                userAvatarElement.style.backgroundImage = 'none';
+                userAvatarElement.textContent = initials;
+            };
+            img.src = profilePicUrl;
+        }
+        
+        console.log('👤 User profile loaded on CreateListing:', { 
+            userName, 
+            roleDisplay, 
+            profilePicUrl, 
+            usingDefault: profilePicUrl === DEFAULT_PROFILE_PIC 
+        });
+    }
+
+    // Setup listener for user data changes
+    function setupUserDataListener() {
+        onUserDataChange((userInfo) => {
+            const { user, userData } = userInfo;
+            if (user && userData) {
+                console.log('CreateListing: User data updated', userData);
+                updateUserProfileUI(userData, user);
+            }
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         console.log('PigSoil+ Create Listing loaded with Firebase integration');
+        
+        // Load cached profile immediately
+        loadUserProfileFromCache();
         
         checkAuthState();
         setupPhotoUpload();
         setupFormValidation();
         setupCharacterCounters();
         setupLocationHandler();
-
         setupLocationModal(); // Added Google Maps setup
+        setupUserDataListener(); // Listen for user data changes
     });
 
     // *** GOOGLE MAPS FUNCTIONS - ADDED ***
@@ -1395,6 +1491,9 @@
             
             try {
                 currentUserData = await getUserData(user.uid);
+                
+                // Update UI with fresh data
+                updateUserProfileUI(currentUserData, user);
                 
                 if (currentUserData.userType !== 'swine_farmer' && currentUserData.userType !== 'Swine Farmer') {
                     showNotification('Only swine farmers can create listings', 'error');
@@ -2023,5 +2122,6 @@
         }, 4000);
     }
 </script>
+<script type="module" src="/js/shared-user-manager.js"></script>
 </body>
 </html>

@@ -151,12 +151,75 @@ function showPromptDialog(message, placeholder, onSubmit, onCancel = null) {
     };
 }
 
+// Load user profile from cache or current data
+function loadUserProfile() {
+    const userData = getCurrentUserData();
+    const user = getCurrentUser();
+    
+    if (!userData && !user) {
+        console.log('⏳ No user data available yet');
+        return;
+    }
+    
+    const userName = userData?.userName || user?.displayName || 'User';
+    const userType = userData?.userType || 'swine_farmer';
+    
+    // Get profile picture with proper fallback chain
+    let profilePicUrl = userData?.userProfilePictureUrl || user?.photoURL || DEFAULT_PROFILE_PICTURE;
+    
+    // Determine user role display
+    let roleDisplay = 'Active User';
+    if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
+        roleDisplay = 'Swine Farmer';
+    } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+        roleDisplay = 'Organic Fertilizer Buyer';
+    }
+    
+    // Generate initials
+    const initials = userName.split(' ')
+        .map(word => word.charAt(0))
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+    
+    // Update header elements
+    const userNameElement = document.getElementById('currentUserName');
+    const userRoleElement = document.getElementById('currentUserRole');
+    const userAvatarElement = document.getElementById('currentUserAvatar');
+    
+    if (userNameElement) userNameElement.textContent = userName;
+    if (userRoleElement) userRoleElement.textContent = roleDisplay;
+    
+    if (userAvatarElement) {
+        // Always use background image with either user's pic or default pic
+        userAvatarElement.style.backgroundImage = `url(${profilePicUrl})`;
+        userAvatarElement.style.backgroundSize = 'cover';
+        userAvatarElement.style.backgroundPosition = 'center';
+        userAvatarElement.style.backgroundRepeat = 'no-repeat';
+        userAvatarElement.textContent = '';
+        
+        // Fallback to initials if image fails to load
+        const img = new Image();
+        img.onerror = () => {
+            userAvatarElement.style.backgroundImage = 'none';
+            userAvatarElement.textContent = initials;
+        };
+        img.src = profilePicUrl;
+    }
+    
+    console.log('👤 User profile loaded:', { userName, roleDisplay });
+}
+
 // Initialize messages functionality
 document.addEventListener('DOMContentLoaded', function() {
     console.log('💬 Messages page initializing...');
     
+    // Load user profile immediately
+    loadUserProfile();
+    
     onUserDataChange(({ user, userData }) => {
         console.log('✅ User data loaded:', userData.userName);
+        loadUserProfile(); // Update profile when data changes
         initializeMessaging(user, userData);
     });
     

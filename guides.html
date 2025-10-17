@@ -507,10 +507,10 @@
         </button>
         <a href="/setting-acc.html" class="user-profile">
           <div class="user-info">
-            <span class="user-name">Juan Dela Cruz</span>
-            <span class="user-role">Active Farmer</span>
+            <span class="user-name" id="headerUserName">Loading...</span>
+            <span class="user-role" id="headerUserRole">Please wait</span>
           </div>
-          <div class="user-avatar">JD</div>
+          <div class="user-avatar" id="headerUserAvatar">...</div>
         </a>
       </div>
     </nav>
@@ -546,20 +546,18 @@
 
       <div class="overview-box basic">
         <h2 class="section-title basic">About This Method</h2>
-        <p>Traditional aerobic composting using swine waste and plant matter. This beginner-friendly method creates high-quality organic fertilizer through natural decomposition processes. Perfect for small to medium-scale swine farms with minimal equipment requirements.</p>
+        <p>Traditional aerobic composting using swine waste and plant matter. Perfect for beginners with minimal equipment needed. Creates low-cost organic fertilizer in 21 days.</p>
       </div>
 
       <div class="materials-section">
         <h2 class="section-title basic">Materials Needed</h2>
         <div class="materials-grid">
-          <div class="material-item basic">Fresh swine manure (100-200 kg)</div>
-          <div class="material-item basic">Dry plant matter/leaves</div>
-          <div class="material-item basic">Rice hulls or sawdust</div>
-          <div class="material-item basic">Shovel or pitchfork</div>
-          <div class="material-item basic">Water source/hose</div>
+          <div class="material-item basic">Fresh swine manure</div>
+          <div class="material-item basic">Dry plant matter</div>
+          <div class="material-item basic">Rice hulls/sawdust</div>
+          <div class="material-item basic">Shovel or fork</div>
+          <div class="material-item basic">Water source</div>
           <div class="material-item basic">Tarpaulin cover</div>
-          <div class="material-item basic">Thermometer (optional)</div>
-          <div class="material-item basic">pH test kit (optional)</div>
         </div>
       </div>
 
@@ -567,13 +565,14 @@
       <div class="day-container basic">
         <div class="day-header">
           <div class="day-number basic">1</div>
-          <div class="day-title basic">Initial Setup & Layering</div>
+          <div class="day-title basic">Initial Setup</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Layer swine manure & plant matter<br>
-          <strong>Time Required:</strong> 2-3 hours<br><br>
+          <strong>Task:</strong> Layer swine manure with carbon materials<br>
+          <strong>Time Required:</strong> 2-3 hours<br>
+          <strong>Phase:</strong> Setup Phase<br><br>
           
-          Start by selecting a well-drained area away from water sources and living areas. Create alternating layers of materials:
+          Create alternating layers of swine manure and dry materials:
           <br><br>
           1. Start with a 6-inch layer of coarse plant material (corn stalks, rice straw)<br>
           2. Add 4 inches of fresh swine manure<br>
@@ -582,8 +581,8 @@
           5. Water each layer lightly as you build
         </div>
         <div class="tip-box">
-          <div class="tip-label">Pro Tip:</div>
-          <div class="tip-text">Maintain a 3:1 ratio of brown materials (carbon-rich) to green materials (nitrogen-rich manure). The pile should feel like a wrung-out sponge - moist but not dripping.</div>
+          <div class="tip-label">Setup Phase:</div>
+          <div class="tip-text">Create alternating layers of swine manure and dry materials. Maintain a 3:1 ratio of brown materials (carbon-rich) to green materials (nitrogen-rich manure).</div>
         </div>
       </div>
 
@@ -593,10 +592,11 @@
           <div class="day-title basic">First Turning</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Turn pile for aeration<br>
-          <strong>Time Required:</strong> 1-2 hours<br><br>
+          <strong>Task:</strong> Mix all layers thoroughly for proper aeration<br>
+          <strong>Time Required:</strong> 1-2 hours<br>
+          <strong>Phase:</strong> Active Decomposition<br><br>
           
-          The first turning is crucial for maintaining proper oxygen levels:
+          Turn pile for oxygen and check moisture levels:
           <br><br>
           1. Using a pitchfork or shovel, turn the entire pile<br>
           2. Move outside materials to the center and center materials to the outside<br>
@@ -606,45 +606,72 @@
           6. Rebuild pile in same location
         </div>
         <div class="tip-box">
-          <div class="tip-label">Pro Tip:</div>
-          <div class="tip-text">After turning, the pile temperature will drop temporarily but should rise again within 24-48 hours, indicating continued active decomposition.</div>
+          <div class="tip-label">Active Decomposition:</div>
+          <div class="tip-text">Turn pile for oxygen and check moisture levels. After turning, the pile temperature will drop temporarily but should rise again within 24-48 hours.</div>
         </div>
       </div>
 
       <div class="day-container basic">
         <div class="day-header">
           <div class="day-number basic">14</div>
-          <div class="day-title basic">Add Dry Carbon Materials</div>
+          <div class="day-title basic">Mid-Point Check</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Second turning and carbon addition<br>
-          <strong>Time Required:</strong> 1.5-2 hours<br><br>
+          <strong>Task:</strong> Turn pile and monitor decomposition progress<br>
+          <strong>Time Required:</strong> 1.5-2 hours<br>
+          <strong>Phase:</strong> Maturation Phase<br><br>
           
-          Mid-process adjustment to balance the compost:
+          Monitor texture changes and earthy smell development:
           <br><br>
           1. Turn the pile completely as done on day 7<br>
-          2. Add additional dry carbon materials (rice hulls, dried leaves, sawdust)<br>
+          2. Add additional dry carbon materials if needed (rice hulls, dried leaves, sawdust)<br>
           3. Mix thoroughly to ensure even distribution<br>
           4. Adjust moisture if necessary<br>
           5. Check for proper brown-to-green ratio<br>
           6. Rebuild pile
         </div>
         <div class="tip-box">
-          <div class="tip-label">Pro Tip:</div>
-          <div class="tip-text">This is a good time to adjust the carbon-nitrogen ratio if the pile has been too wet or smelly. Add more brown materials to balance excess nitrogen.</div>
+          <div class="tip-label">Maturation Phase:</div>
+          <div class="tip-text">Monitor texture changes and earthy smell development. This is a good time to adjust the carbon-nitrogen ratio if the pile has been too wet or smelly.</div>
+        </div>
+      </div>
+
+      <div class="day-container basic">
+        <div class="day-header">
+          <div class="day-number basic">17</div>
+          <div class="day-title basic">Final Turning</div>
+        </div>
+        <div class="day-description">
+          <strong>Task:</strong> Check texture uniformity and adjust moisture<br>
+          <strong>Time Required:</strong> 1-2 hours<br>
+          <strong>Phase:</strong> Pre-Harvest<br><br>
+          
+          Final quality checks and preparation for harvest:
+          <br><br>
+          1. Perform thorough turning of the pile<br>
+          2. Check texture uniformity throughout<br>
+          3. Adjust moisture levels if needed<br>
+          4. Ensure materials are well-decomposed<br>
+          5. Check for earthy smell<br>
+          6. Rebuild pile for final curing
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">Pre-Harvest:</div>
+          <div class="tip-text">Final quality checks and preparation for harvest. Materials should be darker, less fibrous, and have a pleasant earthy smell.</div>
         </div>
       </div>
 
       <div class="day-container basic">
         <div class="day-header">
           <div class="day-number basic">21</div>
-          <div class="day-title basic">Final Turn & Screen Compost</div>
+          <div class="day-title basic">Harvest Ready</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Final processing and screening<br>
-          <strong>Time Required:</strong> 2-3 hours<br><br>
+          <strong>Task:</strong> Compost is ready for use or sale<br>
+          <strong>Time Required:</strong> 2-3 hours<br>
+          <strong>Phase:</strong> ✓ Completion<br><br>
           
-          Complete the composting process:
+          Dark, crumbly compost ready for application or marketplace:
           <br><br>
           1. Perform final turning of the pile<br>
           2. Screen compost through 1/2 inch mesh to remove large particles<br>
@@ -652,11 +679,11 @@
           4. Test pH (should be 6.5-7.5 for optimal use)<br>
           5. Check for proper moisture and crumbly texture<br>
           6. Package or store finished compost<br>
-          7. Allow 1-2 weeks additional curing if needed
+          7. Store in dry, ventilated area
         </div>
         <div class="tip-box">
-          <div class="tip-label">Final Quality Check:</div>
-          <div class="tip-text">Good compost should be dark brown, crumbly, have an earthy smell, and feel cool to the touch. If it's still warm or has strong odors, allow additional curing time.</div>
+          <div class="tip-label">✓ Completion:</div>
+          <div class="tip-text">Dark, crumbly compost ready for application or marketplace. Good compost should be dark brown, crumbly, have an earthy smell, and feel cool to the touch.</div>
         </div>
       </div>
     </div>
@@ -665,28 +692,24 @@
     <div class="guide-method" id="hot-method">
       <div class="header-section">
         <h1 class="title hot">Hot Composting Method</h1>
-        <p class="subtitle">Complete 18-Day High-Temperature Composting Guide</p>
+        <p class="subtitle">18-day pathogen-free composting method</p>
         <div class="heat-indicator">THERMOPHILIC PROCESS (55-70°C)</div>
       </div>
 
       <div class="overview-box hot">
         <h2 class="section-title hot">About This Method</h2>
-        <p>Advanced thermophilic composting that uses controlled high-temperature processes to rapidly decompose swine manure while ensuring complete pathogen elimination and weed seed destruction. This method maintains internal temperatures between 55-70°C for 15+ consecutive days, creating premium-quality, pathogen-free organic fertilizer in just 18 days.</p>
-        <br>
-        <p><strong>Key Benefits:</strong> Faster processing, superior pathogen control, better nutrient retention, reduced odors, and professional-grade results.</p>
+        <p>Pathogen-free compost from swine manure through high-heat decomposition. This advanced method uses controlled high temperatures to rapidly decompose materials while eliminating harmful pathogens.</p>
       </div>
 
       <div class="materials-section">
         <h2 class="section-title hot">Materials Needed</h2>
         <div class="materials-grid">
-          <div class="material-item hot">Fresh swine manure (150-250 kg)</div>
-          <div class="material-item hot">High-carbon materials (sawdust, paper)</div>
-          <div class="material-item hot">Compost thermometer (essential)</div>
-          <div class="material-item hot">Pitchfork or aerator tool</div>
+          <div class="material-item hot">Fresh swine manure</div>
+          <div class="material-item hot">High-carbon materials</div>
+          <div class="material-item hot">Compost thermometer</div>
+          <div class="material-item hot">Turning tools</div>
           <div class="material-item hot">Water source</div>
-          <div class="material-item hot">Insulating cover/tarp</div>
-          <div class="material-item hot">pH testing kit</div>
-          <div class="material-item hot">Moisture meter (optional)</div>
+          <div class="material-item hot">Insulation materials</div>
         </div>
       </div>
 
@@ -694,13 +717,14 @@
       <div class="day-container hot">
         <div class="day-header">
           <div class="day-number hot">1</div>
-          <div class="day-title hot">High-Energy Initial Build</div>
+          <div class="day-title hot">High-Carbon Setup</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Create optimal thermophilic conditions<br>
-          <strong>Time Required:</strong> 3-4 hours<br><br>
+          <strong>Task:</strong> Build pile with proper C:N ratio<br>
+          <strong>Time Required:</strong> 3-4 hours<br>
+          <strong>Phase:</strong> Initial Phase<br><br>
           
-          Build the pile for maximum heat generation:
+          Create optimal conditions for thermophilic decomposition:
           <br><br>
           1. Choose a sheltered location with good drainage<br>
           2. Create a base layer of coarse materials (3 inches)<br>
@@ -711,21 +735,48 @@
           7. Cover with insulating material
         </div>
         <div class="temperature-box">
-          <div class="temp-label">Target Temperature:</div>
-          <div class="temp-text">Expect pile to reach 40-50°C within 24-48 hours. Proper size and moisture are critical for heat generation.</div>
+          <div class="temp-label">Initial Phase:</div>
+          <div class="temp-text">Create optimal conditions for thermophilic decomposition. Expect pile to reach 40-50°C within 24-48 hours.</div>
         </div>
       </div>
 
       <div class="day-container hot">
         <div class="day-header">
-          <div class="day-number hot">4</div>
-          <div class="day-title hot">First Hot Turn</div>
+          <div class="day-number hot">3</div>
+          <div class="day-title hot">Temperature Monitor</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Turn pile for optimal heat distribution<br>
-          <strong>Time Required:</strong> 1.5-2 hours<br><br>
+          <strong>Task:</strong> Check internal heat reaches 60-70°C<br>
+          <strong>Time Required:</strong> 30 minutes - 1 hour<br>
+          <strong>Phase:</strong> Heating Phase<br><br>
           
-          Critical first turning for even heating:
+          Monitor temperature rise and maintain optimal conditions:
+          <br><br>
+          1. Record temperature using thermometer<br>
+          2. Check multiple points in the pile<br>
+          3. Ensure center reaches 60-70°C<br>
+          4. Verify insulation is properly covering pile<br>
+          5. Check moisture levels - should feel warm and moist<br>
+          6. Document temperature readings<br>
+          7. Adjust covering if heat is escaping
+        </div>
+        <div class="temperature-box">
+          <div class="temp-label">Heating Phase:</div>
+          <div class="temp-text">Monitor temperature rise and maintain optimal conditions. Target: 60-70°C for pathogen elimination and rapid decomposition.</div>
+        </div>
+      </div>
+
+      <div class="day-container hot">
+        <div class="day-header">
+          <div class="day-number hot">8</div>
+          <div class="day-title hot">Heat Maintenance</div>
+        </div>
+        <div class="day-description">
+          <strong>Task:</strong> Turn pile to maintain thermophilic phase<br>
+          <strong>Time Required:</strong> 1.5-2 hours<br>
+          <strong>Phase:</strong> Thermophilic Phase<br><br>
+          
+          Sustain high temperatures for rapid decomposition:
           <br><br>
           1. Record temperature before turning<br>
           2. Turn entire pile, moving outer materials to center<br>
@@ -735,22 +786,23 @@
           6. Re-insert thermometer in new center<br>
           7. Cover immediately to retain heat
         </div>
-        <div class="warning-box">
-          <div class="warning-label">Critical Point:</div>
-          <div class="warning-text">This turn is essential for pathogen kill. Every part of the materials must experience the high-heat zone. Temperature will drop temporarily but should recover within 24 hours.</div>
+        <div class="temperature-box">
+          <div class="temp-label">Thermophilic Phase:</div>
+          <div class="temp-text">Sustain high temperatures for rapid decomposition. Temperature will drop temporarily but should recover within 24 hours.</div>
         </div>
       </div>
 
       <div class="day-container hot">
         <div class="day-header">
-          <div class="day-number hot">11</div>
-          <div class="day-title hot">Third Turn & Assessment</div>
+          <div class="day-number hot">12</div>
+          <div class="day-title hot">Pathogen Elimination</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Turn and assess decomposition progress<br>
-          <strong>Time Required:</strong> 1.5-2 hours<br><br>
+          <strong>Task:</strong> Continue high-temperature for safety<br>
+          <strong>Time Required:</strong> 1.5-2 hours<br>
+          <strong>Phase:</strong> Sanitization Phase<br><br>
           
-          Mid-process assessment and turning:
+          Ensure complete pathogen elimination through heat:
           <br><br>
           1. Document temperature before turning<br>
           2. Perform complete turn of all materials<br>
@@ -760,18 +812,23 @@
           6. Adjust moisture if needed<br>
           7. Rebuild pile maintaining heat-retention structure
         </div>
+        <div class="warning-box">
+          <div class="warning-label">Sanitization Phase:</div>
+          <div class="warning-text">Ensure complete pathogen elimination through heat. Maintain temperatures above 55°C for thorough sanitization.</div>
+        </div>
       </div>
 
       <div class="day-container hot">
         <div class="day-header">
           <div class="day-number hot">18</div>
-          <div class="day-title hot">Harvest & Screen Final Product</div>
+          <div class="day-title hot">Curing Complete</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Final processing and harvest<br>
-          <strong>Time Required:</strong> 2-3 hours<br><br>
+          <strong>Task:</strong> Temperature stabilized, ready for harvest<br>
+          <strong>Time Required:</strong> 2-3 hours<br>
+          <strong>Phase:</strong> ✓ Completion<br><br>
           
-          Complete the hot composting process:
+          Pathogen-free compost ready for use or marketplace:
           <br><br>
           1. Screen compost through 1/2 inch mesh<br>
           2. Remove any remaining large particles<br>
@@ -782,8 +839,8 @@
           7. Store in dry, ventilated area
         </div>
         <div class="tip-box">
-          <div class="tip-label">Success Indicators:</div>
-          <div class="tip-text">Perfect hot compost is dark brown, crumbly, smells earthy, feels cool, and has uniform texture with no visible manure pieces.</div>
+          <div class="tip-label">✓ Completion:</div>
+          <div class="tip-text">Pathogen-free compost ready for use or marketplace. Perfect hot compost is dark brown, crumbly, smells earthy, feels cool, and has uniform texture.</div>
         </div>
       </div>
     </div>

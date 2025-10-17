@@ -1,7 +1,14 @@
 // listing-details.js - COMPLETE Implementation
 // Features: Image Carousel, Reviews Modal, Google Maps Static & Interactive
 import { auth, db } from './init.js';
-import './shared-user-manager.js';
+import { 
+    getCurrentUser, 
+    getCurrentUserData, 
+    getCachedUserData,
+    getCachedProfilePic,
+    DEFAULT_PROFILE_PIC,
+    onUserDataChange
+} from './shared-user-manager.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     doc,
@@ -40,6 +47,14 @@ let marker = null;
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('📄 Listing Details Page initialized');
     
+    // Load user profile immediately
+    loadUserProfile();
+    
+    // Listen for user data changes
+    onUserDataChange(() => {
+        loadUserProfile();
+    });
+    
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             console.log('✅ Buyer authenticated:', user.uid);
@@ -61,6 +76,75 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 });
+
+// Load user profile from cache or current data
+function loadUserProfile() {
+    const userData = getCurrentUserData() || getCachedUserData();
+    const user = getCurrentUser();
+    
+    if (!userData && !user) {
+        console.log('⏳ No user data available yet');
+        return;
+    }
+    
+    const userName = userData?.userName || user?.displayName || 'User';
+    const userType = userData?.userType || 'fertilizer_buyer';
+    
+    // Get profile picture with proper fallback chain
+    let profilePicUrl = userData?.userProfilePictureUrl || user?.photoURL || getCachedProfilePic();
+    
+    // If still no profile pic or it's the default, use the DEFAULT_PROFILE_PIC
+    if (!profilePicUrl || profilePicUrl === DEFAULT_PROFILE_PIC) {
+        profilePicUrl = DEFAULT_PROFILE_PIC;
+    }
+    
+    // Determine user role display
+    let roleDisplay = 'Active User';
+    if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
+        roleDisplay = 'Swine Farmer';
+    } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+        roleDisplay = 'Organic Fertilizer Buyer';
+    }
+    
+    // Generate initials
+    const initials = userName.split(' ')
+        .map(word => word.charAt(0))
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+    
+    // Update header elements
+    const userNameElement = document.getElementById('headerUserName');
+    const userRoleElement = document.getElementById('headerUserRole');
+    const userAvatarElement = document.getElementById('headerUserAvatar');
+    
+    if (userNameElement) userNameElement.textContent = userName;
+    if (userRoleElement) userRoleElement.textContent = roleDisplay;
+    
+    if (userAvatarElement) {
+        // Always use background image with either user's pic or default pic
+        userAvatarElement.style.backgroundImage = `url(${profilePicUrl})`;
+        userAvatarElement.style.backgroundSize = 'cover';
+        userAvatarElement.style.backgroundPosition = 'center';
+        userAvatarElement.style.backgroundRepeat = 'no-repeat';
+        userAvatarElement.textContent = '';
+        
+        // Fallback to initials if image fails to load
+        const img = new Image();
+        img.onerror = () => {
+            userAvatarElement.style.backgroundImage = 'none';
+            userAvatarElement.textContent = initials;
+        };
+        img.src = profilePicUrl;
+    }
+    
+    console.log('👤 User profile loaded:', { 
+        userName, 
+        roleDisplay, 
+        profilePicUrl, 
+        usingDefault: profilePicUrl === DEFAULT_PROFILE_PIC 
+    });
+}
 
 async function loadListingDetails(listingId) {
     const loadingState = document.getElementById('loadingState');
