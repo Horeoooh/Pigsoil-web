@@ -77,6 +77,8 @@ const phoneChangeModal = document.getElementById('phoneChangeModal');
 const smsVerificationModal = document.getElementById('smsVerificationModal');
 const passwordChangeModal = document.getElementById('passwordChangeModal');
 
+//merged
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔧 Profile Settings page initialized');
     
