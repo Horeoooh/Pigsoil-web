@@ -1,12 +1,18 @@
-// Profile Settings JavaScript with Firebase Integration and Loading States
-import { auth, db } from '../js/init.js';
+// Profile Settings JavaScript - Complete Implementation with Firebase Standards
+import { auth, db, storage } from '../js/init.js';
 import '../js/shared-user-manager.js';
 import { 
     onAuthStateChanged,
     signOut,
     updateProfile,
     updateEmail,
-    deleteUser
+    updatePassword,
+    deleteUser,
+    EmailAuthProvider,
+    reauthenticateWithCredential,
+    sendPasswordResetEmail,
+    RecaptchaVerifier,
+    signInWithPhoneNumber
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     doc, 
@@ -21,12 +27,18 @@ import {
     writeBatch,
     serverTimestamp 
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
+import {
+    ref,
+    uploadBytesResumable,
+    getDownloadURL
+} from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-storage.js';
+
+// Default profile picture
+const DEFAULT_PROFILE_PICTURE = 'https://i.pinimg.com/736x/d7/95/c3/d795c373a0539e64c7ee69bb0af3c5c3.jpg';
 
 const COLLECTIONS = {
     USERS: 'users',
-    SWINE_FARMERS: 'swineFarmers',
-    FERTILIZER_BUYERS: 'fertilizerBuyers',
-    COMPOST_LISTINGS: 'compost_listings',
+    PRODUCT_LISTINGS: 'product_listings',
     MESSAGES: 'messages',
     CONVERSATIONS: 'conversations',
     NOTIFICATIONS: 'notifications'
@@ -35,50 +47,54 @@ const COLLECTIONS = {
 let currentUser = null;
 let currentUserData = null;
 let isLoading = false;
+let recaptchaVerifier = null;
+let confirmationResult = null;
+let pendingNewPhone = null;
 
 // DOM elements
 const usernameInput = document.getElementById('username');
 const emailInput = document.getElementById('email');
 const phoneInput = document.getElementById('phone');
-const userTypeInput = document.getElementById('userType');
+const userTypeSelect = document.getElementById('userType');
 const profileForm = document.getElementById('profileForm');
 const alertMessage = document.getElementById('alertMessage');
 const saveBtn = document.getElementById('saveBtn');
 const logoutBtn = document.getElementById('logoutBtn');
-const disableBtn = document.getElementById('disableBtn');
 const deleteBtn = document.getElementById('deleteBtn');
-
-const headerUserName = document.getElementById('headerUserName');
-const headerUserRole = document.getElementById('headerUserRole');
-const headerUserAvatar = document.getElementById('headerUserAvatar');
 
 const profileAvatar = document.getElementById('profileAvatar');
 const profileUserName = document.getElementById('profileUserName');
-const profileUserRole = document.getElementById('profileUserRole');
+const avatarUploadBtn = document.getElementById('avatarUploadBtn');
+const profilePictureInput = document.getElementById('profilePictureInput');
+
+const changePhoneBtn = document.getElementById('changePhoneBtn');
+const changeEmailBtn = document.getElementById('changeEmailBtn');
+const changePasswordBtn = document.getElementById('changePasswordBtn');
+const passwordSection = document.getElementById('passwordSection');
+
+// Modals
+const phoneChangeModal = document.getElementById('phoneChangeModal');
+const smsVerificationModal = document.getElementById('smsVerificationModal');
+const passwordChangeModal = document.getElementById('passwordChangeModal');
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Profile Settings page initialized');
+    console.log('🔧 Profile Settings page initialized');
     
-    // Show loading state immediately
     showPageLoading();
-    
     checkAuthState();
     setupEventListeners();
 });
 
-// Show page loading
+// Show/hide loading
 function showPageLoading() {
-    const formGroups = document.querySelectorAll('.form-group');
-    formGroups.forEach(group => {
+    document.querySelectorAll('.form-group').forEach(group => {
         group.style.opacity = '0.5';
         group.style.pointerEvents = 'none';
     });
 }
 
-// Hide page loading
 function hidePageLoading() {
-    const formGroups = document.querySelectorAll('.form-group');
-    formGroups.forEach((group, index) => {
+    document.querySelectorAll('.form-group').forEach((group, index) => {
         setTimeout(() => {
             group.style.transition = 'opacity 0.3s ease';
             group.style.opacity = '1';
@@ -91,496 +107,693 @@ function checkAuthState() {
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
             showAlert('Please sign in to access your profile settings.', 'error');
-            setTimeout(() => {
-                window.location.href = '/login.html';
-            }, 2000);
+            setTimeout(() => window.location.href = '/login.html', 2000);
             return;
         }
         
         currentUser = user;
-        console.log('User authenticated:', user.uid);
+        console.log('👤 User authenticated:', user.uid);
         
         try {
             await loadUserData(user.uid);
             populateForm();
             hidePageLoading();
-            console.log('Profile data loaded successfully');
         } catch (error) {
-            console.error('Error loading profile data:', error);
-            showAlert('Error loading profile data: ' + error.message, 'error');
+            console.error('❌ Error loading profile data:', error);
+            showAlert('Error loading profile data', 'error');
             hidePageLoading();
         }
     });
 }
 
 async function loadUserData(uid) {
-    try {
-        console.log('Loading user data for:', uid);
-        
-        const userDocRef = doc(db, COLLECTIONS.USERS, uid);
-        const userDoc = await getDoc(userDocRef);
-        
-        if (userDoc.exists()) {
-            currentUserData = userDoc.data();
-            console.log('User data loaded:', currentUserData);
-        } else {
-            currentUserData = {
-                userEmail: currentUser.email,
-                userName: currentUser.displayName || 'User',
-                userPhone: currentUser.phoneNumber || '',
-                userType: 'swine_farmer',
-                userCreatedAt: Date.now(),
-                userUpdatedAt: Date.now(),
-                userIsActive: true,
-                userPhoneVerified: true
-            };
-            
-            await setDoc(userDocRef, currentUserData);
-            console.log('Created default user data');
-        }
-
-    } catch (error) {
-        console.error('Error loading user data:', error);
-        throw error;
+    const userDocRef = doc(db, COLLECTIONS.USERS, uid);
+    const userDoc = await getDoc(userDocRef);
+    
+    if (userDoc.exists()) {
+        currentUserData = userDoc.data();
+        console.log('✅ User data loaded:', currentUserData);
+    } else {
+        currentUserData = {
+            userEmail: currentUser.email || null,
+            userName: currentUser.displayName || 'User',
+            userPhone: currentUser.phoneNumber || '',
+            userType: 'swine_farmer',
+            userIsActive: true,
+            userPhoneVerified: true,
+            userCreatedAt: Date.now(),
+            userUpdatedAt: Date.now()
+        };
+        await setDoc(userDocRef, currentUserData);
     }
 }
 
 function populateForm() {
     if (!currentUserData) return;
     
-    // Animate form fields appearing
     if (usernameInput) {
-        usernameInput.value = currentUserData.userName || currentUser.displayName || '';
-        usernameInput.style.opacity = '0';
-        setTimeout(() => {
-            usernameInput.style.transition = 'opacity 0.3s';
-            usernameInput.style.opacity = '1';
-        }, 100);
+        usernameInput.value = currentUserData.userName || '';
+        usernameInput.placeholder = 'Enter your name';
     }
     
     if (emailInput) {
-        emailInput.value = currentUserData.userEmail || currentUser.email || '';
-        emailInput.style.opacity = '0';
-        setTimeout(() => {
-            emailInput.style.transition = 'opacity 0.3s';
-            emailInput.style.opacity = '1';
-        }, 200);
+        emailInput.value = currentUserData.userEmail || '';
+        emailInput.placeholder = 'Enter your email';
+        if (currentUserData.userEmail && changeEmailBtn) changeEmailBtn.style.display = 'inline-block';
+        if (currentUserData.userEmail && passwordSection) passwordSection.style.display = 'block';
     }
     
     if (phoneInput) {
-        phoneInput.value = currentUserData.userPhone || currentUser.phoneNumber || '';
-        phoneInput.style.opacity = '0';
-        setTimeout(() => {
-            phoneInput.style.transition = 'opacity 0.3s';
-            phoneInput.style.opacity = '1';
-        }, 300);
+        phoneInput.value = currentUserData.userPhone || '';
+        phoneInput.placeholder = 'Enter phone number';
     }
     
-    if (userTypeInput) {
-        const userTypeDisplay = currentUserData.userType === 'swine_farmer' ? 'Swine Farmer' : 'Organic Fertilizer Buyer';
-        userTypeInput.value = userTypeDisplay;
-    }
+    if (userTypeSelect && currentUserData.userType) userTypeSelect.value = currentUserData.userType;
     
-    updateHeaderDisplay();
-    updateProfileHeader();
-    
-    console.log('Form populated with user data');
+    updateProfileDisplay();
 }
 
-function updateHeaderDisplay() {
+function updateProfileDisplay() {
     const userName = currentUserData.userName || currentUser.displayName || 'User';
-    const userRole = currentUserData.userType === 'swine_farmer' ? 'Active Farmer' : 'Fertilizer Buyer';
     const initials = generateInitials(userName);
+    const profilePicture = currentUserData.userProfilePictureUrl || DEFAULT_PROFILE_PICTURE;
     
-    if (headerUserName) headerUserName.textContent = userName;
-    if (headerUserRole) headerUserRole.textContent = userRole;
-    if (headerUserAvatar) headerUserAvatar.textContent = initials;
-}
-
-function updateProfileHeader() {
-    const userName = currentUserData.userName || currentUser.displayName || 'User';
-    const userRole = currentUserData.userType === 'swine_farmer' ? 'Swine Farmer' : 'Fertilizer Buyer';
-    const initials = generateInitials(userName);
-    
-    if (profileUserName) {
-        profileUserName.style.opacity = '0';
-        profileUserName.textContent = userName;
-        setTimeout(() => {
-            profileUserName.style.transition = 'opacity 0.5s';
-            profileUserName.style.opacity = '1';
-        }, 100);
-    }
-    
-    if (profileUserRole) {
-        profileUserRole.textContent = userRole;
-    }
+    if (profileUserName) profileUserName.textContent = userName;
     
     if (profileAvatar) {
-        profileAvatar.textContent = initials;
+        profileAvatar.style.backgroundImage = `url(${profilePicture})`;
+        profileAvatar.style.backgroundSize = 'cover';
+        profileAvatar.style.backgroundPosition = 'center';
+        profileAvatar.textContent = '';
+    }
+    
+    const headerUserName = document.getElementById('headerUserName');
+    const headerUserAvatar = document.getElementById('headerUserAvatar');
+    
+    if (headerUserName) headerUserName.textContent = userName;
+    if (headerUserAvatar) {
+        headerUserAvatar.style.backgroundImage = `url(${profilePicture})`;
+        headerUserAvatar.style.backgroundSize = 'cover';
+        headerUserAvatar.style.backgroundPosition = 'center';
+        headerUserAvatar.textContent = '';
     }
 }
 
 function generateInitials(name) {
     if (!name) return '?';
-    return name.split(' ')
-               .map(word => word.charAt(0))
-               .join('')
-               .substring(0, 2)
-               .toUpperCase();
+    return name.split(' ').map(word => word.charAt(0)).join('').substring(0, 2).toUpperCase();
 }
 
 function setupEventListeners() {
-    if (profileForm) {
-        profileForm.addEventListener('submit', handleFormSubmission);
+    if (profileForm) profileForm.addEventListener('submit', handleFormSubmission);
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+    if (deleteBtn) deleteBtn.addEventListener('click', handleDeleteAccount);
+    
+    if (avatarUploadBtn && profilePictureInput) {
+        avatarUploadBtn.addEventListener('click', () => profilePictureInput.click());
+        profilePictureInput.addEventListener('change', handleProfilePictureUpload);
     }
     
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
+    if (changePhoneBtn) changePhoneBtn.addEventListener('click', openPhoneChangeModal);
+    if (changeEmailBtn) changeEmailBtn.addEventListener('click', handleEmailChange);
+    if (changePasswordBtn) changePasswordBtn.addEventListener('click', openPasswordChangeModal);
+    
+    setupPhoneChangeModal();
+    setupSmsVerificationModal();
+    setupPasswordChangeModal();
+}
+
+// ============================================================
+// PROFILE PICTURE UPLOAD (Same pattern as CreateListing.js)
+// ============================================================
+
+async function handleProfilePictureUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+        showAlert('Please select a valid image file', 'error');
+        return;
     }
     
-    if (disableBtn) {
-        disableBtn.addEventListener('click', handleDisableAccount);
+    if (file.size > 5 * 1024 * 1024) {
+        showAlert('Image size must be less than 5MB', 'error');
+        return;
     }
     
-    if (deleteBtn) {
-        deleteBtn.addEventListener('click', handleDeleteAccount);
+    try {
+        setLoadingState(true);
+        showAlert('Uploading profile picture...', 'info');
+        
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            if (profileAvatar) {
+                profileAvatar.style.backgroundImage = `url(${e.target.result})`;
+                profileAvatar.style.backgroundSize = 'cover';
+                profileAvatar.style.backgroundPosition = 'center';
+                profileAvatar.textContent = '';
+            }
+        };
+        reader.readAsDataURL(file);
+        
+        // Upload to Firebase Storage (same as CreateListing.js)
+        const timestamp = Date.now();
+        const storageRef = ref(storage, `profile_pictures/${currentUser.uid}/${timestamp}_${file.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+        
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('📤 Upload progress:', progress.toFixed(0) + '%');
+            },
+            (error) => {
+                console.error('❌ Upload error:', error);
+                showAlert('Failed to upload: ' + error.message, 'error');
+                setLoadingState(false);
+            },
+            async () => {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                console.log('✅ Profile picture uploaded:', downloadURL);
+                
+                await updateDoc(doc(db, COLLECTIONS.USERS, currentUser.uid), {
+                    userProfilePictureUrl: downloadURL,
+                    userUpdatedAt: serverTimestamp()
+                });
+                
+                await updateProfile(currentUser, { photoURL: downloadURL });
+                
+                currentUserData.userProfilePictureUrl = downloadURL;
+                updateProfileDisplay();
+                
+                showAlert('Profile picture updated!', 'success');
+                setLoadingState(false);
+            }
+        );
+        
+    } catch (error) {
+        console.error('❌ Error uploading:', error);
+        showAlert('Failed to upload: ' + error.message, 'error');
+        setLoadingState(false);
+    }
+}
+
+// ============================================================
+// PHONE NUMBER CHANGE (Same pattern as sms-verification.js)
+// ============================================================
+
+function setupPhoneChangeModal() {
+    const closeBtn = document.getElementById('phoneModalClose');
+    const cancelBtn = document.getElementById('cancelPhoneChange');
+    const sendCodeBtn = document.getElementById('sendPhoneCode');
+    
+    if (closeBtn) closeBtn.addEventListener('click', closePhoneChangeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closePhoneChangeModal);
+    if (sendCodeBtn) sendCodeBtn.addEventListener('click', handleSendPhoneCode);
+}
+
+function openPhoneChangeModal() {
+    if (phoneChangeModal) {
+        phoneChangeModal.classList.add('show');
+        initializePhoneRecaptcha();
+    }
+}
+
+function closePhoneChangeModal() {
+    if (phoneChangeModal) {
+        phoneChangeModal.classList.remove('show');
+        document.getElementById('newPhoneNumber').value = '';
+        hideModalAlert('phoneChangeAlert');
+    }
+}
+
+function initializePhoneRecaptcha() {
+    if (!recaptchaVerifier) {
+        recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container-phone', {
+            'size': 'invisible',
+            'callback': () => console.log('✅ reCAPTCHA solved')
+        });
+    }
+}
+
+async function handleSendPhoneCode() {
+    const newPhone = document.getElementById('newPhoneNumber').value.trim();
+    
+    if (!newPhone) {
+        showModalAlert('phoneChangeAlert', 'Please enter a phone number', 'error');
+        return;
     }
     
-    const sidebarItems = document.querySelectorAll('.sidebar-item');
-    sidebarItems.forEach(item => {
-        item.addEventListener('click', function() {
-            sidebarItems.forEach(i => i.classList.remove('active'));
-            this.classList.add('active');
+    if (!newPhone.match(/^\+63[0-9]{10}$/)) {
+        showModalAlert('phoneChangeAlert', 'Please enter a valid Philippine phone number (+63XXXXXXXXXX)', 'error');
+        return;
+    }
+    
+    if (newPhone === currentUserData.userPhone) {
+        showModalAlert('phoneChangeAlert', 'This is your current phone number', 'error');
+        return;
+    }
+    
+    try {
+        showModalAlert('phoneChangeAlert', 'Sending verification code...', 'info');
+        
+        // Check if phone exists
+        const phoneQuery = query(collection(db, COLLECTIONS.USERS), where('userPhone', '==', newPhone));
+        const phoneSnapshot = await getDocs(phoneQuery);
+        
+        if (!phoneSnapshot.empty) {
+            showModalAlert('phoneChangeAlert', 'This phone number is already registered', 'error');
+            return;
+        }
+        
+        // Send SMS
+        confirmationResult = await signInWithPhoneNumber(auth, newPhone, recaptchaVerifier);
+        pendingNewPhone = newPhone;
+        
+        showModalAlert('phoneChangeAlert', 'Verification code sent!', 'success');
+        
+        setTimeout(() => {
+            closePhoneChangeModal();
+            openSmsVerificationModal(newPhone);
+        }, 1000);
+        
+    } catch (error) {
+        console.error('❌ Error sending SMS:', error);
+        let errorMsg = 'Failed to send verification code';
+        
+        if (error.code === 'auth/too-many-requests') {
+            errorMsg = 'Too many requests. Please try again later';
+        } else if (error.code === 'auth/invalid-phone-number') {
+            errorMsg = 'Invalid phone number format';
+        }
+        
+        showModalAlert('phoneChangeAlert', errorMsg, 'error');
+    }
+}
+
+// ============================================================
+// SMS VERIFICATION MODAL
+// ============================================================
+
+function setupSmsVerificationModal() {
+    const closeBtn = document.getElementById('smsModalClose');
+    const cancelBtn = document.getElementById('cancelSmsVerification');
+    const verifyBtn = document.getElementById('verifySmsCode');
+    const codeInputs = document.querySelectorAll('.code-input');
+    
+    if (closeBtn) closeBtn.addEventListener('click', closeSmsVerificationModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeSmsVerificationModal);
+    if (verifyBtn) verifyBtn.addEventListener('click', handleVerifySmsCode);
+    
+    codeInputs.forEach((input, index) => {
+        input.addEventListener('input', function(e) {
+            const value = e.target.value;
             
-            if (this.textContent.trim() !== 'Account') {
-                showAlert(`${this.textContent.trim()} settings coming soon!`, 'info');
+            if (!/^\d*$/.test(value)) {
+                e.target.value = '';
+                return;
+            }
+            
+            if (value && index < codeInputs.length - 1) {
+                codeInputs[index + 1].focus();
+            }
+            
+            const code = Array.from(codeInputs).map(i => i.value).join('');
+            if (code.length === 6) {
+                setTimeout(() => handleVerifySmsCode(), 500);
             }
         });
-    });
-    
-    const inputs = document.querySelectorAll('.form-input');
-    inputs.forEach(input => {
-        input.addEventListener('focus', function() {
-            this.parentElement.style.transform = 'scale(1.02)';
-            this.parentElement.style.transition = 'transform 0.3s ease';
-        });
-
-        input.addEventListener('blur', function() {
-            this.parentElement.style.transform = 'scale(1)';
+        
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !this.value && index > 0) {
+                codeInputs[index - 1].focus();
+            }
         });
     });
 }
 
-async function handleFormSubmission(e) {
-    e.preventDefault();
+function openSmsVerificationModal(phoneNumber) {
+    if (smsVerificationModal) {
+        smsVerificationModal.classList.add('show');
+        document.getElementById('verifyPhoneDisplay').textContent = phoneNumber;
+        document.querySelectorAll('.code-input').forEach(input => input.value = '');
+        document.querySelectorAll('.code-input')[0].focus();
+    }
+}
+
+function closeSmsVerificationModal() {
+    if (smsVerificationModal) {
+        smsVerificationModal.classList.remove('show');
+        document.querySelectorAll('.code-input').forEach(input => input.value = '');
+        hideModalAlert('smsVerificationAlert');
+    }
+}
+
+async function handleVerifySmsCode() {
+    const codeInputs = document.querySelectorAll('.code-input');
+    const code = Array.from(codeInputs).map(input => input.value).join('');
     
-    if (!currentUser || !currentUserData) {
-        showAlert('User data not loaded. Please refresh the page.', 'error');
+    if (code.length !== 6) {
+        showModalAlert('smsVerificationAlert', 'Please enter the complete 6-digit code', 'error');
         return;
     }
     
-    if (isLoading) return;
+    try {
+        showModalAlert('smsVerificationAlert', 'Verifying code...', 'info');
+        
+        await confirmationResult.confirm(code);
+        
+        await updateDoc(doc(db, COLLECTIONS.USERS, currentUser.uid), {
+            userPhone: pendingNewPhone,
+            userPhoneVerified: true,
+            userUpdatedAt: serverTimestamp()
+        });
+        
+        currentUserData.userPhone = pendingNewPhone;
+        if (phoneInput) phoneInput.value = pendingNewPhone;
+        
+        showModalAlert('smsVerificationAlert', 'Phone number updated!', 'success');
+        
+        setTimeout(() => {
+            closeSmsVerificationModal();
+            showAlert('Phone number updated successfully!', 'success');
+        }, 1500);
+        
+    } catch (error) {
+        console.error('❌ Verification failed:', error);
+        
+        let errorMsg = 'Invalid verification code';
+        if (error.code === 'auth/invalid-verification-code') {
+            errorMsg = 'Invalid code. Please try again';
+        } else if (error.code === 'auth/code-expired') {
+            errorMsg = 'Code expired. Please request a new one';
+        }
+        
+        showModalAlert('smsVerificationAlert', errorMsg, 'error');
+    }
+}
+
+// ============================================================
+// EMAIL CHANGE (Firebase Auth Standard)
+// ============================================================
+
+async function handleEmailChange() {
+    const currentEmail = emailInput.value.trim();
+    const newEmail = prompt('Enter your new email address:', currentEmail);
+    
+    if (!newEmail || newEmail === currentEmail) return;
+    
+    if (!newEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        showAlert('Please enter a valid email address', 'error');
+        return;
+    }
     
     try {
         setLoadingState(true);
+        showAlert('Updating email address...', 'info');
         
-        const newUserName = usernameInput.value.trim();
-        const newEmail = emailInput.value.trim();
-        const newPhone = phoneInput.value.trim();
+        await updateEmail(currentUser, newEmail);
         
-        if (!newUserName || !newEmail) {
-            throw new Error('Username and email are required.');
-        }
-        
-        if (!isValidEmail(newEmail)) {
-            throw new Error('Please enter a valid email address.');
-        }
-        
-        if (newPhone && !isValidPhone(newPhone)) {
-            throw new Error('Please enter a valid phone number.');
-        }
-        
-        if (newUserName !== currentUser.displayName) {
-            await updateProfile(currentUser, {
-                displayName: newUserName
-            });
-            console.log('Firebase Auth profile updated');
-        }
-        
-        if (newEmail !== currentUser.email) {
-            await updateEmail(currentUser, newEmail);
-            console.log('Firebase Auth email updated');
-        }
-        
-        const userDocRef = doc(db, COLLECTIONS.USERS, currentUser.uid);
-        const updateData = {
-            userName: newUserName,
+        await updateDoc(doc(db, COLLECTIONS.USERS, currentUser.uid), {
             userEmail: newEmail,
-            userPhone: newPhone,
             userUpdatedAt: serverTimestamp()
-        };
+        });
         
-        await updateDoc(userDocRef, updateData);
-        console.log('Firestore user data updated');
+        currentUserData.userEmail = newEmail;
+        emailInput.value = newEmail;
         
-        currentUserData = {
-            ...currentUserData,
-            ...updateData
-        };
-        
-        updateHeaderDisplay();
-        updateProfileHeader();
-        
-        showAlert('Profile updated successfully!', 'success');
+        showAlert('Email updated successfully!', 'success');
         
     } catch (error) {
-        console.error('Error updating profile:', error);
+        console.error('❌ Email update failed:', error);
         
-        let errorMessage = 'Failed to update profile. Please try again.';
+        let errorMsg = 'Failed to update email';
         
-        switch (error.code) {
-            case 'auth/requires-recent-login':
-                errorMessage = 'For security reasons, please sign out and sign back in to update your email.';
-                break;
-            case 'auth/email-already-in-use':
-                errorMessage = 'This email address is already in use by another account.';
-                break;
-            case 'auth/invalid-email':
-                errorMessage = 'Please enter a valid email address.';
-                break;
-            default:
-                errorMessage = error.message || errorMessage;
+        if (error.code === 'auth/requires-recent-login') {
+            errorMsg = 'For security, please sign out and sign back in to update your email';
+        } else if (error.code === 'auth/email-already-in-use') {
+            errorMsg = 'This email is already in use';
         }
         
-        showAlert(errorMessage, 'error');
+        showAlert(errorMsg, 'error');
     } finally {
         setLoadingState(false);
     }
 }
 
-async function handleLogout() {
-    if (!confirm('Are you sure you want to log out?')) {
+// ============================================================
+// PASSWORD CHANGE (Firebase Auth Standard)
+// ============================================================
+
+function setupPasswordChangeModal() {
+    const closeBtn = document.getElementById('passwordModalClose');
+    const cancelBtn = document.getElementById('cancelPasswordChange');
+    const saveBtn = document.getElementById('saveNewPassword');
+    
+    if (closeBtn) closeBtn.addEventListener('click', closePasswordChangeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closePasswordChangeModal);
+    if (saveBtn) saveBtn.addEventListener('click', handlePasswordChange);
+}
+
+function openPasswordChangeModal() {
+    if (!currentUserData.userEmail) {
+        showAlert('Please add an email address first to enable password management', 'error');
         return;
     }
     
-    try {
-        setLoadingState(true);
-        
-        await signOut(auth);
-        localStorage.removeItem('pigsoil_user');
-        
-        showAlert('Logged out successfully. Redirecting...', 'success');
-        
-        setTimeout(() => {
-            window.location.href = '/login.html';
-        }, 1500);
-        
-    } catch (error) {
-        console.error('Error logging out:', error);
-        showAlert('Error logging out: ' + error.message, 'error');
-        setLoadingState(false);
+    if (passwordChangeModal) {
+        passwordChangeModal.classList.add('show');
     }
 }
 
-async function handleDisableAccount() {
-    if (!confirm('Are you sure you want to disable your account?\n\nYour account will be deactivated but your data will be preserved. You can reactivate it later by logging in again.')) {
+function closePasswordChangeModal() {
+    if (passwordChangeModal) {
+        passwordChangeModal.classList.remove('show');
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+        hideModalAlert('passwordChangeAlert');
+    }
+}
+
+async function handlePasswordChange() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (!currentPassword) {
+        showModalAlert('passwordChangeAlert', 'Please enter your current password', 'error');
+        return;
+    }
+    
+    if (!newPassword) {
+        showModalAlert('passwordChangeAlert', 'Please enter a new password', 'error');
+        return;
+    }
+    
+    if (newPassword.length < 6) {
+        showModalAlert('passwordChangeAlert', 'Password must be at least 6 characters', 'error');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        showModalAlert('passwordChangeAlert', 'Passwords do not match', 'error');
         return;
     }
     
     try {
-        setLoadingState(true);
-        showProgressMessage('Disabling account...');
+        showModalAlert('passwordChangeAlert', 'Updating password...', 'info');
         
-        const userDocRef = doc(db, COLLECTIONS.USERS, currentUser.uid);
-        await updateDoc(userDocRef, {
-            userIsActive: false,
-            userDisabledAt: serverTimestamp(),
-            userUpdatedAt: serverTimestamp()
-        });
+        const credential = EmailAuthProvider.credential(currentUserData.userEmail, currentPassword);
+        await reauthenticateWithCredential(currentUser, credential);
+        await updatePassword(currentUser, newPassword);
         
-        const userType = currentUserData.userType;
-        const profileCollection = userType === 'swine_farmer' ? COLLECTIONS.SWINE_FARMERS : COLLECTIONS.FERTILIZER_BUYERS;
-        
-        const profileQuery = query(collection(db, profileCollection), where('userId', '==', currentUser.uid));
-        const profileSnapshot = await getDocs(profileQuery);
-        
-        if (!profileSnapshot.empty) {
-            const profileDoc = profileSnapshot.docs[0];
-            await updateDoc(doc(db, profileCollection, profileDoc.id), {
-                isActive: false,
-                updatedAt: serverTimestamp()
-            });
-        }
-        
-        if (userType === 'swine_farmer') {
-            const listingsQuery = query(
-                collection(db, COLLECTIONS.COMPOST_LISTINGS),
-                where('sellerId', '==', currentUser.uid)
-            );
-            const listingsSnapshot = await getDocs(listingsQuery);
-            
-            const batch = writeBatch(db);
-            listingsSnapshot.forEach((listingDoc) => {
-                batch.update(doc(db, COLLECTIONS.COMPOST_LISTINGS, listingDoc.id), {
-                    availability: 'disabled',
-                    updatedAt: serverTimestamp()
-                });
-            });
-            await batch.commit();
-        }
-        
-        await signOut(auth);
-        localStorage.removeItem('pigsoil_user');
-        
-        showAlert('Account disabled successfully. You can reactivate it by logging in again.', 'success');
+        showModalAlert('passwordChangeAlert', 'Password updated!', 'success');
         
         setTimeout(() => {
-            window.location.href = '/login.html';
-        }, 2000);
+            closePasswordChangeModal();
+            showAlert('Password updated successfully!', 'success');
+        }, 1500);
         
     } catch (error) {
-        console.error('Error disabling account:', error);
-        showAlert('Error disabling account: ' + error.message, 'error');
+        console.error('❌ Password update failed:', error);
+        
+        let errorMsg = 'Failed to update password';
+        
+        if (error.code === 'auth/wrong-password') {
+            errorMsg = 'Current password is incorrect';
+        } else if (error.code === 'auth/weak-password') {
+            errorMsg = 'Password is too weak';
+        }
+        
+        showModalAlert('passwordChangeAlert', errorMsg, 'error');
+    }
+}
+
+// ============================================================
+// FORM SUBMISSION (Username & User Type)
+// ============================================================
+
+async function handleFormSubmission(e) {
+    e.preventDefault();
+    
+    if (!currentUser || !currentUserData || isLoading) return;
+    
+    try {
+        setLoadingState(true);
+        
+        const newUserName = usernameInput.value.trim();
+        const newUserType = userTypeSelect.value;
+        const newEmail = emailInput.value.trim();
+        
+        if (!newUserName || newUserName.length < 3) {
+            throw new Error('Username must be at least 3 characters');
+        }
+        
+        const nameChanged = newUserName !== currentUserData.userName;
+        const typeChanged = newUserType !== currentUserData.userType;
+        const emailChanged = newEmail !== (currentUserData.userEmail || '');
+        
+        if (!nameChanged && !typeChanged && !emailChanged) {
+            showAlert('No changes to save', 'info');
+            setLoadingState(false);
+            return;
+        }
+        
+        const updateData = { userUpdatedAt: serverTimestamp() };
+        
+        if (nameChanged) {
+            updateData.userName = newUserName;
+            await updateProfile(currentUser, { displayName: newUserName });
+        }
+        
+        if (typeChanged) {
+            updateData.userType = newUserType;
+            showAlert('User type updated! The app will reload...', 'success');
+        }
+        
+        if (emailChanged && newEmail) {
+            updateData.userEmail = newEmail;
+        }
+        
+        await updateDoc(doc(db, COLLECTIONS.USERS, currentUser.uid), updateData);
+        currentUserData = { ...currentUserData, ...updateData };
+        updateProfileDisplay();
+        
+        if (typeChanged) {
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            showAlert('Profile updated successfully!', 'success');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error updating profile:', error);
+        showAlert(error.message || 'Failed to update profile', 'error');
+    } finally {
+        if (userTypeSelect.value === currentUserData.userType) {
+            setLoadingState(false);
+        }
+    }
+}
+
+// ============================================================
+// LOGOUT & DELETE ACCOUNT
+// ============================================================
+
+async function handleLogout() {
+    if (!confirm('Are you sure you want to log out?')) return;
+    
+    try {
+        setLoadingState(true);
+        await signOut(auth);
+        localStorage.removeItem('pigsoil_user');
+        showAlert('Logged out successfully', 'success');
+        setTimeout(() => window.location.href = '/login.html', 1500);
+    } catch (error) {
+        console.error('❌ Logout error:', error);
+        showAlert('Error logging out', 'error');
         setLoadingState(false);
     }
 }
 
 async function handleDeleteAccount() {
-    if (!confirm('PERMANENT DELETION WARNING\n\nAre you sure you want to permanently delete your account?\n\nThis will delete:\n• Your profile and account information\n• All your listings (if you\'re a swine farmer)\n• All your messages and conversations\n• All your reviews and ratings\n\nThis action CANNOT be undone!')) {
-        return;
-    }
+    if (!confirm('⚠️ PERMANENT DELETION\n\nDelete your account and all data?\n\nThis CANNOT be undone!')) return;
     
-    const confirmationText = prompt('To confirm deletion, please type "DELETE MY ACCOUNT" (all caps):');
-    
-    if (confirmationText !== 'DELETE MY ACCOUNT') {
-        showAlert('Account deletion cancelled. The confirmation text did not match.', 'info');
+    const confirmText = prompt('Type "DELETE MY ACCOUNT" to confirm:');
+    if (confirmText !== 'DELETE MY ACCOUNT') {
+        showAlert('Deletion cancelled', 'info');
         return;
     }
     
     try {
         setLoadingState(true);
-        showProgressMessage('Deleting account data...');
+        showAlert('Deleting account...', 'info');
         
         const uid = currentUser.uid;
-        const userType = currentUserData.userType;
-        
         const batch = writeBatch(db);
         
-        const userDocRef = doc(db, COLLECTIONS.USERS, uid);
-        batch.delete(userDocRef);
-        
-        const profileCollection = userType === 'swine_farmer' ? COLLECTIONS.SWINE_FARMERS : COLLECTIONS.FERTILIZER_BUYERS;
-        const profileQuery = query(collection(db, profileCollection), where('userId', '==', uid));
-        const profileSnapshot = await getDocs(profileQuery);
-        
-        profileSnapshot.forEach((profileDoc) => {
-            batch.delete(doc(db, profileCollection, profileDoc.id));
-        });
-        
+        batch.delete(doc(db, COLLECTIONS.USERS, uid));
         await batch.commit();
         
-        if (userType === 'swine_farmer') {
-            showProgressMessage('Removing listings...');
-            
-            const listingsQuery = query(
-                collection(db, COLLECTIONS.COMPOST_LISTINGS),
-                where('sellerId', '==', uid)
-            );
-            const listingsSnapshot = await getDocs(listingsQuery);
-            
+        // Delete listings
+        const listingsQuery = query(collection(db, COLLECTIONS.PRODUCT_LISTINGS), where('listingSellerID', '==', uid));
+        const listingsSnapshot = await getDocs(listingsQuery);
+        
+        if (listingsSnapshot.size > 0) {
             const listingsBatch = writeBatch(db);
-            listingsSnapshot.forEach((listingDoc) => {
-                listingsBatch.delete(doc(db, COLLECTIONS.COMPOST_LISTINGS, listingDoc.id));
-            });
-            
-            if (listingsSnapshot.size > 0) {
-                await listingsBatch.commit();
-            }
+            listingsSnapshot.forEach(doc => listingsBatch.delete(doc.ref));
+            await listingsBatch.commit();
         }
         
-        showProgressMessage('Cleaning up messages...');
-        
-        const messagesQuery = query(
-            collection(db, COLLECTIONS.MESSAGES),
-            where('senderId', '==', uid)
-        );
+        // Delete messages
+        const messagesQuery = query(collection(db, COLLECTIONS.MESSAGES), where('senderId', '==', uid));
         const messagesSnapshot = await getDocs(messagesQuery);
         
-        const messagesBatch = writeBatch(db);
-        messagesSnapshot.forEach((messageDoc) => {
-            messagesBatch.delete(doc(db, COLLECTIONS.MESSAGES, messageDoc.id));
-        });
-        
         if (messagesSnapshot.size > 0) {
+            const messagesBatch = writeBatch(db);
+            messagesSnapshot.forEach(doc => messagesBatch.delete(doc.ref));
             await messagesBatch.commit();
         }
         
-        showProgressMessage('Finalizing deletion...');
-        
-        try {
-            await deleteUser(currentUser);
-            console.log('Firebase Auth user deleted');
-        } catch (authError) {
-            if (authError.code === 'auth/requires-recent-login') {
-                showAlert('For security, please sign in again to complete account deletion.', 'error');
-                setTimeout(() => {
-                    window.location.href = '/login.html';
-                }, 2000);
-                return;
-            }
-            throw authError;
-        }
-        
+        await deleteUser(currentUser);
         localStorage.removeItem('pigsoil_user');
         
-        showAlert('Account and all associated data have been permanently deleted. Thank you for using PigSoil+.', 'success');
-        
-        setTimeout(() => {
-            window.location.href = '/login.html';
-        }, 3000);
+        showAlert('Account deleted successfully', 'success');
+        setTimeout(() => window.location.href = '/login.html', 2000);
         
     } catch (error) {
-        console.error('Error deleting account:', error);
+        console.error('❌ Delete error:', error);
         
-        let errorMessage = 'Error deleting account: ' + error.message;
-        
+        let errorMsg = 'Error deleting account';
         if (error.code === 'auth/requires-recent-login') {
-            errorMessage = 'For security reasons, please sign out and sign back in, then try again.';
+            errorMsg = 'For security, please sign out and sign back in, then try again';
         }
         
-        showAlert(errorMessage, 'error');
+        showAlert(errorMsg, 'error');
         setLoadingState(false);
     }
 }
+
+// ============================================================
+// UTILITY FUNCTIONS
+// ============================================================
 
 function setLoadingState(loading) {
     isLoading = loading;
     
     if (saveBtn) {
         saveBtn.disabled = loading;
-        if (loading) {
-            saveBtn.innerHTML = '<div style="display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px;"></div>Saving...';
-        } else {
-            saveBtn.innerHTML = 'Save Changes';
-        }
+        saveBtn.innerHTML = loading ? 
+            '<div style="display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px;"></div>Saving...' :
+            'Save Changes';
     }
     
-    if (disableBtn) disableBtn.disabled = loading;
     if (deleteBtn) deleteBtn.disabled = loading;
     if (logoutBtn) logoutBtn.disabled = loading;
     
-    const inputs = [usernameInput, emailInput, phoneInput];
-    inputs.forEach(input => {
+    [usernameInput, emailInput, userTypeSelect].forEach(input => {
         if (input) input.disabled = loading;
     });
-}
-
-function showProgressMessage(message) {
-    if (alertMessage) {
-        alertMessage.textContent = message;
-        alertMessage.className = 'alert info';
-        alertMessage.style.display = 'block';
-    }
 }
 
 function showAlert(message, type) {
@@ -598,42 +811,30 @@ function showAlert(message, type) {
         alertMessage.style.transform = 'translateY(0)';
     }, 100);
     
-    setTimeout(() => {
-        alertMessage.style.opacity = '0';
-        alertMessage.style.transform = 'translateY(-10px)';
+    if (type !== 'info') {
         setTimeout(() => {
-            alertMessage.style.display = 'none';
-        }, 300);
-    }, 5000);
-    
-    alertMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
-
-function isValidPhone(phone) {
-    const phoneRegex = /^[\+]?[\d\s\-\(\)]{10,}$/;
-    return phoneRegex.test(phone);
-}
-
-// Add CSS animations
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+            alertMessage.style.opacity = '0';
+            setTimeout(() => alertMessage.style.display = 'none', 300);
+        }, 5000);
     }
-`;
+}
+
+function showModalAlert(modalAlertId, message, type) {
+    const modalAlert = document.getElementById(modalAlertId);
+    if (modalAlert) {
+        modalAlert.textContent = message;
+        modalAlert.className = `alert ${type}`;
+        modalAlert.style.display = 'block';
+    }
+}
+
+function hideModalAlert(modalAlertId) {
+    const modalAlert = document.getElementById(modalAlertId);
+    if (modalAlert) modalAlert.style.display = 'none';
+}
+
+const style = document.createElement('style');
+style.textContent = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
 document.head.appendChild(style);
 
-window.PigSoilProfileSettings = {
-    loadUserData,
-    updateHeaderDisplay,
-    generateInitials,
-    showAlert
-};
-
-console.log('Profile Settings with Firebase integration loaded!');
+console.log('✅ Profile Settings with complete Firebase integration loaded!');

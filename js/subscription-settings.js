@@ -13,6 +13,9 @@ import {
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 
+// Default profile picture
+const DEFAULT_PROFILE_PICTURE = 'https://i.pinimg.com/736x/d7/95/c3/d795c373a0539e64c7ee69bb0af3c5c3.jpg';
+
 // Constants matching Android User model
 const TIER_FREE = 'FREE';
 const TIER_ESSENTIAL = 'ESSENTIAL';
@@ -58,7 +61,6 @@ const modalBody = document.getElementById('modalBody');
 const modalActions = document.getElementById('modalActions');
 
 const headerUserName = document.getElementById('headerUserName');
-const headerUserRole = document.getElementById('headerUserRole');
 const headerUserAvatar = document.getElementById('headerUserAvatar');
 
 // Initialize
@@ -289,12 +291,22 @@ function updateUI() {
 
 function updateHeaderDisplay() {
     const userName = currentUserData.userName || currentUser.displayName || 'User';
-    const userRole = currentUserData.userType === 'swine_farmer' ? 'Swine Farmer' : 'Fertilizer Buyer';
-    const initials = generateInitials(userName);
+    const profilePicture = currentUserData.userProfilePictureUrl || DEFAULT_PROFILE_PICTURE;
     
     if (headerUserName) headerUserName.textContent = userName;
-    if (headerUserRole) headerUserRole.textContent = userRole;
-    if (headerUserAvatar) headerUserAvatar.textContent = initials;
+    
+    if (headerUserAvatar) {
+        headerUserAvatar.style.backgroundImage = `url(${profilePicture})`;
+        headerUserAvatar.style.backgroundSize = 'cover';
+        headerUserAvatar.style.backgroundPosition = 'center';
+        headerUserAvatar.textContent = '';
+        
+        // Ensure the img tag inside is updated too
+        const avatarImg = headerUserAvatar.querySelector('img');
+        if (avatarImg) {
+            avatarImg.src = profilePicture;
+        }
+    }
 }
 
 function generateInitials(name) {

@@ -1,4 +1,4 @@
-// Signup functionality for PigSoil+ - Firebase Version (Email/Password Only)
+// Signup functionality for PigSoil+ - Firebase Version (Email/Password Only) with Caching
 import { auth, db } from './init.js';
 import { 
     createUserWithEmailAndPassword,
@@ -13,6 +13,10 @@ import {
     where, 
     getDocs 
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
+import { 
+    cacheCompleteUserData, 
+    DEFAULT_PROFILE_PIC 
+} from './shared-user-manager.js';
 
 // DOM elements
 const signupForm = document.getElementById('signupForm');
@@ -150,6 +154,19 @@ async function handleSignup(userData) {
         if (!saveResult.success) {
             throw new Error(saveResult.error);
         }
+
+        // Cache the complete user data including default profile picture
+        console.log('💾 Caching user data after successful signup');
+        const completeUserData = {
+            ...firestoreUserData,
+            userPhone: '',
+            userPhoneVerified: false,
+            userIsActive: true,
+            userProfilePictureUrl: DEFAULT_PROFILE_PIC,
+            userCreatedAt: Date.now(),
+            userUpdatedAt: Date.now()
+        };
+        cacheCompleteUserData(completeUserData);
 
         // Registration successful
         showAlert('Account created successfully! Redirecting...', 'success');

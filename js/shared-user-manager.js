@@ -14,6 +14,16 @@ const COLLECTIONS = {
     USERS: 'users'
 };
 
+const CACHE_KEYS = {
+    USER_DATA: 'pigsoil_user_data',
+    USER_AUTH: 'pigsoil_user_auth',
+    PROFILE_PIC: 'pigsoil_profile_pic',
+    CACHE_TIMESTAMP: 'pigsoil_cache_timestamp'
+};
+
+const DEFAULT_PROFILE_PIC = 'https://i.pinimg.com/736x/d7/95/c3/d795c373a0539e64c7ee69bb0af3c5c3.jpg';
+const CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+
 let currentUser = null;
 let currentUserData = null;
 let userDataListener = null;
@@ -21,12 +31,18 @@ let userDataListener = null;
 const USER_DATA_CHANGED = 'userDataChanged';
 
 export function initializeSharedUserManager() {
-    console.log('🔧 Initializing Shared User Manager - FIXED VERSION');
+    console.log('🔧 Initializing Shared User Manager - FIXED VERSION with Caching');
+    
+    // Try to load cached data immediately for faster UI
+    loadCachedUserData();
     
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUser = user;
             console.log('👤 User authenticated:', user.uid);
+            
+            // Cache basic auth info
+            cacheUserAuth(user);
             
             setupUserDataListener(user.uid);
         } else {
@@ -40,6 +56,7 @@ export function initializeSharedUserManager() {
             }
             
             clearUserProfile();
+            clearUserCache();
         }
     });
 }
@@ -63,9 +80,15 @@ async function setupUserDataListener(uid) {
             currentUserData = docSnapshot.data();
             console.log('📡 Initial user data loaded:', currentUserData);
             console.log('🔍 User type detected:', currentUserData.userType);
+            
+            // Cache the complete user data
+            cacheUserData(currentUserData);
         } else {
             console.log('📝 Creating default user data');
             currentUserData = await createDefaultUserData(uid);
+            
+            // Cache the newly created user data
+            cacheUserData(currentUserData);
         }
         
         // Update UI and navigation BEFORE enabling links
@@ -98,6 +121,9 @@ async function setupUserDataListener(uid) {
             if (JSON.stringify(newUserData) !== JSON.stringify(currentUserData)) {
                 currentUserData = newUserData;
                 console.log('📡 User data updated from Firestore:', newUserData);
+                
+                // Update cache with new data
+                cacheUserData(newUserData);
                 
                 updateAllUserProfile();
                 updateNavigationLinks();
@@ -135,6 +161,7 @@ function updateAllUserProfile() {
     const userName = currentUserData.userName || currentUser.displayName || 'User';
     const userRole = getUserRoleDisplay(currentUserData.userType);
     const initials = generateInitials(userName);
+    const profilePicUrl = currentUserData.userProfilePictureUrl || currentUser.photoURL;
     
     const userNameElements = document.querySelectorAll('.user-name, #headerUserName, #profileUserName');
     userNameElements.forEach(element => {
@@ -148,7 +175,17 @@ function updateAllUserProfile() {
     
     const avatarElements = document.querySelectorAll('.user-avatar, #headerUserAvatar, #profileAvatar');
     avatarElements.forEach(element => {
-        if (element) element.textContent = initials;
+        if (element) {
+            if (profilePicUrl) {
+                element.style.backgroundImage = `url(${profilePicUrl})`;
+                element.style.backgroundSize = 'cover';
+                element.style.backgroundPosition = 'center';
+                element.textContent = '';
+            } else {
+                element.style.backgroundImage = 'none';
+                element.textContent = initials;
+            }
+        }
     });
     
     console.log('🔄 Updated all user profile elements');
@@ -223,7 +260,7 @@ function getUserRoleDisplay(userType) {
             return 'Swine Farmer';
         case 'fertilizer_buyer':
         case 'Organic Fertilizer Buyer':
-            return 'Fertilizer Buyer';
+            return 'Organic Fertilizer Buyer';
         default:
             return 'Active Farmer';
     }
@@ -265,6 +302,122 @@ function dispatchUserDataEvent() {
     });
     
     document.dispatchEvent(event);
+}
+
+// CACHING FUNCTIONS
+function cacheUserAuth(user) {
+    try {
+        const authData = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            phoneNumber: user.phoneNumber,
+            photoURL: user.photoURL
+        };
+        
+        localStorage.setItem(CACHE_KEYS.USER_AUTH, JSON.stringify(authData));
+        localStorage.setItem(CACHE_KEYS.CACHE_TIMESTAMP, Date.now().toString());
+        console.log('💾 Cached user auth data');
+    } catch (error) {
+        console.error('❌ Error caching user auth:', error);
+    }
+}
+
+function cacheUserData(userData) {
+    try {
+        if (!userData) return;
+        
+        // Cache the complete user document
+        const dataToCache = {
+            userID: userData.userID,
+            userName: userData.userName,
+            userEmail: userData.userEmail,
+            userPhone: userData.userPhone,
+            userType: userData.userType,
+            userProfilePictureUrl: userData.userProfilePictureUrl || DEFAULT_PROFILE_PIC,
+            userIsActive: userData.userIsActive,
+            userPhoneVerified: userData.userPhoneVerified,
+            isPro: userData.isPro,
+            subscriptionTier: userData.subscriptionTier,
+            subscriptionEndDate: userData.subscriptionEndDate,
+            isDualRole: userData.isDualRole,
+            autoRenew: userData.autoRenew,
+            currentChatId: userData.currentChatId,
+            fcmToken: userData.fcmToken,
+            lastSeen: userData.lastSeen,
+            userIsOnline: userData.userIsOnline,
+            xenditCustomerId: userData.xenditCustomerId,
+            xenditSubscriptionId: userData.xenditSubscriptionId,
+            weeklyCameraAiUsed: userData.weeklyCameraAiUsed,
+            weeklyManongBotPromptsUsed: userData.weeklyManongBotPromptsUsed,
+            currentWeekStart: userData.currentWeekStart,
+            userCreatedAt: userData.userCreatedAt,
+            userUpdatedAt: userData.userUpdatedAt
+        };
+        
+        localStorage.setItem(CACHE_KEYS.USER_DATA, JSON.stringify(dataToCache));
+        localStorage.setItem(CACHE_KEYS.PROFILE_PIC, userData.userProfilePictureUrl || DEFAULT_PROFILE_PIC);
+        localStorage.setItem(CACHE_KEYS.CACHE_TIMESTAMP, Date.now().toString());
+        
+        console.log('💾 Cached complete user data:', dataToCache);
+    } catch (error) {
+        console.error('❌ Error caching user data:', error);
+    }
+}
+
+function loadCachedUserData() {
+    try {
+        const cachedTimestamp = localStorage.getItem(CACHE_KEYS.CACHE_TIMESTAMP);
+        
+        // Check if cache is expired
+        if (cachedTimestamp) {
+            const cacheAge = Date.now() - parseInt(cachedTimestamp);
+            if (cacheAge > CACHE_EXPIRY_MS) {
+                console.log('🗑️ Cache expired, clearing...');
+                clearUserCache();
+                return false;
+            }
+        }
+        
+        const cachedUserData = localStorage.getItem(CACHE_KEYS.USER_DATA);
+        
+        if (cachedUserData) {
+            currentUserData = JSON.parse(cachedUserData);
+            console.log('📦 Loaded cached user data:', currentUserData);
+            
+            // Update UI with cached data immediately
+            updateAllUserProfile();
+            updateNavigationLinks();
+            
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('❌ Error loading cached data:', error);
+        return false;
+    }
+}
+
+function clearUserCache() {
+    try {
+        localStorage.removeItem(CACHE_KEYS.USER_DATA);
+        localStorage.removeItem(CACHE_KEYS.USER_AUTH);
+        localStorage.removeItem(CACHE_KEYS.PROFILE_PIC);
+        localStorage.removeItem(CACHE_KEYS.CACHE_TIMESTAMP);
+        console.log('🗑️ Cleared user cache');
+    } catch (error) {
+        console.error('❌ Error clearing cache:', error);
+    }
+}
+
+function getCachedProfilePicture() {
+    try {
+        return localStorage.getItem(CACHE_KEYS.PROFILE_PIC) || DEFAULT_PROFILE_PIC;
+    } catch (error) {
+        console.error('❌ Error getting cached profile picture:', error);
+        return DEFAULT_PROFILE_PIC;
+    }
 }
 
 // EXPORTED FUNCTIONS
@@ -314,7 +467,44 @@ export function isFertilizerBuyer() {
     return result;
 }
 
+// CACHE UTILITY EXPORTS
+export function cacheCompleteUserData(userData) {
+    cacheUserData(userData);
+}
+
+export function getCachedUserData() {
+    try {
+        const cachedData = localStorage.getItem(CACHE_KEYS.USER_DATA);
+        return cachedData ? JSON.parse(cachedData) : null;
+    } catch (error) {
+        console.error('❌ Error getting cached user data:', error);
+        return null;
+    }
+}
+
+export function getCachedProfilePic() {
+    return getCachedProfilePicture();
+}
+
+export function clearCache() {
+    clearUserCache();
+}
+
+export function isCacheValid() {
+    try {
+        const cachedTimestamp = localStorage.getItem(CACHE_KEYS.CACHE_TIMESTAMP);
+        if (!cachedTimestamp) return false;
+        
+        const cacheAge = Date.now() - parseInt(cachedTimestamp);
+        return cacheAge < CACHE_EXPIRY_MS;
+    } catch (error) {
+        return false;
+    }
+}
+
+export { DEFAULT_PROFILE_PIC };
+
 // Initialize on load
 initializeSharedUserManager();
 
-console.log('🔧 Shared User Manager with FIXED Routing loaded!');
+console.log('🔧 Shared User Manager with FIXED Routing and Caching loaded!');

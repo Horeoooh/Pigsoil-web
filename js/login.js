@@ -1,4 +1,4 @@
-// Enhanced Login functionality for PigSoil+ - Firebase Version with Buyer Routing
+// Enhanced Login functionality for PigSoil+ - Firebase Version with Buyer Routing and Caching
 import { auth, db } from './init.js';
 import { 
     signInWithEmailAndPassword,
@@ -14,6 +14,11 @@ import {
     where,
     getDocs
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
+import { 
+    cacheCompleteUserData, 
+    getCachedProfilePic, 
+    DEFAULT_PROFILE_PIC 
+} from './shared-user-manager.js';
 
 // Collection names
 const COLLECTIONS = {
@@ -172,6 +177,14 @@ async function handleEmailLogin(email, password) {
 
         // Get user data from Firestore with enhanced fallback
         const userData = await getUserData(user.uid);
+
+        // Cache the complete user data including profile picture
+        console.log('💾 Caching user data after successful login');
+        cacheCompleteUserData({
+            ...userData,
+            userID: user.uid,
+            userProfilePictureUrl: userData.userProfilePictureUrl || DEFAULT_PROFILE_PIC
+        });
 
         // Login successful
         showAlert('Login successful! Redirecting...', 'success');
@@ -343,19 +356,6 @@ if (languageSelector) {
     });
 }
 
-const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-checkboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-        const customCheckbox = this.nextElementSibling;
-        if (this.checked) {
-            customCheckbox.style.animation = 'none';
-            setTimeout(() => {
-                customCheckbox.style.animation = 'bounce 0.6s ease';
-            }, 10);
-        }
-    });
-});
-
 function createFloatingParticle() {
     const particle = document.createElement('div');
     particle.style.cssText = `
@@ -386,17 +386,6 @@ style.textContent = `
         to {
             transform: translateY(-${window.innerHeight + 100}px) rotate(360deg);
             opacity: 0;
-        }
-    }
-    @keyframes bounce {
-        0%, 20%, 50%, 80%, 100% {
-            transform: translateY(0);
-        }
-        40% {
-            transform: translateY(-4px);
-        }
-        60% {
-            transform: translateY(-2px);
         }
     }
 `;

@@ -203,44 +203,99 @@
             color: #666;
         }
 
-        /* Stats Section */
-        .stats-section {
+        /* Bot and Transactions Grid */
+        .bot-transactions-section {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
+            grid-template-columns: 1fr 2fr;
+            gap: 32px;
             margin-bottom: 32px;
         }
 
-        .stat-card {
-            background: white;
-            border-radius: 16px;
+        /* Bot Card */
+        .bot-card {
+            background: linear-gradient(135deg, #ffffff, #f4faf5);
+            border-radius: 20px;
             padding: 24px;
-            text-align: center;
+            border: 1px solid #e0f2e0;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .bot-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .bot-avatar {
+            width: 50px;
+            height: 50px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .bot-avatar img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+        }
+
+        .bot-info h4 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2e7d32;
+            margin-bottom: 4px;
+        }
+
+        .bot-info small {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .bot-message {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .bot-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .bot-buttons button {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
             transition: all 0.3s ease;
         }
 
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        .bot-buttons .primary {
+            background: #4CAF50;
+            color: white;
         }
 
-        .stat-icon {
-            font-size: 36px;
-            margin-bottom: 12px;
+        .bot-buttons .secondary {
+            background: #2e7d32;
+            color: white;
         }
 
-        .stat-content h4 {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: #4CAF50;
+        .bot-buttons button:hover {
+            transform: translateY(-1px);
         }
 
         /* Recent Transactions */
@@ -389,7 +444,7 @@
                 grid-template-columns: 1fr;
             }
 
-            .stats-section {
+            .bot-transactions-section {
                 grid-template-columns: 1fr;
             }
 
@@ -425,10 +480,12 @@
                 </button>
                 <a href="/setting-acc.html" class="user-profile" aria-label="View Profile">
                     <div class="user-info">
-                        <span class="user-name">Maria Santos</span>
+                        <span class="user-name" id="buyerName">Loading...</span>
                         <span class="user-role">Organic Fertilizer Buyer</span>
                     </div>
-                    <div class="user-avatar">MS</div>
+                    <div class="user-avatar" id="buyerAvatar" style="background-size: cover; background-position: center;">
+                        <img src="" alt="" style="display: none;" id="buyerAvatarImg">
+                    </div>
                 </a>
             </div>
         </nav>
@@ -437,7 +494,7 @@
     <main class="main-content">
         <!-- Welcome Section -->
         <section class="welcome-section">
-            <h2>Welcome back, Maria! 👋</h2>
+            <h2>Welcome back, <span id="welcomeName">Buyer</span>! 👋</h2>
             <p class="welcome-subtitle">Ready to find quality organic fertilizer?</p>
         </section>
 
@@ -451,48 +508,45 @@
                 </div>
             </a>
 
-            <a href="messages.html" class="action-card">
-                <div class="action-icon">💬</div>
+            <a href="transactions.html" class="action-card">
+                <div class="action-icon">�</div>
                 <div class="action-content">
-                    <h3>Messages</h3>
-                    <p>Chat with swine farmers</p>
+                    <h3>Transactions</h3>
+                    <p>View your purchase history</p>
                 </div>
             </a>
         </section>
 
-        <!-- Stats Section -->
-        <section class="stats-section">
-            <div class="stat-card">
-                <div class="stat-icon">📦</div>
-                <div class="stat-content">
-                    <h4>Total Purchases</h4>
-                    <p class="stat-value" id="totalPurchases">12</p>
+        <!-- Bot & Recent Transactions -->
+        <section class="bot-transactions-section">
+            <!-- Manong Bot Card -->
+            <div class="bot-card">
+                <div class="bot-header">
+                    <div class="bot-avatar">
+                        <img src="/images/Farmer.png" alt="Farmer Bot" />
+                    </div>
+                    <div class="bot-info">
+                        <h4>Manong Bot</h4>
+                        <small>AI Farming Assistant</small>
+                    </div>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">✓</div>
-                <div class="stat-content">
-                    <h4>Completed</h4>
-                    <p class="stat-value" id="completedPurchases">8</p>
+                <div class="bot-message">
+                    Get personalized farming tips and composting guidance! Download our mobile app to access Manong Bot - your AI farming assistant available 24/7.
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">⏳</div>
-                <div class="stat-content">
-                    <h4>Pending</h4>
-                    <p class="stat-value" id="pendingPurchases">4</p>
+                <div class="bot-buttons">
+                    <button class="primary" onclick="alert('Mobile app coming soon! Stay tuned for iOS and Android releases.')">Download App</button>
+                    <button class="secondary" onclick="alert('Visit our mobile app to chat with Manong Bot!')">Learn More</button>
                 </div>
-            </div>
-        </section>
-
-        <!-- Recent Transactions -->
-        <section class="transactions-section">
-            <div class="section-header">
-                <h3>Recent Transactions</h3>
-                <a href="buyer-transactions.html" class="see-all">See All →</a>
             </div>
 
-            <div class="transactions-list" id="transactionsList">
+            <!-- Recent Transactions -->
+            <div class="transactions-section">
+                <div class="section-header">
+                    <h3>Recent Transactions</h3>
+                    <a href="transactions.html" class="see-all">See All →</a>
+                </div>
+
+                <div class="transactions-list" id="transactionsList">
                 <div class="transaction-card">
                     <div class="transaction-image">
                         <img src="/images/compost-basic.jpg" alt="Premium Basic Compost" onerror="this.parentElement.innerHTML='🌱'">
@@ -537,6 +591,7 @@
                         <span class="status-badge in-progress">🚚 In Progress</span>
                     </div>
                 </div>
+            </div>
             </div>
         </section>
     </main>

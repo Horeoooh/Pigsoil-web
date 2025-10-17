@@ -227,42 +227,9 @@
 
         .options-row {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
             margin-bottom: 2rem;
-        }
-
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-        }
-
-        .custom-checkbox {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #4a6741;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .checkbox-container input[type="checkbox"] {
-            display: none;
-        }
-
-        .checkbox-container input[type="checkbox"]:checked + .custom-checkbox {
-            background: #4a6741;
-            transform: scale(1.1);
-        }
-
-        .checkbox-container input[type="checkbox"]:checked + .custom-checkbox::after {
-            content: "✓";
-            color: white;
-            font-weight: bold;
         }
 
         .forgot-password {
@@ -462,9 +429,7 @@
             }
 
             .options-row {
-                flex-direction: column;
-                gap: 1rem;
-                align-items: flex-start;
+                justify-content: center;
             }
         }
     </style>
@@ -527,12 +492,7 @@
                     >
                 </div>
 
-                <div class="options-row">
-                    <label class="checkbox-container">
-                        <input type="checkbox" id="remember" checked>
-                        <div class="custom-checkbox"></div>
-                        <span>Remember me</span>
-                    </label>
+                <div class="options-row" style="justify-content: flex-end;">
                     <a href="#forgot" class="forgot-password">Forgot password?</a>
                 </div>
 

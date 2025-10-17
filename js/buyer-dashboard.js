@@ -16,11 +16,52 @@ import {
 const COLLECTIONS = {
     USERS: 'users',
     TRANSACTIONS: 'transactions',
-    LISTINGS: 'listings'
+    LISTINGS: 'product_listings'
 };
 
 let currentUser = null;
 let isLoading = false;
+
+const DEFAULT_PROFILE_PIC = 'https://i.pinimg.com/736x/d7/95/c3/d795c373a0539e64c7ee69bb0af3c5c3.jpg';
+
+// Load cached user data for instant UI display
+function loadCachedUserDataToUI() {
+    try {
+        const cachedUserData = localStorage.getItem('pigsoil_user_data');
+        const cachedProfilePic = localStorage.getItem('pigsoil_profile_pic');
+        
+        if (cachedUserData) {
+            const userData = JSON.parse(cachedUserData);
+            const userName = userData.userName || 'Buyer';
+            const firstName = userName.split(' ')[0];
+            
+            // Update name elements
+            const buyerNameElement = document.getElementById('buyerName');
+            if (buyerNameElement) {
+                buyerNameElement.textContent = userName;
+            }
+            
+            const welcomeNameElement = document.getElementById('welcomeName');
+            if (welcomeNameElement) {
+                welcomeNameElement.textContent = firstName;
+            }
+            
+            // Update avatar with cached profile picture or default
+            const profilePicUrl = cachedProfilePic || userData.userProfilePictureUrl || DEFAULT_PROFILE_PIC;
+            const avatarElement = document.getElementById('buyerAvatar');
+            if (avatarElement && profilePicUrl) {
+                avatarElement.style.backgroundImage = `url(${profilePicUrl})`;
+                avatarElement.style.backgroundSize = 'cover';
+                avatarElement.style.backgroundPosition = 'center';
+                avatarElement.textContent = ''; // Clear any text
+            }
+            
+            console.log('✅ Loaded cached user data to UI:', userName);
+        }
+    } catch (error) {
+        console.error('❌ Error loading cached user data:', error);
+    }
+}
 
 // Show loading spinner
 function showLoading(elementId) {
@@ -46,6 +87,9 @@ function hideLoading(elementId) {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('Buyer Dashboard initialized');
     
+    // Load cached data immediately for instant UI
+    loadCachedUserDataToUI();
+    
     // Show loading states immediately
     showLoading('transactionsList');
     
@@ -58,8 +102,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 // Load all data
                 await Promise.all([
                     loadUserData(user.uid),
-                    loadRecentTransactions(),
-                    loadStats()
+                    loadRecentTransactions()
                 ]);
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
@@ -81,9 +124,28 @@ async function loadUserData(userId) {
         if (userDoc.exists()) {
             currentUser = userDoc.data();
             
+            const userName = currentUser.userName || 'Buyer';
+            const firstName = userName.split(' ')[0];
+            
+            // Update name elements
             const buyerNameElement = document.getElementById('buyerName');
             if (buyerNameElement) {
-                buyerNameElement.textContent = currentUser.userName || 'Buyer';
+                buyerNameElement.textContent = userName;
+            }
+            
+            const welcomeNameElement = document.getElementById('welcomeName');
+            if (welcomeNameElement) {
+                welcomeNameElement.textContent = firstName;
+            }
+            
+            // Update avatar with profile picture or default
+            const profilePicUrl = currentUser.userProfilePictureUrl || DEFAULT_PROFILE_PIC;
+            const avatarElement = document.getElementById('buyerAvatar');
+            if (avatarElement) {
+                avatarElement.style.backgroundImage = `url(${profilePicUrl})`;
+                avatarElement.style.backgroundSize = 'cover';
+                avatarElement.style.backgroundPosition = 'center';
+                avatarElement.textContent = ''; // Clear any text
             }
             
             console.log('User data loaded:', currentUser);
@@ -108,8 +170,8 @@ async function loadRecentTransactions() {
         const transactionsRef = collection(db, COLLECTIONS.TRANSACTIONS);
         const q = query(
             transactionsRef,
-            where('buyerID', '==', auth.currentUser.uid),
-            orderBy('transactionCreatedAt', 'desc'),
+            where('transactionBuyerID', '==', auth.currentUser.uid),
+            orderBy('transactionOrderDate', 'desc'),
             limit(3)
         );
         
@@ -122,13 +184,13 @@ async function loadRecentTransactions() {
             return;
         }
         
-        transactionsList.innerHTML = '';
+        // Load enriched transaction data (with product and seller info)
+        const transactions = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
         
-        for (const docSnap of querySnapshot.docs) {
-            const transaction = docSnap.data();
-            const transactionCard = createTransactionCard(transaction);
-            transactionsList.appendChild(transactionCard);
-        }
+        loadTransactionDetails(transactions, transactionsList);
         
         console.log('Loaded', querySnapshot.size, 'recent transactions');
     } catch (error) {
@@ -138,53 +200,168 @@ async function loadRecentTransactions() {
     }
 }
 
-function createTransactionCard(transaction) {
+// Load product and seller info for transactions (like Android version)
+async function loadTransactionDetails(transactions, transactionsList) {
+    transactionsList.innerHTML = '';
+    
+    const enrichedTransactions = [];
+    
+    for (const transaction of transactions) {
+        try {
+            const displayData = await loadProductAndSellerInfo(transaction);
+            enrichedTransactions.push(displayData);
+        } catch (error) {
+            console.error('Error loading transaction details:', error);
+            // Add with default values if loading fails
+            enrichedTransactions.push({
+                transaction: transaction,
+                productName: 'Organic Fertilizer',
+                sellerName: 'Unknown Seller',
+                productImage: '/images/compost-basic.jpg'
+            });
+        }
+    }
+    
+    // Display all enriched transactions
+    enrichedTransactions.forEach(displayData => {
+        const transactionCard = createTransactionCard(displayData);
+        transactionsList.appendChild(transactionCard);
+    });
+}
+
+// Load product and seller information
+async function loadProductAndSellerInfo(transaction) {
+    let productName = 'Organic Fertilizer';
+    let sellerName = 'Unknown Seller';
+    let productImage = '/images/compost-basic.jpg'; // Default image
+    
+    try {
+        // Load product listing
+        const listingRef = doc(db, COLLECTIONS.LISTINGS, transaction.transactionListingID);
+        const listingDoc = await getDoc(listingRef);
+        
+        if (listingDoc.exists()) {
+            const listingData = listingDoc.data();
+            productName = listingData.listingProductName || productName;
+            
+            // Get first image from listingProductImages array
+            if (listingData.listingProductImages && Array.isArray(listingData.listingProductImages) && listingData.listingProductImages.length > 0) {
+                productImage = listingData.listingProductImages[0];
+            }
+        }
+    } catch (error) {
+        console.error('Error loading product:', error);
+    }
+    
+    try {
+        // Load seller info
+        const sellerRef = doc(db, COLLECTIONS.USERS, transaction.transactionSellerID);
+        const sellerDoc = await getDoc(sellerRef);
+        
+        if (sellerDoc.exists()) {
+            sellerName = sellerDoc.data().userName || sellerName;
+        }
+    } catch (error) {
+        console.error('Error loading seller:', error);
+    }
+    
+    return {
+        transaction: transaction,
+        productName: productName,
+        sellerName: sellerName,
+        productImage: productImage
+    };
+}
+
+function createTransactionCard(displayData) {
+    const transaction = displayData.transaction;
     const card = document.createElement('div');
     card.className = 'transaction-card';
     
     const statusClass = getStatusClass(transaction.transactionStatus);
     const statusIcon = getStatusIcon(transaction.transactionStatus);
+    const statusText = getStatusDisplayText(transaction.transactionStatus);
+    
+    // Format date
+    const transactionDate = transaction.transactionOrderDate?.toDate ? 
+        transaction.transactionOrderDate.toDate() : 
+        new Date(transaction.transactionOrderDate);
+    const dateFormatter = new Intl.DateTimeFormat('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+    });
+    const formattedDate = dateFormatter.format(transactionDate);
+    
+    // Format amount
+    const amount = transaction.transactionTotalAmount || 0;
+    const formattedAmount = new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(amount);
     
     card.innerHTML = `
         <div class="transaction-image">
-            <img src="${transaction.productImage || '../images/compost-basic.jpg'}" 
-                 alt="${transaction.productName}"
-                 onerror="this.parentElement.innerHTML='🌱'">
+            <img src="${displayData.productImage}" 
+                 alt="${displayData.productName}"
+                 onerror="this.src='/images/compost-basic.jpg'">
         </div>
         <div class="transaction-details">
-            <h4>${transaction.productName || 'Compost Product'}</h4>
-            <span class="seller-name">From: ${transaction.sellerName || 'Swine Farmer'}</span>
+            <h4>${displayData.productName}</h4>
+            <span class="seller-name">Swine Farmer: ${displayData.sellerName}</span>
             <div class="transaction-meta">
-                <span class="price">₱${transaction.transactionAmount?.toFixed(2) || '0.00'}</span>
-                <span class="quantity">${transaction.productQuantity || '25kg'}</span>
+                <span class="price">${formattedAmount}</span>
+                <span class="quantity">${formattedDate}</span>
             </div>
-            <span class="status-badge ${statusClass}">${statusIcon} ${transaction.transactionStatus || 'Pending'}</span>
+            <span class="status-badge ${statusClass}">${statusIcon} ${statusText}</span>
         </div>
     `;
     
+    card.style.cursor = 'pointer';
     card.onclick = () => {
-        window.location.href = `/transaction-details.html?id=${transaction.transactionID}`;
+        // Navigate to transaction details (when implemented)
+        console.log('View transaction:', transaction.id || transaction.transactionId);
+        // window.location.href = `/transaction-details.html?id=${transaction.id}`;
     };
     
     return card;
 }
 
+function getStatusDisplayText(status) {
+    const statusMap = {
+        'contacted': 'Negotiating',
+        'agreed': 'Agreed',
+        'confirmed': 'Confirmed',
+        'completed': 'Completed',
+        'cancelled': 'Cancelled',
+        'cancellation_requested': 'Cancelling'
+    };
+    
+    return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
+}
+
 function getStatusClass(status) {
     const statusMap = {
-        'Completed': 'completed',
-        'Pending': 'pending',
-        'In Progress': 'in-progress',
-        'Cancelled': 'cancelled'
+        'completed': 'completed',
+        'agreed': 'in-progress',
+        'confirmed': 'in-progress',
+        'contacted': 'pending',
+        'cancelled': 'cancelled',
+        'cancellation_requested': 'pending'
     };
     return statusMap[status] || 'pending';
 }
 
 function getStatusIcon(status) {
     const iconMap = {
-        'Completed': '✓',
-        'Pending': '⏳',
-        'In Progress': '🚚',
-        'Cancelled': '❌'
+        'completed': '✓',
+        'agreed': '✓',
+        'confirmed': '✓',
+        'contacted': '�',
+        'cancelled': '❌',
+        'cancellation_requested': '⏳'
     };
     return iconMap[status] || '⏳';
 }
@@ -194,11 +371,11 @@ function displayEmptyTransactions() {
     if (!transactionsList) return;
     
     transactionsList.innerHTML = `
-        <div style="text-align: center; padding: 40px 20px; color: #666;">
+        <div style="text-align: center; padding: 60px 20px; color: #666;">
             <div style="font-size: 60px; margin-bottom: 15px;">📦</div>
-            <h3 style="margin-bottom: 10px; font-size: 18px; color: #333;">No transactions yet</h3>
-            <p style="margin-bottom: 20px; font-size: 14px;">Start browsing the marketplace to find quality organic fertilizer</p>
-            <a href="/buyer-marketplace.html" style="display: inline-block; background: #4CAF50; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: background 0.3s;">
+            <h3 style="margin-bottom: 10px; font-size: 18px; color: #333; font-weight: 600;">No transactions yet</h3>
+            <p style="margin-bottom: 20px; font-size: 14px; line-height: 1.5;">Start browsing the marketplace to find quality organic fertilizer from swine farmers</p>
+            <a href="/buyer-marketplace.html" style="display: inline-block; background: #4CAF50; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);">
                 Browse Marketplace
             </a>
         </div>
@@ -219,64 +396,6 @@ function displayErrorState(elementId, message) {
             </button>
         </div>
     `;
-}
-
-async function loadStats() {
-    try {
-        if (!auth.currentUser) {
-            updateStatElement('totalPurchases', 0);
-            updateStatElement('completedPurchases', 0);
-            updateStatElement('pendingPurchases', 0);
-            return;
-        }
-        
-        const transactionsRef = collection(db, COLLECTIONS.TRANSACTIONS);
-        const q = query(
-            transactionsRef,
-            where('buyerID', '==', auth.currentUser.uid)
-        );
-        
-        const querySnapshot = await getDocs(q);
-        
-        let totalPurchases = 0;
-        let completedPurchases = 0;
-        let pendingPurchases = 0;
-        
-        querySnapshot.forEach((docSnap) => {
-            const transaction = docSnap.data();
-            totalPurchases++;
-            
-            if (transaction.transactionStatus === 'Completed') {
-                completedPurchases++;
-            } else if (transaction.transactionStatus === 'Pending' || transaction.transactionStatus === 'In Progress') {
-                pendingPurchases++;
-            }
-        });
-        
-        updateStatElement('totalPurchases', totalPurchases);
-        updateStatElement('completedPurchases', completedPurchases);
-        updateStatElement('pendingPurchases', pendingPurchases);
-        
-        console.log('Stats loaded:', { totalPurchases, completedPurchases, pendingPurchases });
-    } catch (error) {
-        console.error('Error loading stats:', error);
-        updateStatElement('totalPurchases', 0);
-        updateStatElement('completedPurchases', 0);
-        updateStatElement('pendingPurchases', 0);
-    }
-}
-
-function updateStatElement(elementId, value) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        // Add animation
-        element.style.opacity = '0';
-        setTimeout(() => {
-            element.textContent = value;
-            element.style.transition = 'opacity 0.3s';
-            element.style.opacity = '1';
-        }, 100);
-    }
 }
 
 // Add CSS for loading animation

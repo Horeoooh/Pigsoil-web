@@ -1,4 +1,4 @@
-// SMS Verification functionality for PigSoil+ - Firebase Version
+// SMS Verification functionality for PigSoil+ - Firebase Version with Caching
 import { auth, db } from './init.js';
 import { 
     signInWithPhoneNumber,
@@ -14,6 +14,10 @@ import {
     where, 
     getDocs 
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
+import { 
+    cacheCompleteUserData, 
+    DEFAULT_PROFILE_PIC 
+} from './shared-user-manager.js';
 
 // Global variables
 let recaptchaVerifier = null;
@@ -239,7 +243,7 @@ async function completeUserProfile(profileData) {
         }
         
         const userType = profileData.userType; // Keep as 'swine_farmer' or 'fertilizer_buyer'
-        await setDoc(doc(db, 'users', verifiedUser.uid), {
+        const completeUserData = {
             userID: verifiedUser.uid,
             userName: profileData.username,
             userEmail: null,
@@ -247,20 +251,31 @@ async function completeUserProfile(profileData) {
             userType: userType,
             userIsActive: true,
             userPhoneVerified: true,
+            userProfilePictureUrl: DEFAULT_PROFILE_PIC,
             userCreatedAt: Date.now(),
-            userUpdatedAt: Date.now()
-        });
+            userUpdatedAt: Date.now(),
+            isPro: false,
+            isDualRole: false,
+            autoRenew: false,
+            userIsOnline: false,
+            weeklyCameraAiUsed: 0,
+            weeklyManongBotPromptsUsed: 0
+        };
         
-        // Store user data in localStorage
-        const completeUserData = {
+        await setDoc(doc(db, 'users', verifiedUser.uid), completeUserData);
+        
+        // Cache the complete user data including profile picture
+        console.log('💾 Caching user data after phone verification');
+        cacheCompleteUserData(completeUserData);
+        
+        // Store user data in localStorage (backward compatibility)
+        localStorage.setItem('pigsoil_user', JSON.stringify({
             uid: verifiedUser.uid,
             userName: profileData.username,
             userType: userType,
             userPhone: pendingVerificationData.phone,
             userPhoneVerified: true
-        };
-        
-        localStorage.setItem('pigsoil_user', JSON.stringify(completeUserData));
+        }));
         localStorage.removeItem('pendingPhoneVerification');
         
         showProfileSuccess('Registration complete! Redirecting...');

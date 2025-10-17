@@ -180,17 +180,37 @@
                 border: none;
                 text-align: left;
                 width: 100%;
+                text-decoration: none;
+                display: block;
+                font-family: 'Poppins', sans-serif;
+                font-size: 14px;
+                line-height: normal;
             }
 
             .sidebar-item:hover {
                 background: #e9ecef;
                 color: #333;
+                text-decoration: none;
             }
 
             .sidebar-item.active {
                 background: #e8f5e8;
                 color: #2d5a27;
                 border-right-color: #4CAF50;
+            }
+            
+            /* Ensure links look exactly like buttons */
+            a.sidebar-item {
+                color: #666;
+            }
+            
+            a.sidebar-item:hover {
+                color: #333;
+                text-decoration: none;
+            }
+            
+            a.sidebar-item:visited {
+                color: #666;
             }
 
             .sidebar-section {
@@ -199,7 +219,7 @@
             }
 
             .sidebar-section-title {
-                padding: 0 24px 8px;
+                padding: 0 24px 12px;
                 font-size: 12px;
                 color: #999;
                 text-transform: uppercase;
@@ -207,11 +227,11 @@
             }
 
             .logout-btn {
-                margin-top: auto;
+                margin-top: 32px;
                 padding: 12px 24px;
                 color: #dc3545;
                 cursor: pointer;
-                font-weight: 500;
+                font-weight: 600;
                 display: flex;
                 align-items: center;
                 gap: 8px;
@@ -239,6 +259,11 @@
                 margin-bottom: 32px;
             }
 
+            .profile-avatar-container {
+                position: relative;
+                display: inline-block;
+            }
+
             .profile-avatar {
                 width: 80px;
                 height: 80px;
@@ -250,6 +275,36 @@
                 color: white;
                 font-size: 24px;
                 font-weight: 600;
+                background-size: cover;
+                background-position: center;
+            }
+
+            .avatar-upload-btn {
+                position: absolute;
+                bottom: -4px;
+                right: -4px;
+                width: 32px;
+                height: 32px;
+                background: #4CAF50;
+                border: 3px solid white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                color: white;
+                padding: 0;
+            }
+
+            .avatar-upload-btn:hover {
+                background: #45a049;
+                transform: scale(1.1);
+            }
+
+            .avatar-upload-btn svg {
+                width: 16px;
+                height: 16px;
             }
 
             .form-group {
@@ -318,6 +373,15 @@
                 font-family: 'Poppins', sans-serif;
             }
 
+            .btn-success {
+                background: #4CAF50;
+                color: white;
+            }
+
+            .btn-success:hover {
+                background: #45a049;
+            }
+
             .btn-danger {
                 background: #dc3545;
                 color: white;
@@ -336,6 +400,19 @@
             .btn-outline:hover {
                 background: #dc3545;
                 color: white;
+            }
+
+            .btn-link {
+                background: none;
+                border: none;
+                padding: 0;
+                cursor: pointer;
+                font-family: 'Poppins', sans-serif;
+                text-decoration: underline;
+            }
+
+            .btn-link:hover {
+                opacity: 0.8;
             }
 
             /* Loading state */
@@ -441,10 +518,11 @@
                     </button>
                     <a href="/setting-acc.html" class="user-profile" title="User Profile" aria-label="View user profile settings">
                         <div>
-                            <span class="user-name" id="headerUserName">Loading...</span>
-                            <span class="user-role" id="headerUserRole">Loading...</span>
+                            <span class="user-name" id="headerUserName">User</span>
                         </div>
-                        <div class="user-avatar" id="headerUserAvatar">?</div>
+                        <div class="user-avatar" id="headerUserAvatar">
+                            <img src="https://i.pinimg.com/736x/d7/95/c3/d795c373a0539e64c7ee69bb0af3c5c3.jpg" alt="User" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        </div>
                     </a>
                 </div>
             </nav>
@@ -453,16 +531,11 @@
         <main class="main-container">
             <div class="settings-container">
                 <aside class="sidebar">
-                    <button class="sidebar-item" title="My Address Settings" aria-label="Manage address settings">My Address</button>
-                    <button class="sidebar-item active" title="Account Settings" aria-label="Manage account settings">Account</button>
-                    <button class="sidebar-item" title="Notification Settings" aria-label="Manage notification settings">Notification</button>
-                    <button class="sidebar-item" title="Language Settings" aria-label="Manage language settings">Language</button>
-                    
                     <div class="sidebar-section">
-                        <div class="sidebar-section-title">Billing</div>
-                        <button href="/setting-subscription.html" class="sidebar-item" title="Subscription Settings" aria-label="Manage subscription settings">Subscription</button>
-                        <button class="sidebar-item" title="Billing Settings" aria-label="Manage billing settings">Billing</button>
-                        <button class="sidebar-item" title="Appearance Settings" aria-label="Manage appearance settings">Appearance</button>
+                        <div class="sidebar-section-title">SETTINGS</div>
+                        <button class="sidebar-item active" title="Account Settings" aria-label="Manage account settings">Account</button>
+                        <button class="sidebar-item" title="Language Settings" aria-label="Manage language settings">Language</button>
+                        <a href="/setting-subscription.html" class="sidebar-item" title="Subscription Settings" aria-label="Manage subscription settings">Subscription</a>
                     </div>
 
                     <button class="logout-btn" id="logoutBtn" title="Log Out" aria-label="Log out of your account">
@@ -472,10 +545,18 @@
 
                 <div class="content">
                     <div class="profile-header">
-                        <div class="profile-avatar" id="profileAvatar" aria-label="Profile Avatar">?</div>
+                        <div class="profile-avatar-container">
+                            <div class="profile-avatar" id="profileAvatar" aria-label="Profile Avatar">?</div>
+                            <button class="avatar-upload-btn" id="avatarUploadBtn" title="Change profile picture">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                    <circle cx="12" cy="13" r="4"></circle>
+                                </svg>
+                            </button>
+                            <input type="file" id="profilePictureInput" accept="image/*" style="display: none;">
+                        </div>
                         <div>
                             <h2 id="profileUserName">Loading...</h2>
-                            <p id="profileUserRole">Loading...</p>
                         </div>
                     </div>
 
@@ -484,30 +565,45 @@
                     <form id="profileForm">
                         <div class="form-group">
                             <label for="username" class="form-label">Username</label>
-                            <input type="text" id="username" class="form-input" placeholder="Loading..."
+                            <input type="text" id="username" class="form-input" placeholder="Enter your name"
                                 title="Username" aria-label="Username">
                         </div>
 
                         <div class="form-group">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" id="email" class="form-input" placeholder="Loading..."
+                            <input type="email" id="email" class="form-input" placeholder="Enter your email"
                                 title="Email Address" aria-label="Email address">
+                            <button type="button" class="btn-link" id="changeEmailBtn" style="display: none; margin-top: 8px; color: #4CAF50; font-size: 13px;">
+                                Change Email
+                            </button>
+                        </div>
+
+                        <div class="form-group" id="passwordSection" style="display: none;">
+                            <label for="password" class="form-label">Password</label>
+                            <button type="button" class="btn-link" id="changePasswordBtn" style="color: #4CAF50; font-size: 13px;">
+                                Change Password
+                            </button>
                         </div>
 
                         <div class="form-group">
-                            <label for="phone" class="form-label">Phone</label>
-                            <input type="tel" id="phone" class="form-input" placeholder="Loading..."
-                                title="Phone Number" aria-label="Phone number">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" id="phone" class="form-input" placeholder="Enter phone number"
+                                title="Phone Number" aria-label="Phone number" readonly>
+                            <button type="button" class="btn-link" id="changePhoneBtn" style="margin-top: 8px; color: #4CAF50; font-size: 13px;">
+                                Change Phone Number
+                            </button>
                         </div>
 
                         <div class="form-group">
                             <label for="userType" class="form-label">User Type</label>
-                            <input type="text" id="userType" class="form-input" readonly
-                                title="User Type" aria-label="User type">
+                            <select id="userType" class="form-input" title="User Type" aria-label="User type">
+                                <option value="swine_farmer">Swine Farmer</option>
+                                <option value="fertilizer_buyer">Fertilizer Buyer</option>
+                            </select>
                         </div>
 
                         <div class="button-group">
-                            <button type="submit" class="btn btn-danger" id="saveBtn" 
+                            <button type="submit" class="btn btn-success" id="saveBtn" 
                                     title="Save Changes" aria-label="Save account changes">
                                 Save Changes
                             </button>
@@ -515,16 +611,176 @@
                     </form>
 
                     <div class="account-removal">
-                        <h3>Account Management</h3>
-                        <p>Manage your PigSoil+ account. Disabling temporarily suspends your account, while deletion permanently removes all data.</p>
+                        <h3>Delete Account</h3>
+                        <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
                         <div class="button-group">
-                            <button class="btn btn-danger" id="disableBtn" title="Disable Account" aria-label="Temporarily disable your account">Disable Account</button>
                             <button class="btn btn-outline" id="deleteBtn" title="Delete Account" aria-label="Permanently delete your account">Delete Account</button>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
+
+        <!-- Phone Change Modal -->
+        <div id="phoneChangeModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Change Phone Number</h3>
+                    <button class="modal-close" id="phoneModalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom: 16px;">Enter your new phone number. You'll receive an SMS verification code.</p>
+                    <input type="tel" id="newPhoneNumber" class="form-input" placeholder="+639XXXXXXXXX" style="width: 100%;">
+                    <div id="phoneChangeAlert" class="alert" style="margin-top: 12px; display: none;"></div>
+                    <div id="recaptcha-container-phone" style="margin-top: 12px;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" id="cancelPhoneChange">Cancel</button>
+                    <button class="btn btn-success" id="sendPhoneCode">Send Code</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SMS Verification Modal -->
+        <div id="smsVerificationModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Verify Phone Number</h3>
+                    <button class="modal-close" id="smsModalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom: 16px;">Enter the 6-digit code sent to <strong id="verifyPhoneDisplay"></strong></p>
+                    <div class="code-inputs" style="display: flex; gap: 8px; justify-content: center; margin: 20px 0;">
+                        <input type="text" maxlength="1" class="code-input" pattern="[0-9]" style="width: 45px; height: 50px; text-align: center; font-size: 20px; border: 2px solid #ddd; border-radius: 8px;">
+                        <input type="text" maxlength="1" class="code-input" pattern="[0-9]" style="width: 45px; height: 50px; text-align: center; font-size: 20px; border: 2px solid #ddd; border-radius: 8px;">
+                        <input type="text" maxlength="1" class="code-input" pattern="[0-9]" style="width: 45px; height: 50px; text-align: center; font-size: 20px; border: 2px solid #ddd; border-radius: 8px;">
+                        <input type="text" maxlength="1" class="code-input" pattern="[0-9]" style="width: 45px; height: 50px; text-align: center; font-size: 20px; border: 2px solid #ddd; border-radius: 8px;">
+                        <input type="text" maxlength="1" class="code-input" pattern="[0-9]" style="width: 45px; height: 50px; text-align: center; font-size: 20px; border: 2px solid #ddd; border-radius: 8px;">
+                        <input type="text" maxlength="1" class="code-input" pattern="[0-9]" style="width: 45px; height: 50px; text-align: center; font-size: 20px; border: 2px solid #ddd; border-radius: 8px;">
+                    </div>
+                    <div id="smsVerificationAlert" class="alert" style="margin-top: 12px; display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" id="cancelSmsVerification">Cancel</button>
+                    <button class="btn btn-success" id="verifySmsCode">Verify</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Change Modal -->
+        <div id="passwordChangeModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Change Password</h3>
+                    <button class="modal-close" id="passwordModalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" id="currentPassword" class="form-input" placeholder="Enter current password">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label class="form-label">New Password</label>
+                        <input type="password" id="newPassword" class="form-input" placeholder="Enter new password">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label class="form-label">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" class="form-input" placeholder="Confirm new password">
+                    </div>
+                    <div id="passwordChangeAlert" class="alert" style="margin-top: 12px; display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" id="cancelPasswordChange">Cancel</button>
+                    <button class="btn btn-success" id="saveNewPassword">Change Password</button>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .modal-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 9999;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .modal-overlay.show {
+                display: flex;
+            }
+
+            .modal-content {
+                background: white;
+                border-radius: 12px;
+                width: 90%;
+                max-width: 500px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+                animation: modalSlideIn 0.3s ease;
+            }
+
+            @keyframes modalSlideIn {
+                from {
+                    transform: translateY(-50px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .modal-header {
+                padding: 20px 24px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .modal-header h3 {
+                margin: 0;
+                font-size: 18px;
+                color: #333;
+            }
+
+            .modal-close {
+                background: none;
+                border: none;
+                font-size: 28px;
+                color: #999;
+                cursor: pointer;
+                padding: 0;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                transition: all 0.3s;
+            }
+
+            .modal-close:hover {
+                background: #f5f5f5;
+                color: #333;
+            }
+
+            .modal-body {
+                padding: 24px;
+            }
+
+            .modal-footer {
+                padding: 16px 24px;
+                border-top: 1px solid #eee;
+                display: flex;
+                gap: 12px;
+                justify-content: flex-end;
+            }
+        </style>
 
         <!-- Firebase and settings integration script -->
         <script type="module" src="/js/profile-settings.js"></script>
