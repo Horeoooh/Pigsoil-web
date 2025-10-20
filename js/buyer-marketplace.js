@@ -20,6 +20,34 @@ import {
     onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 
+// ===== USER TYPE CHECK - REDIRECT SWINE FARMERS =====
+function checkUserTypeAndRedirect() {
+    try {
+        const cachedUserData = localStorage.getItem('pigsoil_user_data');
+        if (cachedUserData) {
+            const userData = JSON.parse(cachedUserData);
+            const userType = userData.userType;
+            
+            // Redirect swine farmers to farmer dashboard
+            if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
+                console.log('🚫 Swine farmer detected on buyer page, redirecting to dashboard...');
+                window.location.href = '/dashboard.html';
+                return true; // Redirecting
+            }
+        }
+        return false; // Not redirecting
+    } catch (error) {
+        console.error('❌ Error checking user type:', error);
+        return false;
+    }
+}
+
+// Check immediately on page load
+if (checkUserTypeAndRedirect()) {
+    // Stop execution if redirecting
+    throw new Error('Redirecting...');
+}
+
 const COLLECTIONS = {
     PRODUCT_LISTINGS: 'product_listings',
     USERS: 'users',

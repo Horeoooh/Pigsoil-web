@@ -15,6 +15,34 @@ import {
 import { ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-storage.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 
+// ===== USER TYPE CHECK - REDIRECT FERTILIZER BUYERS =====
+function checkUserTypeAndRedirect() {
+    try {
+        const cachedUserData = localStorage.getItem('pigsoil_user_data');
+        if (cachedUserData) {
+            const userData = JSON.parse(cachedUserData);
+            const userType = userData.userType;
+            
+            // Redirect fertilizer buyers to buyer dashboard
+            if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+                console.log('🚫 Fertilizer buyer detected on farmer page, redirecting to buyer dashboard...');
+                window.location.href = '/buyer-dashboard.html';
+                return true; // Redirecting
+            }
+        }
+        return false; // Not redirecting
+    } catch (error) {
+        console.error('❌ Error checking user type:', error);
+        return false;
+    }
+}
+
+// Check immediately on page load
+if (checkUserTypeAndRedirect()) {
+    // Stop execution if redirecting
+    throw new Error('Redirecting...');
+}
+
 // Updated collection names to match your EXACT Firebase structure
 const COLLECTIONS = {
     ADDRESSES: 'addresses',

@@ -23,6 +23,34 @@ import {
     orderBy
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 
+// ===== USER TYPE CHECK - REDIRECT SWINE FARMERS =====
+function checkUserTypeAndRedirect() {
+    try {
+        const cachedUserData = localStorage.getItem('pigsoil_user_data');
+        if (cachedUserData) {
+            const userData = JSON.parse(cachedUserData);
+            const userType = userData.userType;
+            
+            // Redirect swine farmers to farmer dashboard
+            if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
+                console.log('🚫 Swine farmer detected on buyer page, redirecting to dashboard...');
+                window.location.href = '/dashboard.html';
+                return true; // Redirecting
+            }
+        }
+        return false; // Not redirecting
+    } catch (error) {
+        console.error('❌ Error checking user type:', error);
+        return false;
+    }
+}
+
+// Check immediately on page load
+if (checkUserTypeAndRedirect()) {
+    // Stop execution if redirecting
+    throw new Error('Redirecting...');
+}
+
 const COLLECTIONS = {
     PRODUCT_LISTINGS: 'product_listings',
     USERS: 'users',
@@ -203,6 +231,9 @@ async function loadListingDetails(listingId) {
         // Render the listing
         renderListingDetails();
         
+        // Load seller profile picture asynchronously
+        loadSellerProfilePicture();
+        
         // Initialize carousel if images exist
         if (productImages.length > 1) {
             initializeCarousel();
@@ -319,6 +350,44 @@ function getStaticMapUrl(lat, lng, locationName) {
     const scale = '2';  // ADD THIS - Makes map high resolution (retina)
     
     return `https://maps.googleapis.com/maps/api/staticmap?center=${center}&zoom=${zoom}&size=${size}&scale=${scale}&markers=${marker}&key=${GOOGLE_MAPS_API_KEY}`;
+}
+
+// ========== SELLER PROFILE PICTURE LOADER ==========
+function loadSellerProfilePicture() {
+    if (!sellerData || !sellerData.id) {
+        console.log('⚠️ No seller data available for profile picture');
+        return;
+    }
+    
+    const sellerAvatarContainer = document.getElementById('sellerAvatarContainer');
+    if (!sellerAvatarContainer) {
+        console.log('⚠️ Seller avatar container not found');
+        return;
+    }
+    
+    // Get seller profile picture URL
+    const sellerProfilePic = sellerData.userProfilePictureUrl || DEFAULT_PROFILE_PIC;
+    const sellerName = sellerData.userName || 'Swine Farmer';
+    
+    console.log('🖼️ Loading seller profile picture:', sellerProfilePic);
+    
+    // Use background image approach like the header
+    sellerAvatarContainer.style.backgroundImage = `url(${sellerProfilePic})`;
+    sellerAvatarContainer.style.backgroundSize = 'cover';
+    sellerAvatarContainer.style.backgroundPosition = 'center';
+    sellerAvatarContainer.style.backgroundRepeat = 'no-repeat';
+    sellerAvatarContainer.textContent = '';
+    
+    // Fallback to initials if image fails to load
+    const img = new Image();
+    img.onerror = () => {
+        console.log('⚠️ Seller profile picture failed to load, using initials');
+        sellerAvatarContainer.style.backgroundImage = '';
+        sellerAvatarContainer.textContent = getInitials(sellerName);
+    };
+    img.src = sellerProfilePic;
+    
+    console.log('✅ Seller profile picture loaded successfully');
 }
 
 function renderListingDetails() {
@@ -448,7 +517,7 @@ function renderListingDetails() {
                 <!-- Seller Info Card with Reviews -->
                 <div class="seller-card">
                     <div class="seller-header">
-                        <div class="seller-avatar">${getInitials(sellerName)}</div>
+                        <div class="seller-avatar" id="sellerAvatarContainer">${getInitials(sellerName)}</div>
                         <div style="flex: 1;">
                             <div class="seller-name">${sellerName}</div>
                             <div class="seller-rating">

@@ -23,6 +23,34 @@ import {
     deleteObject
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-storage.js';
 
+// ===== USER TYPE CHECK - REDIRECT FERTILIZER BUYERS =====
+function checkUserTypeAndRedirect() {
+    try {
+        const cachedUserData = localStorage.getItem('pigsoil_user_data');
+        if (cachedUserData) {
+            const userData = JSON.parse(cachedUserData);
+            const userType = userData.userType;
+            
+            // Redirect fertilizer buyers to buyer marketplace
+            if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+                console.log('🚫 Fertilizer buyer detected on farmer page, redirecting to buyer marketplace...');
+                window.location.href = '/buyer-marketplace.html';
+                return true; // Redirecting
+            }
+        }
+        return false; // Not redirecting
+    } catch (error) {
+        console.error('❌ Error checking user type:', error);
+        return false;
+    }
+}
+
+// Check immediately on page load
+if (checkUserTypeAndRedirect()) {
+    // Stop execution if redirecting
+    throw new Error('Redirecting...');
+}
+
 const COLLECTIONS = {
     PRODUCT_LISTINGS: 'product_listings',
     USERS: 'users'
@@ -116,21 +144,21 @@ async function loadUserProfile() {
 }
 
 function updateHeaderUI(userData, headerUserName, headerUserRole, headerUserAvatar) {
-    // Update username
-    const displayName = userData.username || userData.displayName || 'User';
+    // Update username - use userName (Firestore field) or displayName as fallback
+    const displayName = userData.userName || userData.username || userData.displayName || 'User';
     headerUserName.textContent = displayName;
 
     // Update user role
     let roleText = 'User';
-    if (userData.userType === 'swine_farmer') {
+    if (userData.userType === 'swine_farmer' || userData.userType === 'Swine Farmer') {
         roleText = 'Swine Farmer';
-    } else if (userData.userType === 'fertilizer_buyer') {
+    } else if (userData.userType === 'fertilizer_buyer' || userData.userType === 'Organic Fertilizer Buyer') {
         roleText = 'Organic Fertilizer Buyer';
     }
     headerUserRole.textContent = roleText;
 
     // Update avatar
-    const profilePicUrl = userData.profilePicture || getCachedProfilePic() || DEFAULT_PROFILE_PIC;
+    const profilePicUrl = userData.userProfilePictureUrl || userData.profilePicture || getCachedProfilePic() || DEFAULT_PROFILE_PIC;
     
     if (profilePicUrl && profilePicUrl !== DEFAULT_PROFILE_PIC) {
         const img = document.createElement('img');
@@ -416,7 +444,7 @@ function renderListingDetails() {
                     <strong>📍 ${fullAddress}</strong>
                 </p>
                 <p style="font-size: 14px; color: #666; margin-top: 8px; margin-bottom: 0;">
-                    Buyers will contact you to arrange pickup or delivery options.
+                    Buyers will contact you for inquiries regarding this pickup location.
                 </p>
             </div>
         </div>

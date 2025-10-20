@@ -24,8 +24,7 @@ import {
     query,
     where,
     getDocs,
-    writeBatch,
-    serverTimestamp 
+    writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 import {
     ref,
@@ -280,7 +279,7 @@ async function handleProfilePictureUpload(e) {
                 
                 await updateDoc(doc(db, COLLECTIONS.USERS, currentUser.uid), {
                     userProfilePictureUrl: downloadURL,
-                    userUpdatedAt: serverTimestamp()
+                    userUpdatedAt: Date.now()
                 });
                 
                 await updateProfile(currentUser, { photoURL: downloadURL });
@@ -468,7 +467,7 @@ async function handleVerifySmsCode() {
         await updateDoc(doc(db, COLLECTIONS.USERS, currentUser.uid), {
             userPhone: pendingNewPhone,
             userPhoneVerified: true,
-            userUpdatedAt: serverTimestamp()
+            userUpdatedAt: Date.now()
         });
         
         currentUserData.userPhone = pendingNewPhone;
@@ -518,7 +517,7 @@ async function handleEmailChange() {
         
         await updateDoc(doc(db, COLLECTIONS.USERS, currentUser.uid), {
             userEmail: newEmail,
-            userUpdatedAt: serverTimestamp()
+            userUpdatedAt: Date.now()
         });
         
         currentUserData.userEmail = newEmail;
@@ -662,7 +661,7 @@ async function handleFormSubmission(e) {
             return;
         }
         
-        const updateData = { userUpdatedAt: serverTimestamp() };
+        const updateData = { userUpdatedAt: Date.now() };
         
         if (nameChanged) {
             updateData.userName = newUserName;

@@ -9,8 +9,7 @@ import {
 import { 
     doc, 
     getDoc,
-    updateDoc,
-    serverTimestamp
+    updateDoc
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 
 // Default profile picture
@@ -146,7 +145,7 @@ async function checkAndResetWeeklyLimits() {
                 weeklyManongBotPromptsUsed: 0,
                 weeklyCameraAiUsed: 0,
                 currentWeekStart: weekStart,
-                userUpdatedAt: serverTimestamp()
+                userUpdatedAt: Date.now()
             });
             
             // Update local data
@@ -290,16 +289,49 @@ function updateUI() {
 }
 
 function updateHeaderDisplay() {
-    const userName = currentUserData.userName || currentUser.displayName || 'User';
-    const profilePicture = currentUserData.userProfilePictureUrl || DEFAULT_PROFILE_PICTURE;
+    // Import cached data functions from shared-user-manager
+    const getCachedData = () => {
+        try {
+            const cachedData = localStorage.getItem('pigsoil_user_data');
+            return cachedData ? JSON.parse(cachedData) : null;
+        } catch (error) {
+            return null;
+        }
+    };
+    
+    const getCachedProfilePic = () => {
+        try {
+            return localStorage.getItem('pigsoil_profile_pic') || DEFAULT_PROFILE_PICTURE;
+        } catch (error) {
+            return DEFAULT_PROFILE_PICTURE;
+        }
+    };
+    
+    // Try to use cached data first for immediate display
+    const cachedData = getCachedData();
+    const userName = currentUserData?.userName || 
+                     currentUser?.displayName || 
+                     cachedData?.userName || 
+                     'Loading...';
+    
+    const profilePicture = currentUserData?.userProfilePictureUrl || 
+                          currentUser?.photoURL || 
+                          getCachedProfilePic();
     
     if (headerUserName) headerUserName.textContent = userName;
     
     if (headerUserAvatar) {
-        headerUserAvatar.style.backgroundImage = `url(${profilePicture})`;
-        headerUserAvatar.style.backgroundSize = 'cover';
-        headerUserAvatar.style.backgroundPosition = 'center';
-        headerUserAvatar.textContent = '';
+        if (profilePicture && profilePicture !== DEFAULT_PROFILE_PICTURE) {
+            headerUserAvatar.style.backgroundImage = `url(${profilePicture})`;
+            headerUserAvatar.style.backgroundSize = 'cover';
+            headerUserAvatar.style.backgroundPosition = 'center';
+            headerUserAvatar.textContent = '';
+        } else {
+            // Show initials if no profile picture
+            const initials = userName === 'Loading...' ? '...' : generateInitials(userName);
+            headerUserAvatar.style.backgroundImage = 'none';
+            headerUserAvatar.textContent = initials;
+        }
         
         // Ensure the img tag inside is updated too
         const avatarImg = headerUserAvatar.querySelector('img');
@@ -361,6 +393,7 @@ function buildPlansList() {
     
     const userType = currentUserData.userType || 'swine_farmer';
     const isDualRole = currentUserData.isDualRole || false;
+    const isFertilizerBuyerOnly = userType === 'fertilizer_buyer' && !isDualRole;
     
     // Determine if user should see Premium tier
     const showPremium = isDualRole || userType !== 'fertilizer_buyer';
@@ -368,14 +401,18 @@ function buildPlansList() {
     // FREE Tier
     let freeFeatures = [
         'Marketplace Access',
-        'Composting Guides',
-        `${FREE_WEEKLY_CAMERA_AI_LIMIT} Camera AI scans/week`
+        'Composting Guides'
     ];
+    
+    // Only add Camera AI for non-fertilizer buyers
+    if (!isFertilizerBuyerOnly) {
+        freeFeatures.push(`${FREE_WEEKLY_CAMERA_AI_LIMIT} Camera AI scans/week (Mobile only)`);
+    }
     
     if (showPremium) {
         freeFeatures = [
-            `${FREE_WEEKLY_MANONG_BOT_LIMIT} Manong Bot questions/week`,
-            `${FREE_WEEKLY_CAMERA_AI_LIMIT} Camera AI scans/week`,
+            `${FREE_WEEKLY_MANONG_BOT_LIMIT} Manong Bot questions/week (Mobile only)`,
+            `${FREE_WEEKLY_CAMERA_AI_LIMIT} Camera AI scans/week (Mobile only)`,
             'Marketplace Access',
             'Composting Guides'
         ];
@@ -392,17 +429,14 @@ function buildPlansList() {
     });
     
     // ESSENTIAL Tier
-    const essentialFeatures = userType === 'fertilizer_buyer' && !isDualRole 
+    const essentialFeatures = isFertilizerBuyerOnly 
         ? [
             'Everything in Free',
-            'Unlimited Manong Bot',
-            'Priority support'
+            'Unlimited Manong Bot (Mobile only)'
         ]
         : [
             'Everything in Free',
-            'Unlimited Manong Bot',
-            `${FREE_WEEKLY_CAMERA_AI_LIMIT} Camera AI scans/week`,
-            'Priority support'
+            'Unlimited Manong Bot (Mobile only)'
         ];
     
     plans.push({
@@ -427,10 +461,7 @@ function buildPlansList() {
             priceText: `₱${PREMIUM_PRICE}/mo`,
             features: [
                 'Everything in Essential',
-                'Unlimited Manong Bot',
-                'Unlimited Camera AI',
-                'Priority support',
-                'Advanced analytics'
+                'Unlimited Camera AI (Mobile only)'
             ],
             icon: '⭐',
             badge: 'Most Popular',
@@ -567,7 +598,17 @@ function selectPlan(tier) {
 }
 
 function updateUsageSection() {
-    // Always show usage section
+    const userType = currentUserData.userType || 'swine_farmer';
+    const isDualRole = currentUserData.isDualRole || false;
+    const isFertilizerBuyerOnly = userType === 'fertilizer_buyer' && !isDualRole;
+    
+    // Hide usage section completely for fertilizer buyers
+    if (isFertilizerBuyerOnly) {
+        usageSection.style.display = 'none';
+        return;
+    }
+    
+    // Always show usage section for farmers/dual role
     usageSection.style.display = 'block';
     
     // Get current usage values
@@ -917,7 +958,7 @@ async function performCancellation() {
             xenditSubscriptionId: null,
             weeklyManongBotPromptsUsed: 0,
             weeklyCameraAiUsed: 0,
-            userUpdatedAt: serverTimestamp()
+            userUpdatedAt: Date.now()
         });
         
         showAlert('Subscription cancelled successfully. You have been downgraded to the Free plan.', 'success');

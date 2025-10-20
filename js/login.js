@@ -8,7 +8,6 @@ import {
     doc, 
     getDoc,
     setDoc,
-    serverTimestamp,
     collection,
     query,
     where,
@@ -94,7 +93,7 @@ async function getUserData(userId) {
                 // Update the document with the correct UID as document ID
                 await setDoc(userDocRef, {
                     ...userData,
-                    userUpdatedAt: serverTimestamp()
+                    userUpdatedAt: Date.now()
                 });
                 
                 return userData;
@@ -104,14 +103,14 @@ async function getUserData(userId) {
         // If no user data found, create default entry for authenticated user
         console.log('📝 Creating default user data for authenticated user');
         const defaultUserData = {
-            userCreatedAt: serverTimestamp(),
+            userCreatedAt: Date.now(),
             userEmail: currentUser?.email || 'unknown@email.com',
             userIsActive: true,
             userName: currentUser?.displayName || 'User',
             userPhone: currentUser?.phoneNumber || '+639123456789',
             userPhoneVerified: false,
             userType: 'swine_farmer', // Default to swine farmer
-            userUpdatedAt: serverTimestamp()
+            userUpdatedAt: Date.now()
         };
         
         await setDoc(userDocRef, defaultUserData);
