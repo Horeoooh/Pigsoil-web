@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.android.pigsoil_final",
+    "sha256_cert_fingerprints": [
+      "e9:77:8b:b8:66:73:ba:02:d3:22:64:67:96:3a:58:3f:0f:ac:42:b3:43:b5:30:45:50:f8:85:38:bf:82:c8:73"
+    ]
+  }
+}]

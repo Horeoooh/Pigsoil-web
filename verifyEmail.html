@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Verify your PigSoil+ account email">
+    <title>Verify Email - PigSoil+</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* ONLY spinner - no card, no text, no branding */
+        .spinner {
+            width: 70px;
+            height: 70px;
+            border: 6px solid rgba(255, 255, 255, 0.3);
+            border-top: 6px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- ONLY SPINNER - NO UI, NO TEXT, NOTHING ELSE -->
+    <div class="spinner"></div>
+
+    <script type="module">
+        // Import Firebase from init.js
+        import { auth, db } from '/js/init.js';
+        import { applyActionCode, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
+        import { doc, getDoc, updateDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
+
+        const WEB_DASHBOARD_URL = '/dashboard.html';
+        const BUYER_DASHBOARD_URL = '/buyer-dashboard.html';
+        const LOGIN_URL = '/login.html';
+        const DEFAULT_PROFILE_PIC = 'https://i.pinimg.com/736x/d7/95/c3/d795c373a0539e64c7ee69bb0af3c5c3.jpg';
+
+        /**
+         * Normalize userType to underscore format
+         */
+        function normalizeUserType(userType) {
+            if (!userType) return 'swine_farmer'; // Default
+            
+            // Convert display names to underscore format
+            if (userType === 'Swine Farmer') return 'swine_farmer';
+            if (userType === 'Organic Fertilizer Buyer') return 'fertilizer_buyer';
+            
+            // Already in correct format
+            if (userType === 'swine_farmer' || userType === 'fertilizer_buyer') {
+                return userType;
+            }
+            
+            console.warn('⚠️ Unknown userType format:', userType, '- defaulting to swine_farmer');
+            return 'swine_farmer'; // Safe default
+        }
+
+        /**
+         * Save pending signup data to Firestore (from signup.js)
+         */
+        async function savePendingSignupData() {
+            try {
+                const pendingData = sessionStorage.getItem('pendingSignup');
+                
+                if (!pendingData) {
+                    console.log('ℹ️ No pending signup data found');
+                    return null;
+                }
+
+                const signupData = JSON.parse(pendingData);
+                console.log('💾 Found pending signup data:', signupData);
+
+                // Check if document already exists
+                const userDocRef = doc(db, 'users', signupData.userID);
+                const userDoc = await getDoc(userDocRef);
+                
+                if (userDoc.exists()) {
+                    console.log('ℹ️ User document already exists');
+                    sessionStorage.removeItem('pendingSignup');
+                    return signupData;
+                }
+
+                // Normalize userType to ensure underscore format
+                const normalizedUserType = normalizeUserType(signupData.userType);
+                console.log('🔄 Normalized userType:', signupData.userType, '→', normalizedUserType);
+
+                // Save to Firestore
+                const firestoreData = {
+                    userID: signupData.userID,
+                    userName: signupData.userName,
+                    userEmail: signupData.userEmail,
+                    userPhone: null,
+                    userType: normalizedUserType, // Use normalized format
+                    userProfilePictureUrl: DEFAULT_PROFILE_PIC,
+                    userIsActive: true,
+                    userPhoneVerified: false,
+                    emailVerified: false,
+                    userCreatedAt: Date.now(),
+                    userUpdatedAt: Date.now(),
+                    signupComplete: true
+                };
+
+                console.log('💾 Saving to Firestore with userType:', normalizedUserType);
+                await setDoc(userDocRef, firestoreData);
+                
+                console.log('✅ User data saved to Firestore successfully!');
+
+                // Clear the pending data
+                sessionStorage.removeItem('pendingSignup');
+                
+                return signupData;
+                
+            } catch (error) {
+                console.error('❌ Failed to save pending signup data:', error);
+                return null;
+            }
+        }
+
+        /**
+         * Detect if user is on Android
+         */
+        function isAndroid() {
+            return /android/i.test(navigator.userAgent);
+        }
+
+        /**
+         * Parse URL query parameters
+         */
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                mode: params.get('mode'),
+                oobCode: params.get('oobCode'),
+                apiKey: params.get('apiKey'),
+                continueUrl: params.get('continueUrl'),
+                verified: params.get('verified')
+            };
+        }
+
+        /**
+         * Auto-login and redirect to appropriate dashboard
+         */
+        async function autoLoginAndRedirect(user) {
+            try {
+                console.log('🔐 Auto-login process starting for:', user.uid);
+                
+                // Get user data from Firestore
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const userType = userData.userType;
+                    
+                    console.log('📋 User type:', userType);
+                    console.log('👤 Username:', userData.userName);
+                    
+                    // Update email verification status in Firestore
+                    await updateDoc(userDocRef, {
+                        emailVerified: true,
+                        userUpdatedAt: Date.now()
+                    });
+                    
+                    console.log('✅ Email verification status updated in Firestore');
+                    
+                    // Cache complete user data
+                    const completeUserData = {
+                        ...userData,
+                        userID: user.uid,
+                        emailVerified: true,
+                        userProfilePictureUrl: userData.userProfilePictureUrl || DEFAULT_PROFILE_PIC
+                    };
+                    
+                    // Store in ALL cache locations (matches shared-user-manager.js cache keys)
+                    localStorage.setItem('pigsoil_user_data', JSON.stringify(completeUserData));
+                    localStorage.setItem('pigsoil_user_auth', JSON.stringify({
+                        uid: user.uid,
+                        email: user.email,
+                        emailVerified: true
+                    }));
+                    localStorage.setItem('pigsoil_user', JSON.stringify(completeUserData));
+                    localStorage.setItem('pigsoil_profile_pic', completeUserData.userProfilePictureUrl);
+                    localStorage.setItem('pigsoil_cache_timestamp', Date.now().toString());
+                    
+                    console.log('✅ User data cached to localStorage');
+                    console.log('💾 Cached data includes:');
+                    console.log('  - userType:', completeUserData.userType);
+                    console.log('  - userName:', completeUserData.userName);
+                    console.log('  - emailVerified:', completeUserData.emailVerified);
+                    console.log('✅ Auto-login successful - redirecting to dashboard...');
+                    
+                    // Redirect based on platform and user type
+                    if (isAndroid()) {
+                        console.log('📱 Android device detected');
+                        
+                        // For Android: The app's intent filter should have already intercepted this link
+                        // and opened in MainActivity. If we're here, user chose "Open in browser" or app not installed.
+                        // In this case, just show success message - they're already in the app or chose web.
+                        
+                        // Check if we're actually in the Android app's WebView or in a browser
+                        const isInApp = window.navigator.userAgent.includes('wv') || 
+                                       window.Android !== undefined;
+                        
+                        if (isInApp) {
+                            // We're in the Android app's WebView - show success message
+                            console.log('✅ Running in Android app WebView - verification complete');
+                            document.body.innerHTML = `
+                                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center;">
+                                    <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
+                                    <h1 style="color: white; margin-bottom: 10px; font-family: sans-serif;">Email Verified!</h1>
+                                    <p style="color: rgba(255,255,255,0.9); font-size: 16px; font-family: sans-serif;">Your email has been verified successfully.<br>Return to the app to continue.</p>
+                                </div>
+                            `;
+                        } else {
+                            // User is in regular browser on Android - treat as web user
+                            console.log('🌐 Android device but in browser - treating as web user');
+                            redirectToDashboard(userType);
+                        }
+                    } else {
+                        // Web users (desktop/non-Android): redirect immediately to dashboard
+                        console.log('💻 Web user - redirecting to dashboard');
+                        redirectToDashboard(userType);
+                    }
+                } else {
+                    console.error('⚠️ No user data found in Firestore');
+                    window.location.href = LOGIN_URL + '?error=no_user_data';
+                }
+            } catch (error) {
+                console.error('❌ Error in auto-login:', error);
+                window.location.href = LOGIN_URL + '?error=auto_login_failed';
+            }
+        }
+
+        /**
+         * Redirect to appropriate dashboard based on user type
+         */
+        function redirectToDashboard(userType) {
+            // Normalize userType before checking (safety measure)
+            const normalizedType = normalizeUserType(userType);
+            
+            console.log('🔍 Redirecting based on userType:', normalizedType);
+            
+            if (normalizedType === 'swine_farmer') {
+                console.log('🐷 Redirecting swine farmer to dashboard');
+                window.location.href = WEB_DASHBOARD_URL;
+            } else if (normalizedType === 'fertilizer_buyer') {
+                console.log('🌱 Redirecting fertilizer buyer to buyer dashboard');
+                window.location.href = BUYER_DASHBOARD_URL;
+            } else {
+                console.log('❓ Unknown user type, defaulting to dashboard');
+                window.location.href = WEB_DASHBOARD_URL;
+            }
+        }
+
+        /**
+         * Main verification logic with auto-login
+         */
+        async function verifyEmailAndAutoLogin() {
+            try {
+                // First, save any pending signup data
+                await savePendingSignupData();
+
+                const { mode, oobCode, verified } = getQueryParams();
+
+                console.log('🔍 Verification params:', { mode, oobCode: oobCode ? 'present' : 'missing', verified });
+
+                // If already verified (deep link callback from Android)
+                if (verified === 'true') {
+                    console.log('✅ Already verified via deep link');
+                    const currentUser = auth.currentUser;
+                    if (currentUser) {
+                        await autoLoginAndRedirect(currentUser);
+                    } else {
+                        console.log('⚠️ No user logged in, redirecting to login');
+                        window.location.href = LOGIN_URL;
+                    }
+                    return;
+                }
+
+                // Validate parameters
+                if (!mode || !oobCode) {
+                    console.error('❌ Missing verification parameters');
+                    window.location.href = LOGIN_URL + '?error=invalid_link';
+                    return;
+                }
+
+                if (mode !== 'verifyEmail') {
+                    console.error('❌ Invalid action mode:', mode);
+                    window.location.href = LOGIN_URL + '?error=invalid_action';
+                    return;
+                }
+
+                // Apply the verification code
+                console.log('🔐 Applying verification code...');
+                await applyActionCode(auth, oobCode);
+                
+                console.log('✅ Email verified successfully via action code');
+
+                // Check if user is already logged in
+                const currentUser = auth.currentUser;
+                
+                if (currentUser) {
+                    console.log('👤 User already logged in:', currentUser.email);
+                    
+                    // Reload user to get updated emailVerified status
+                    await currentUser.reload();
+                    
+                    // Auto-login and redirect
+                    await autoLoginAndRedirect(currentUser);
+                } else {
+                    console.log('⚠️ No user currently logged in after verification');
+                    // Set flag so login.js shows success message
+                    sessionStorage.setItem('emailJustVerified', 'true');
+                    
+                    // Redirect to login (they'll need to manually login)
+                    window.location.href = LOGIN_URL;
+                }
+
+            } catch (error) {
+                console.error('❌ Verification error:', error);
+
+                // Handle specific error codes
+                if (error.code === 'auth/invalid-action-code') {
+                    // Check if user is already verified
+                    const currentUser = auth.currentUser;
+                    if (currentUser && currentUser.emailVerified) {
+                        console.log('✅ Email already verified, auto-logging in');
+                        await autoLoginAndRedirect(currentUser);
+                        return;
+                    }
+                    
+                    console.error('❌ Invalid or expired verification code');
+                    window.location.href = LOGIN_URL + '?error=invalid_code';
+                } else if (error.code === 'auth/expired-action-code') {
+                    console.error('❌ Verification link expired');
+                    window.location.href = LOGIN_URL + '?error=expired_link';
+                } else if (error.code === 'auth/network-request-failed') {
+                    console.error('❌ Network error');
+                    window.location.href = LOGIN_URL + '?error=network_error';
+                } else {
+                    console.error('❌ Unexpected error:', error.message);
+                    window.location.href = LOGIN_URL + '?error=verification_failed';
+                }
+            }
+        }
+
+        // Start verification immediately when page loads
+        console.log('🚀 Starting email verification and auto-login...');
+        verifyEmailAndAutoLogin();
+    </script>
+</body>
+</html>

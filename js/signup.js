@@ -1,22 +1,18 @@
-// Signup functionality for PigSoil+ - Firebase Version (Email/Password Only) with Caching
+// Signup functionality for PigSoil+ - Simplified
 import { auth, db } from './init.js';
 import { 
     createUserWithEmailAndPassword,
-    onAuthStateChanged
+    onAuthStateChanged,
+    sendEmailVerification
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     doc, 
-    setDoc,
     getDoc, 
     collection, 
     query, 
     where, 
     getDocs 
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
-import { 
-    cacheCompleteUserData, 
-    DEFAULT_PROFILE_PIC 
-} from './shared-user-manager.js';
 
 // DOM elements
 const signupForm = document.getElementById('signupForm');
@@ -24,7 +20,6 @@ const signupButton = document.getElementById('signupButton');
 const alertMessage = document.getElementById('alertMessage');
 const inputs = document.querySelectorAll('.form-input');
 
-// Helper functions
 function showAlert(message, type = 'error') {
     if (alertMessage) {
         alertMessage.textContent = message;
@@ -51,7 +46,6 @@ function setLoading(loading) {
     }
 }
 
-// Check if username exists in Firestore
 async function checkUsernameExists(username) {
     try {
         const q = query(collection(db, 'users'), where('userName', '==', username));
@@ -60,29 +54,6 @@ async function checkUsernameExists(username) {
     } catch (error) {
         console.error('Username check failed:', error);
         return false;
-    }
-}
-
-// Save user data to Firestore
-async function saveUserToFirestore(userData) {
-    try {
-        await setDoc(doc(db, 'users', userData.userID), {
-            userID: userData.userID,
-            userName: userData.userName,
-            userEmail: userData.userEmail,
-            userPhone: null,
-            userType: userData.userType,
-            userIsActive: true,
-            userPhoneVerified: false,
-            userCreatedAt: Date.now(),
-            userUpdatedAt: Date.now()
-        });
-        
-        console.log('User saved to Firestore');
-        return { success: true };
-    } catch (error) {
-        console.error('Save failed:', error);
-        return { success: false, error: error.message };
     }
 }
 
@@ -126,10 +97,12 @@ function validateForm() {
     return true;
 }
 
-// Main signup function using Firebase
+// Simplified signup - just create auth user and store temp data
 async function handleSignup(userData) {
     try {
         setLoading(true);
+
+        console.log('📝 Starting signup with username:', userData.username);
 
         // Check if username already exists
         const usernameExists = await checkUsernameExists(userData.username);
@@ -137,52 +110,46 @@ async function handleSignup(userData) {
             throw new Error('Username is already taken. Please choose another.');
         }
 
-        // Create Firebase Auth user with email/password
+        // Create Firebase Auth user
         const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
         const user = userCredential.user;
+        
+        console.log('✅ Firebase Auth user created:', user.uid);
 
-        // Prepare user data for Firestore
-        const firestoreUserData = {
+        // Store signup data in sessionStorage for email-verification.html to use
+        // Keep userType in underscore format (swine_farmer, fertilizer_buyer)
+        const pendingData = {
             userID: user.uid,
             userName: userData.username,
             userEmail: userData.email,
-            userType: userData.userType === 'swine_farmer' ? 'Swine Farmer' : 'Organic Fertilizer Buyer'
+            userType: userData.userType // Keep as swine_farmer or fertilizer_buyer
         };
+        
+        sessionStorage.setItem('pendingSignup', JSON.stringify(pendingData));
+        console.log('💾 Stored pending signup data with userType:', userData.userType);
 
-        // Save user data to Firestore
-        const saveResult = await saveUserToFirestore(firestoreUserData);
-        if (!saveResult.success) {
-            throw new Error(saveResult.error);
+        // Send verification email
+        try {
+            await sendEmailVerification(user, {
+                url: 'https://www.pigsoil.tech/verifyEmail.html',
+                handleCodeInApp: true,
+                android: {
+                    packageName: 'com.android.pigsoil_final',
+                    installApp: true,
+                    minimumVersion: '1'
+                }
+            });
+            console.log('✅ Verification email sent');
+        } catch (emailError) {
+            console.warn('⚠️ Failed to send verification email:', emailError);
         }
 
-        // Cache the complete user data including default profile picture
-        console.log('💾 Caching user data after successful signup');
-        const completeUserData = {
-            ...firestoreUserData,
-            userPhone: '',
-            userPhoneVerified: false,
-            userIsActive: true,
-            userProfilePictureUrl: DEFAULT_PROFILE_PIC,
-            userCreatedAt: Date.now(),
-            userUpdatedAt: Date.now()
-        };
-        cacheCompleteUserData(completeUserData);
-
-        // Registration successful
         showAlert('Account created successfully! Redirecting...', 'success');
         
-        // Store user data temporarily
-        localStorage.setItem('newUser', JSON.stringify({
-            userId: user.uid,
-            email: userData.email,
-            username: userData.username,
-            userType: userData.userType
-        }));
-        
-        // Redirect to phone registration page
+        // Quick redirect - email-verification.html will save to Firestore
         setTimeout(() => {
-            window.location.href = '/phone-registration.html';
-        }, 2000);
+            window.location.href = '/email-verification.html';
+        }, 1000);
         
     } catch (error) {
         console.error('Signup error:', error);
@@ -190,13 +157,13 @@ async function handleSignup(userData) {
         
         switch (error.code) {
             case 'auth/email-already-in-use':
-                errorMessage = 'This email is already registered. Please use a different email or sign in instead.';
+                errorMessage = 'This email is already registered.';
                 break;
             case 'auth/weak-password':
-                errorMessage = 'Password is too weak. Please use a stronger password.';
+                errorMessage = 'Password is too weak.';
                 break;
             case 'auth/invalid-email':
-                errorMessage = 'Invalid email address format.';
+                errorMessage = 'Invalid email format.';
                 break;
             default:
                 if (error.message.includes('already taken')) {
@@ -211,7 +178,7 @@ async function handleSignup(userData) {
     }
 }
 
-// Form submission handler
+// Form submission
 if (signupForm) {
     signupForm.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -232,13 +199,18 @@ if (signupForm) {
     });
 }
 
-// Check if user is already logged in and redirect
+// Check if user is already logged in
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         console.log('👤 User already logged in:', user.uid);
         
+        // Allow unverified users to stay on signup page
+        if (!user.emailVerified) {
+            console.log('📧 Email not verified - allowing access to signup page');
+            return;
+        }
+        
         try {
-            // Get user data from Firestore
             const userDocRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userDocRef);
             
@@ -246,26 +218,16 @@ onAuthStateChanged(auth, async (user) => {
                 const userData = userDoc.data();
                 const userType = userData.userType;
                 
-                console.log('🔍 User type detected:', userType);
+                console.log('🔍 User type from Firestore:', userType);
                 
-                // Store user data in localStorage
-                localStorage.setItem('pigsoil_user', JSON.stringify({
-                    uid: user.uid,
-                    userName: userData.userName,
-                    userType: userType,
-                    userPhone: userData.userPhone,
-                    userPhoneVerified: userData.userPhoneVerified
-                }));
-                
-                // Redirect based on user type
-                if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
-                    console.log('🐷 Redirecting logged-in swine farmer to dashboard');
+                if (userType === 'swine_farmer') {
+                    console.log('🚀 Redirecting to Farmer Dashboard');
                     window.location.href = '/dashboard.html';
-                } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
-                    console.log('🌿 Redirecting logged-in fertilizer buyer to buyer dashboard');
+                } else if (userType === 'fertilizer_buyer') {
+                    console.log('🚀 Redirecting to Buyer Dashboard');
                     window.location.href = '/buyer-dashboard.html';
                 } else {
-                    console.log('⚠️ Unknown user type, defaulting to farmer dashboard');
+                    console.warn('⚠️ Unknown userType, defaulting to Farmer Dashboard');
                     window.location.href = '/dashboard.html';
                 }
             }
@@ -275,7 +237,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// Input animations and interactions
+// Input animations
 if (inputs.length > 0) {
     inputs.forEach(input => {
         input.addEventListener('focus', function() {
@@ -311,7 +273,7 @@ if (inputs.length > 0) {
     });
 }
 
-// Real-time validation feedback
+// Real-time validation
 document.getElementById('username')?.addEventListener('input', function() {
     const username = this.value.trim();
     if (username && username.length < 3) {
@@ -347,7 +309,6 @@ document.getElementById('confirmPassword')?.addEventListener('input', function()
     }
 });
 
-// Language selector interaction
 const languageSelector = document.querySelector('.language-btn');
 if (languageSelector) {
     languageSelector.addEventListener('click', function(e) {

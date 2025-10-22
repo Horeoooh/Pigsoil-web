@@ -50,6 +50,12 @@ function checkIfAlreadyLoggedIn() {
         if (user) {
             console.log('👤 User already logged in:', user.uid);
             
+            // Allow unverified users to access SMS verification
+            if (!user.emailVerified && user.providerData[0]?.providerId === 'password') {
+                console.log('📧 Email not verified - allowing access to SMS verification');
+                return;
+            }
+            
             try {
                 // Get user data from Firestore
                 const userDocRef = doc(db, 'users', user.uid);

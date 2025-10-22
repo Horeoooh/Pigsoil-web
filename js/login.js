@@ -177,6 +177,17 @@ async function handleEmailLogin(email, password) {
         // Get user data from Firestore with enhanced fallback
         const userData = await getUserData(user.uid);
 
+        // Check if email is verified
+        if (!user.emailVerified) {
+            console.log('⚠️ Email not verified, redirecting to verification page');
+            showAlert('Please verify your email before logging in.', 'error');
+            
+            setTimeout(() => {
+                window.location.href = '/email-verification.html';
+            }, 1500);
+            return;
+        }
+
         // Cache the complete user data including profile picture
         console.log('💾 Caching user data after successful login');
         cacheCompleteUserData({
@@ -259,6 +270,12 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         console.log('👤 User is signed in:', user.uid);
         
+        // Allow unverified users to stay on login page (they can re-login if needed)
+        if (!user.emailVerified) {
+            console.log('📧 Email not verified - allowing access to login page');
+            return;
+        }
+        
         // Check if user has complete profile data and redirect
         try {
             const userDocRef = doc(db, COLLECTIONS.USERS, user.uid);
@@ -302,6 +319,13 @@ onAuthStateChanged(auth, async (user) => {
 // Initialize page without auto-login
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Login page initialized');
+    
+    // Check if user just verified their email
+    const emailJustVerified = sessionStorage.getItem('emailJustVerified');
+    if (emailJustVerified === 'true') {
+        showAlert('✅ Email verified successfully! Please log in to continue.', 'success');
+        sessionStorage.removeItem('emailJustVerified');
+    }
     
     // Note: Don't clear session here - let onAuthStateChanged handle redirects
     // This allows already logged-in users to be redirected automatically

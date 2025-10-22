@@ -12,7 +12,10 @@ import {
     reauthenticateWithCredential,
     sendPasswordResetEmail,
     RecaptchaVerifier,
-    signInWithPhoneNumber
+    signInWithPhoneNumber,
+    linkWithCredential,
+    PhoneAuthProvider,
+    updatePhoneNumber
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     doc, 
@@ -49,6 +52,7 @@ let isLoading = false;
 let recaptchaVerifier = null;
 let confirmationResult = null;
 let pendingNewPhone = null;
+let hasPasswordProvider = false;
 
 // DOM elements
 const usernameInput = document.getElementById('username');
@@ -75,6 +79,8 @@ const passwordSection = document.getElementById('passwordSection');
 const phoneChangeModal = document.getElementById('phoneChangeModal');
 const smsVerificationModal = document.getElementById('smsVerificationModal');
 const passwordChangeModal = document.getElementById('passwordChangeModal');
+const addEmailModal = document.getElementById('addEmailModal');
+const changeEmailModal = document.getElementById('changeEmailModal');
 
 //merged
 
@@ -160,8 +166,6 @@ function populateForm() {
     if (emailInput) {
         emailInput.value = currentUserData.userEmail || '';
         emailInput.placeholder = 'Enter your email';
-        if (currentUserData.userEmail && changeEmailBtn) changeEmailBtn.style.display = 'inline-block';
-        if (currentUserData.userEmail && passwordSection) passwordSection.style.display = 'block';
     }
     
     if (phoneInput) {
@@ -171,7 +175,41 @@ function populateForm() {
     
     if (userTypeSelect && currentUserData.userType) userTypeSelect.value = currentUserData.userType;
     
+    checkEmailAccountStatus();
     updateProfileDisplay();
+}
+
+function checkEmailAccountStatus() {
+    // Check if user has password provider
+    hasPasswordProvider = currentUser.providerData.some(provider => provider.providerId === 'password');
+    
+    console.log('🔐 Password provider:', hasPasswordProvider);
+    console.log('📧 Email:', currentUserData.userEmail);
+    
+    if (!hasPasswordProvider && !currentUserData.userEmail) {
+        // Phone-only user - show "Add Email & Password" button
+        if (changeEmailBtn) {
+            changeEmailBtn.textContent = '+ Add Email & Password';
+            changeEmailBtn.style.display = 'inline-block';
+            changeEmailBtn.style.color = '#4CAF50';
+        }
+        if (passwordSection) passwordSection.style.display = 'none';
+        if (emailInput) emailInput.readOnly = true;
+    } else if (hasPasswordProvider) {
+        // User has email/password - show "Change Email" and "Change Password"
+        if (changeEmailBtn) {
+            changeEmailBtn.textContent = 'Change Email';
+            changeEmailBtn.style.display = 'inline-block';
+            changeEmailBtn.style.color = '#4CAF50';
+        }
+        if (passwordSection) passwordSection.style.display = 'block';
+        if (emailInput) emailInput.readOnly = true;
+    } else {
+        // Has email but no password (shouldn't happen, but handle it)
+        if (changeEmailBtn) changeEmailBtn.style.display = 'none';
+        if (passwordSection) passwordSection.style.display = 'none';
+        if (emailInput) emailInput.readOnly = false;
+    }
 }
 
 function updateProfileDisplay() {
@@ -216,12 +254,14 @@ function setupEventListeners() {
     }
     
     if (changePhoneBtn) changePhoneBtn.addEventListener('click', openPhoneChangeModal);
-    if (changeEmailBtn) changeEmailBtn.addEventListener('click', handleEmailChange);
+    if (changeEmailBtn) changeEmailBtn.addEventListener('click', handleEmailButtonClick);
     if (changePasswordBtn) changePasswordBtn.addEventListener('click', openPasswordChangeModal);
     
     setupPhoneChangeModal();
     setupSmsVerificationModal();
     setupPasswordChangeModal();
+    setupAddEmailModal();
+    setupChangeEmailModal();
 }
 
 // ============================================================
@@ -362,14 +402,22 @@ async function handleSendPhoneCode() {
         const phoneQuery = query(collection(db, COLLECTIONS.USERS), where('userPhone', '==', newPhone));
         const phoneSnapshot = await getDocs(phoneQuery);
         
-        if (!phoneSnapshot.empty) {
+        if (!phoneSnapshot.empty && phoneSnapshot.docs[0].id !== currentUser.uid) {
             showModalAlert('phoneChangeAlert', 'This phone number is already registered', 'error');
             return;
         }
         
-        // Send SMS
-        confirmationResult = await signInWithPhoneNumber(auth, newPhone, recaptchaVerifier);
+        // ⚠️ CRITICAL: Use PhoneAuthProvider.verifyPhoneNumber() NOT signInWithPhoneNumber()
+        // signInWithPhoneNumber() creates a NEW account!
+        // verifyPhoneNumber() just verifies the phone for the EXISTING user
+        const phoneProvider = new PhoneAuthProvider(auth);
+        const verificationId = await phoneProvider.verifyPhoneNumber(newPhone, recaptchaVerifier);
+        
+        // Store verification ID for later use
+        confirmationResult = { verificationId };
         pendingNewPhone = newPhone;
+        
+        console.log('✅ Verification SMS sent to:', newPhone);
         
         showModalAlert('phoneChangeAlert', 'Verification code sent!', 'success');
         
@@ -386,6 +434,8 @@ async function handleSendPhoneCode() {
             errorMsg = 'Too many requests. Please try again later';
         } else if (error.code === 'auth/invalid-phone-number') {
             errorMsg = 'Invalid phone number format';
+        } else if (error.code === 'auth/quota-exceeded') {
+            errorMsg = 'SMS quota exceeded. Please try again later';
         }
         
         showModalAlert('phoneChangeAlert', errorMsg, 'error');
@@ -462,8 +512,20 @@ async function handleVerifySmsCode() {
     try {
         showModalAlert('smsVerificationAlert', 'Verifying code...', 'info');
         
-        await confirmationResult.confirm(code);
+        // Create phone credential using the verification ID and code
+        const phoneCredential = PhoneAuthProvider.credential(
+            confirmationResult.verificationId,
+            code
+        );
         
+        console.log('✅ SMS code verified, updating phone number...');
+        
+        // Update phone number on the current user (NOT sign in!)
+        await updatePhoneNumber(currentUser, phoneCredential);
+        
+        console.log('✅ Phone number updated in Firebase Auth');
+        
+        // Update Firestore
         await updateDoc(doc(db, COLLECTIONS.USERS, currentUser.uid), {
             userPhone: pendingNewPhone,
             userPhoneVerified: true,
@@ -488,6 +550,12 @@ async function handleVerifySmsCode() {
             errorMsg = 'Invalid code. Please try again';
         } else if (error.code === 'auth/code-expired') {
             errorMsg = 'Code expired. Please request a new one';
+        } else if (error.code === 'auth/missing-verification-code') {
+            errorMsg = 'Please enter the verification code';
+        } else if (error.code === 'auth/credential-already-in-use') {
+            errorMsg = 'This phone number is already in use';
+        } else if (error.code === 'auth/requires-recent-login') {
+            errorMsg = 'For security, please sign out and sign back in, then try again';
         }
         
         showModalAlert('smsVerificationAlert', errorMsg, 'error');
@@ -495,52 +563,253 @@ async function handleVerifySmsCode() {
 }
 
 // ============================================================
-// EMAIL CHANGE (Firebase Auth Standard)
+// EMAIL & PASSWORD MANAGEMENT
 // ============================================================
 
-async function handleEmailChange() {
-    const currentEmail = emailInput.value.trim();
-    const newEmail = prompt('Enter your new email address:', currentEmail);
+function handleEmailButtonClick() {
+    if (!hasPasswordProvider && !currentUserData.userEmail) {
+        openAddEmailModal();
+    } else {
+        openChangeEmailModal();
+    }
+}
+
+// ============================================================
+// ADD EMAIL & PASSWORD (Phone-only users)
+// ============================================================
+
+function setupAddEmailModal() {
+    const closeBtn = document.getElementById('addEmailModalClose');
+    const cancelBtn = document.getElementById('cancelAddEmail');
+    const addBtn = document.getElementById('addEmailPasswordBtn');
     
-    if (!newEmail || newEmail === currentEmail) return;
+    if (closeBtn) closeBtn.addEventListener('click', closeAddEmailModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeAddEmailModal);
+    if (addBtn) addBtn.addEventListener('click', handleAddEmailPassword);
+}
+
+function openAddEmailModal() {
+    if (addEmailModal) {
+        addEmailModal.classList.add('show');
+        document.getElementById('addEmail').value = '';
+        document.getElementById('addPassword').value = '';
+        document.getElementById('addConfirmPassword').value = '';
+        hideModalAlert('addEmailAlert');
+    }
+}
+
+function closeAddEmailModal() {
+    if (addEmailModal) {
+        addEmailModal.classList.remove('show');
+        document.getElementById('addEmail').value = '';
+        document.getElementById('addPassword').value = '';
+        document.getElementById('addConfirmPassword').value = '';
+        hideModalAlert('addEmailAlert');
+    }
+}
+
+async function handleAddEmailPassword() {
+    const email = document.getElementById('addEmail').value.trim();
+    const password = document.getElementById('addPassword').value;
+    const confirmPassword = document.getElementById('addConfirmPassword').value;
     
-    if (!newEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-        showAlert('Please enter a valid email address', 'error');
+    // Validation
+    if (!email) {
+        showModalAlert('addEmailAlert', 'Please enter an email address', 'error');
+        return;
+    }
+    
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        showModalAlert('addEmailAlert', 'Please enter a valid email address', 'error');
+        return;
+    }
+    
+    if (!password) {
+        showModalAlert('addEmailAlert', 'Please enter a password', 'error');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showModalAlert('addEmailAlert', 'Password must be at least 6 characters', 'error');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        showModalAlert('addEmailAlert', 'Passwords do not match', 'error');
         return;
     }
     
     try {
-        setLoadingState(true);
-        showAlert('Updating email address...', 'info');
+        showModalAlert('addEmailAlert', 'Adding email & password...', 'info');
         
+        // Check if email already exists
+        const emailQuery = query(collection(db, COLLECTIONS.USERS), where('userEmail', '==', email));
+        const emailSnapshot = await getDocs(emailQuery);
+        
+        if (!emailSnapshot.empty && emailSnapshot.docs[0].id !== currentUser.uid) {
+            showModalAlert('addEmailAlert', 'This email is already registered', 'error');
+            return;
+        }
+        
+        // Link email/password credential to phone account
+        const credential = EmailAuthProvider.credential(email, password);
+        await linkWithCredential(currentUser, credential);
+        
+        console.log('✅ Email/password linked successfully');
+        
+        // Update Firestore
+        await updateDoc(doc(db, COLLECTIONS.USERS, currentUser.uid), {
+            userEmail: email,
+            userUpdatedAt: Date.now()
+        });
+        
+        currentUserData.userEmail = email;
+        if (emailInput) emailInput.value = email;
+        
+        showModalAlert('addEmailAlert', 'Email & password added!', 'success');
+        
+        setTimeout(() => {
+            closeAddEmailModal();
+            checkEmailAccountStatus();
+            showAlert('Email & password added successfully! You can now sign in with email.', 'success');
+        }, 1500);
+        
+    } catch (error) {
+        console.error('❌ Failed to add email/password:', error);
+        
+        let errorMsg = 'Failed to add email & password';
+        
+        if (error.code === 'auth/email-already-in-use') {
+            errorMsg = 'This email is already in use';
+        } else if (error.code === 'auth/weak-password') {
+            errorMsg = 'Password is too weak';
+        } else if (error.code === 'auth/provider-already-linked') {
+            errorMsg = 'Email provider already linked';
+        } else if (error.code === 'auth/credential-already-in-use') {
+            errorMsg = 'This credential is already in use';
+        }
+        
+        showModalAlert('addEmailAlert', errorMsg, 'error');
+    }
+}
+
+// ============================================================
+// CHANGE EMAIL (Users with existing email/password)
+// ============================================================
+
+function setupChangeEmailModal() {
+    const closeBtn = document.getElementById('changeEmailModalClose');
+    const cancelBtn = document.getElementById('cancelChangeEmail');
+    const changeBtn = document.getElementById('changeEmailBtn2');
+    
+    if (closeBtn) closeBtn.addEventListener('click', closeChangeEmailModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeChangeEmailModal);
+    if (changeBtn) changeBtn.addEventListener('click', handleChangeEmail);
+}
+
+function openChangeEmailModal() {
+    if (changeEmailModal) {
+        changeEmailModal.classList.add('show');
+        document.getElementById('currentPasswordEmail').value = '';
+        document.getElementById('newEmail').value = currentUserData.userEmail || '';
+        hideModalAlert('changeEmailAlert');
+    }
+}
+
+function closeChangeEmailModal() {
+    if (changeEmailModal) {
+        changeEmailModal.classList.remove('show');
+        document.getElementById('currentPasswordEmail').value = '';
+        document.getElementById('newEmail').value = '';
+        hideModalAlert('changeEmailAlert');
+    }
+}
+
+async function handleChangeEmail() {
+    const currentPassword = document.getElementById('currentPasswordEmail').value;
+    const newEmail = document.getElementById('newEmail').value.trim();
+    const currentEmail = currentUserData.userEmail;
+    
+    // Validation
+    if (!currentPassword) {
+        showModalAlert('changeEmailAlert', 'Please enter your current password', 'error');
+        return;
+    }
+    
+    if (!newEmail) {
+        showModalAlert('changeEmailAlert', 'Please enter a new email', 'error');
+        return;
+    }
+    
+    if (!newEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        showModalAlert('changeEmailAlert', 'Please enter a valid email address', 'error');
+        return;
+    }
+    
+    if (newEmail === currentEmail) {
+        showModalAlert('changeEmailAlert', 'This is your current email', 'error');
+        return;
+    }
+    
+    try {
+        showModalAlert('changeEmailAlert', 'Changing email...', 'info');
+        
+        // Check if new email already exists (exclude current user)
+        const emailQuery = query(collection(db, COLLECTIONS.USERS), where('userEmail', '==', newEmail));
+        const emailSnapshot = await getDocs(emailQuery);
+        
+        if (!emailSnapshot.empty && emailSnapshot.docs[0].id !== currentUser.uid) {
+            showModalAlert('changeEmailAlert', 'This email is already registered', 'error');
+            return;
+        }
+        
+        // Reauthenticate with current password
+        const credential = EmailAuthProvider.credential(currentEmail, currentPassword);
+        await reauthenticateWithCredential(currentUser, credential);
+        
+        console.log('✅ Reauthenticated successfully');
+        
+        // Update email in Firebase Auth
         await updateEmail(currentUser, newEmail);
         
+        // Update Firestore
         await updateDoc(doc(db, COLLECTIONS.USERS, currentUser.uid), {
             userEmail: newEmail,
             userUpdatedAt: Date.now()
         });
         
         currentUserData.userEmail = newEmail;
-        emailInput.value = newEmail;
+        if (emailInput) emailInput.value = newEmail;
         
-        showAlert('Email updated successfully!', 'success');
+        showModalAlert('changeEmailAlert', 'Email changed!', 'success');
+        
+        setTimeout(() => {
+            closeChangeEmailModal();
+            showAlert('Email changed successfully!', 'success');
+        }, 1500);
         
     } catch (error) {
-        console.error('❌ Email update failed:', error);
+        console.error('❌ Failed to change email:', error);
         
-        let errorMsg = 'Failed to update email';
+        let errorMsg = 'Failed to change email';
         
-        if (error.code === 'auth/requires-recent-login') {
-            errorMsg = 'For security, please sign out and sign back in to update your email';
+        if (error.code === 'auth/wrong-password') {
+            errorMsg = 'Current password is incorrect';
         } else if (error.code === 'auth/email-already-in-use') {
             errorMsg = 'This email is already in use';
+        } else if (error.code === 'auth/requires-recent-login') {
+            errorMsg = 'Please sign out and sign back in, then try again';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMsg = 'Invalid email format';
         }
         
-        showAlert(errorMsg, 'error');
-    } finally {
-        setLoadingState(false);
+        showModalAlert('changeEmailAlert', errorMsg, 'error');
     }
 }
+
+// ============================================================
+// EMAIL CHANGE (Firebase Auth Standard) - REMOVED, REPLACED ABOVE
+// ============================================================
 
 // ============================================================
 // PASSWORD CHANGE (Firebase Auth Standard)
@@ -557,13 +826,17 @@ function setupPasswordChangeModal() {
 }
 
 function openPasswordChangeModal() {
-    if (!currentUserData.userEmail) {
+    if (!hasPasswordProvider) {
         showAlert('Please add an email address first to enable password management', 'error');
         return;
     }
     
     if (passwordChangeModal) {
         passwordChangeModal.classList.add('show');
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+        hideModalAlert('passwordChangeAlert');
     }
 }
 
@@ -602,29 +875,43 @@ async function handlePasswordChange() {
         return;
     }
     
+    if (newPassword === currentPassword) {
+        showModalAlert('passwordChangeAlert', 'New password must be different from current password', 'error');
+        return;
+    }
+    
     try {
-        showModalAlert('passwordChangeAlert', 'Updating password...', 'info');
+        showModalAlert('passwordChangeAlert', 'Changing password...', 'info');
         
+        // Reauthenticate with current password
         const credential = EmailAuthProvider.credential(currentUserData.userEmail, currentPassword);
         await reauthenticateWithCredential(currentUser, credential);
+        
+        console.log('✅ Reauthenticated successfully');
+        
+        // Update password
         await updatePassword(currentUser, newPassword);
         
-        showModalAlert('passwordChangeAlert', 'Password updated!', 'success');
+        console.log('✅ Password updated successfully');
+        
+        showModalAlert('passwordChangeAlert', 'Password changed!', 'success');
         
         setTimeout(() => {
             closePasswordChangeModal();
-            showAlert('Password updated successfully!', 'success');
+            showAlert('Password changed successfully!', 'success');
         }, 1500);
         
     } catch (error) {
         console.error('❌ Password update failed:', error);
         
-        let errorMsg = 'Failed to update password';
+        let errorMsg = 'Failed to change password';
         
         if (error.code === 'auth/wrong-password') {
             errorMsg = 'Current password is incorrect';
         } else if (error.code === 'auth/weak-password') {
-            errorMsg = 'Password is too weak';
+            errorMsg = 'New password is too weak';
+        } else if (error.code === 'auth/requires-recent-login') {
+            errorMsg = 'Please sign out and sign back in, then try again';
         }
         
         showModalAlert('passwordChangeAlert', errorMsg, 'error');

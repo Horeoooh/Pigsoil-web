@@ -690,6 +690,66 @@
             </div>
         </div>
 
+        <!-- Add Email & Password Modal (for phone-only users) -->
+        <div id="addEmailModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add Email & Password</h3>
+                    <button class="modal-close" id="addEmailModalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom: 16px; color: #666; font-size: 14px;">
+                        Link an email and password to your account. You'll be able to sign in with either phone or email.
+                    </p>
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" id="addEmail" class="form-input" placeholder="Enter your email" style="width: 100%;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label class="form-label">Password</label>
+                        <input type="password" id="addPassword" class="form-input" placeholder="Enter password (min 6 characters)" style="width: 100%;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" id="addConfirmPassword" class="form-input" placeholder="Confirm password" style="width: 100%;">
+                    </div>
+                    <div id="addEmailAlert" class="alert" style="margin-top: 12px; display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" id="cancelAddEmail">Cancel</button>
+                    <button class="btn btn-success" id="addEmailPasswordBtn">Add Email & Password</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Email Modal (for users with existing email) -->
+        <div id="changeEmailModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Change Email Address</h3>
+                    <button class="modal-close" id="changeEmailModalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom: 16px; color: #666; font-size: 14px;">
+                        For security, enter your current password to change your email address.
+                    </p>
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" id="currentPasswordEmail" class="form-input" placeholder="Enter current password" style="width: 100%;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label class="form-label">New Email Address</label>
+                        <input type="email" id="newEmail" class="form-input" placeholder="Enter new email" style="width: 100%;">
+                    </div>
+                    <div id="changeEmailAlert" class="alert" style="margin-top: 12px; display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" id="cancelChangeEmail">Cancel</button>
+                    <button class="btn btn-success" id="changeEmailBtn2">Change Email</button>
+                </div>
+            </div>
+        </div>
+
         <style>
             .modal-overlay {
                 display: none;

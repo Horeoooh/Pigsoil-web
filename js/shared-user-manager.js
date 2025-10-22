@@ -6,7 +6,6 @@ import {
 import { 
     doc, 
     getDoc,
-    setDoc,
     onSnapshot 
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 
@@ -74,36 +73,47 @@ async function setupUserDataListener(uid) {
     
     try {
         // Load user data synchronously FIRST
+        console.log('🔍 Loading user data for:', uid);
         const docSnapshot = await getDoc(userDocRef);
         
         if (docSnapshot.exists()) {
-            currentUserData = docSnapshot.data();
-            console.log('📡 Initial user data loaded:', currentUserData);
-            console.log('🔍 User type detected:', currentUserData.userType);
+            const userData = docSnapshot.data();
             
-            // Cache the complete user data
-            cacheUserData(currentUserData);
+            // CHECK if this is a complete signup (has signupComplete flag or has userName)
+            if (userData.signupComplete || userData.userName) {
+                currentUserData = userData;
+                console.log('📡 Initial user data loaded:', currentUserData);
+                console.log('🔍 User type detected:', currentUserData.userType);
+                console.log('👤 Username detected:', currentUserData.userName);
+                
+                // Cache the complete user data
+                cacheUserData(currentUserData);
+                
+                // Update UI and navigation BEFORE enabling links
+                updateAllUserProfile();
+                updateNavigationLinks();
+                dispatchUserDataEvent();
+                
+                // NOW enable navigation links
+                navLinks.forEach(link => {
+                    link.style.pointerEvents = '';
+                    link.style.opacity = '';
+                    link.style.cursor = '';
+                });
+                
+                console.log('✅ Navigation enabled and ready');
+            } else {
+                console.warn('⚠️ Incomplete user data found (missing userName or signupComplete)');
+                console.log('User data:', userData);
+                // Don't create default - let the signup process handle it
+                // Keep navigation disabled
+            }
         } else {
-            console.log('📝 Creating default user data');
-            currentUserData = await createDefaultUserData(uid);
-            
-            // Cache the newly created user data
-            cacheUserData(currentUserData);
+            console.warn('⚠️ No user document found in Firestore for UID:', uid);
+            console.log('📝 Waiting for signup process to create user document...');
+            // Don't create default - wait for signup to complete
+            // Keep navigation disabled
         }
-        
-        // Update UI and navigation BEFORE enabling links
-        updateAllUserProfile();
-        updateNavigationLinks(); // This is the critical function
-        dispatchUserDataEvent();
-        
-        // NOW enable navigation links
-        navLinks.forEach(link => {
-            link.style.pointerEvents = '';
-            link.style.opacity = '';
-            link.style.cursor = '';
-        });
-        
-        console.log('✅ Navigation enabled and ready');
         
     } catch (error) {
         console.error('❌ Error loading initial user data:', error);
@@ -118,41 +128,34 @@ async function setupUserDataListener(uid) {
         if (docSnapshot.exists()) {
             const newUserData = docSnapshot.data();
             
-            if (JSON.stringify(newUserData) !== JSON.stringify(currentUserData)) {
-                currentUserData = newUserData;
-                console.log('📡 User data updated from Firestore:', newUserData);
-                
-                // Update cache with new data
-                cacheUserData(newUserData);
-                
-                updateAllUserProfile();
-                updateNavigationLinks();
-                dispatchUserDataEvent();
+            // Only update if this is complete data
+            if (newUserData.signupComplete || newUserData.userName) {
+                if (JSON.stringify(newUserData) !== JSON.stringify(currentUserData)) {
+                    currentUserData = newUserData;
+                    console.log('📡 User data updated from Firestore:', newUserData);
+                    
+                    // Update cache with new data
+                    cacheUserData(newUserData);
+                    
+                    updateAllUserProfile();
+                    updateNavigationLinks();
+                    dispatchUserDataEvent();
+                    
+                    // Enable navigation if it was disabled
+                    const navLinks = document.querySelectorAll('[data-nav]');
+                    navLinks.forEach(link => {
+                        link.style.pointerEvents = '';
+                        link.style.opacity = '';
+                        link.style.cursor = '';
+                    });
+                }
+            } else {
+                console.log('⏳ Incomplete user data in snapshot, waiting for complete data...');
             }
         }
     }, (error) => {
         console.error('❌ Error listening to user data:', error);
     });
-}
-
-async function createDefaultUserData(uid) {
-    const defaultData = {
-        userEmail: currentUser.email || 'unknown@email.com',
-        userName: currentUser.displayName || 'User',
-        userPhone: currentUser.phoneNumber || '',
-        userType: 'swine_farmer', // Default to farmer
-        userIsActive: true,
-        userCreatedAt: new Date(),
-        userUpdatedAt: new Date()
-    };
-    
-    try {
-        await setDoc(doc(db, COLLECTIONS.USERS, uid), defaultData);
-        return defaultData;
-    } catch (error) {
-        console.error('Error creating default user data:', error);
-        return defaultData;
-    }
 }
 
 function updateAllUserProfile() {
@@ -262,7 +265,7 @@ function getUserRoleDisplay(userType) {
         case 'Organic Fertilizer Buyer':
             return 'Organic Fertilizer Buyer';
         default:
-            return 'Active Farmer';
+            return 'User';
     }
 }
 
@@ -352,7 +355,8 @@ function cacheUserData(userData) {
             weeklyManongBotPromptsUsed: userData.weeklyManongBotPromptsUsed,
             currentWeekStart: userData.currentWeekStart,
             userCreatedAt: userData.userCreatedAt,
-            userUpdatedAt: userData.userUpdatedAt
+            userUpdatedAt: userData.userUpdatedAt,
+            signupComplete: userData.signupComplete
         };
         
         localStorage.setItem(CACHE_KEYS.USER_DATA, JSON.stringify(dataToCache));

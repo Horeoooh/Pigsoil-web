@@ -8,6 +8,12 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         console.log('👤 User is signed in:', user.uid);
         
+        // Only redirect if email is verified
+        if (!user.emailVerified) {
+            console.log('📧 Email not verified yet - user can stay on landing page');
+            return;
+        }
+        
         // Check if user has complete profile data and redirect
         try {
             const userDocRef = doc(db, 'users', user.uid);
