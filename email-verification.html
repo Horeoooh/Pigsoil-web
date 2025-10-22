@@ -45,6 +45,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            text-decoration: none;
+            cursor: pointer;
         }
 
         .logo-img {
@@ -297,10 +299,10 @@
 <body>
     <header class="header">
         <div class="nav-container">
-            <div class="logo">
+            <a href="/index.html" class="logo">
                 <img src="/images/pig logo.png" alt="PigSoil Logo" class="logo-img">
                 <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
-            </div>
+            </a>
         </div>
     </header>
 
@@ -329,6 +331,12 @@
                 <div class="resend-section">
                     <button id="resendBtn" class="resend-btn">
                         <span id="resendBtnText">📨 Resend Verification Email</span>
+                    </button>
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <button id="checkVerificationBtn" class="resend-btn" style="background: #2e7d32;">
+                        <span id="checkBtnText">✅ I've Verified My Email</span>
                     </button>
                 </div>
                 
@@ -432,6 +440,8 @@ savePendingSignupData();
         const userEmailEl = document.getElementById('userEmail');
         const resendBtn = document.getElementById('resendBtn');
         const resendBtnText = document.getElementById('resendBtnText');
+        const checkVerificationBtn = document.getElementById('checkVerificationBtn');
+        const checkBtnText = document.getElementById('checkBtnText');
         const alertMessage = document.getElementById('alertMessage');
         const pendingState = document.getElementById('pendingState');
         const successState = document.getElementById('successState');
@@ -439,6 +449,7 @@ savePendingSignupData();
         let resendCooldown = 0;
         let cooldownInterval = null;
         let autoCheckInterval = null; // For periodic auto-checking (matches Android onResume)
+        const AUTO_CHECK_INTERVAL = 5000; // Check every 5 seconds
 
         // Deep link URL for Android app - matches your Android actionCodeSettings
         const DEEP_LINK_URL = 'https://www.pigsoil.tech/verifyEmail.html';
@@ -635,9 +646,107 @@ savePendingSignupData();
         // Resend button click handler
         resendBtn.addEventListener('click', resendVerification);
 
+        // Manual verification check button handler
+        checkVerificationBtn.addEventListener('click', async () => {
+            try {
+                checkVerificationBtn.disabled = true;
+                checkBtnText.textContent = 'Checking...';
+                checkVerificationBtn.classList.add('loading');
+
+                const user = auth.currentUser;
+                if (!user) {
+                    showAlert('No user logged in. Please sign up again.', 'error');
+                    setTimeout(() => {
+                        window.location.href = '/signup.html';
+                    }, 2000);
+                    return;
+                }
+
+                // Reload user to get latest verification status
+                await user.reload();
+
+                if (user.emailVerified) {
+                    console.log('✅ Email verified confirmed!');
+                    showAlert('✅ Email verified! Redirecting to dashboard...', 'success');
+                    
+                    // Stop auto-check interval
+                    if (autoCheckInterval) {
+                        clearInterval(autoCheckInterval);
+                    }
+                    
+                    // Update Firestore
+                    try {
+                        const userDocRef = doc(db, 'users', user.uid);
+                        await updateDoc(userDocRef, {
+                            emailVerified: true,
+                            userUpdatedAt: Date.now()
+                        });
+                        console.log('✅ Email verification status updated in Firestore');
+                    } catch (error) {
+                        console.error('Failed to update Firestore:', error);
+                    }
+                    
+                    // Get user data and redirect to appropriate dashboard
+                    try {
+                        const userDocRef = doc(db, 'users', user.uid);
+                        const userDoc = await getDoc(userDocRef);
+                        
+                        if (userDoc.exists()) {
+                            const userData = userDoc.data();
+                            const userType = userData.userType;
+                            
+                            console.log('🔍 User data loaded:');
+                            console.log('  - userType:', userType);
+                            console.log('  - userName:', userData.userName);
+                            
+                            // Cache user data
+                            cacheCompleteUserData({
+                                ...userData,
+                                userID: user.uid,
+                                emailVerified: true,
+                                userProfilePictureUrl: userData.userProfilePictureUrl || DEFAULT_PROFILE_PIC
+                            });
+                            
+                            console.log('✅ User data cached successfully');
+                            
+                            // Redirect based on user type
+                            setTimeout(() => {
+                                if (userType === 'swine_farmer') {
+                                    console.log('🚀 Redirecting to Farmer Dashboard');
+                                    window.location.href = '/dashboard.html';
+                                } else if (userType === 'fertilizer_buyer') {
+                                    console.log('🚀 Redirecting to Buyer Dashboard');
+                                    window.location.href = '/buyer-dashboard.html';
+                                } else {
+                                    console.warn('⚠️ Unknown userType, defaulting to Farmer Dashboard');
+                                    window.location.href = '/dashboard.html';
+                                }
+                            }, 1500);
+                        } else {
+                            window.location.href = '/dashboard.html';
+                        }
+                    } catch (error) {
+                        console.error('Error getting user data:', error);
+                        window.location.href = '/dashboard.html';
+                    }
+                } else {
+                    showAlert('⚠️ Email not verified yet. Please check your email and click the verification link.', 'error');
+                    checkVerificationBtn.disabled = false;
+                    checkBtnText.textContent = '✅ I\'ve Verified My Email';
+                    checkVerificationBtn.classList.remove('loading');
+                }
+            } catch (error) {
+                console.error('Error checking verification:', error);
+                showAlert('Error checking verification. Please try again.', 'error');
+                checkVerificationBtn.disabled = false;
+                checkBtnText.textContent = '✅ I\'ve Verified My Email';
+                checkVerificationBtn.classList.remove('loading');
+            }
+        });
+
         // Auto-check verification status periodically (matches Android's onResume behavior)
         function startAutoCheckVerification() {
-            // Check every 3 seconds if email has been verified
+            // Check every 5 seconds if email has been verified
             autoCheckInterval = setInterval(async () => {
                 try {
                     const user = auth.currentUser;
@@ -711,7 +820,7 @@ savePendingSignupData();
                 } catch (error) {
                     console.error('Error checking verification status:', error);
                 }
-            }, 3000); // Check every 3 seconds
+            }, AUTO_CHECK_INTERVAL); // Check every 5 seconds
         }
 
         // Cleanup on page unload
@@ -734,5 +843,7 @@ savePendingSignupData();
             }
         });
     </script>
+    <script type="module" src="/js/auth-guard.js"></script>
 </body>
 </html>
+

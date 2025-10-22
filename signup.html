@@ -46,6 +46,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            text-decoration: none;
+            cursor: pointer;
         }
 
         .logo-img {
@@ -675,10 +677,10 @@
 <body>
     <header class="header">
         <div class="nav-container">
-            <div class="logo">
+            <a href="/index.html" class="logo">
                 <img src="/images/pig logo.png" alt="PigSoil Logo" class="logo-img">
                 <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
-            </div>
+            </a>
             
             <nav class="nav-links">
                 <a href="#about">About</a>
@@ -769,6 +771,7 @@
         </div>
     </main>
 
+    <script type="module" src="/js/auth-guard.js"></script>
     <script type="module" src="/js/signup.js"></script>
 </body>
 </html>

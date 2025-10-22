@@ -1,6 +1,6 @@
 // Subscription Settings JavaScript - Full Version with Xendit Integration
 import { auth, db } from './init.js';
-import './shared-user-manager.js';
+import { DEFAULT_PROFILE_PIC } from './shared-user-manager.js';
 import xenditService from './xendit-service.js';
 import { 
     onAuthStateChanged,
@@ -11,9 +11,6 @@ import {
     getDoc,
     updateDoc
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
-
-// Default profile picture
-const DEFAULT_PROFILE_PICTURE = 'https://i.pinimg.com/736x/d7/95/c3/d795c373a0539e64c7ee69bb0af3c5c3.jpg';
 
 // Constants matching Android User model
 const TIER_FREE = 'FREE';
@@ -301,9 +298,9 @@ function updateHeaderDisplay() {
     
     const getCachedProfilePic = () => {
         try {
-            return localStorage.getItem('pigsoil_profile_pic') || DEFAULT_PROFILE_PICTURE;
+            return localStorage.getItem('pigsoil_profile_pic') || DEFAULT_PROFILE_PIC;
         } catch (error) {
-            return DEFAULT_PROFILE_PICTURE;
+            return DEFAULT_PROFILE_PIC;
         }
     };
     
@@ -321,7 +318,7 @@ function updateHeaderDisplay() {
     if (headerUserName) headerUserName.textContent = userName;
     
     if (headerUserAvatar) {
-        if (profilePicture && profilePicture !== DEFAULT_PROFILE_PICTURE) {
+        if (profilePicture && profilePicture !== DEFAULT_PROFILE_PIC) {
             headerUserAvatar.style.backgroundImage = `url(${profilePicture})`;
             headerUserAvatar.style.backgroundSize = 'cover';
             headerUserAvatar.style.backgroundPosition = 'center';

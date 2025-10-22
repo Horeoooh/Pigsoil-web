@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PigSoil+ Auth Router</title>
+    <style>
+        /* Completely blank page - no visible UI */
+        body {
+            margin: 0;
+            padding: 0;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- NO UI - BLANK PAGE -->
+    
+    <script type="module">
+        // Import Firebase
+        import { auth, db } from '/js/init.js';
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
+        import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
+
+        const ANDROID_DEEP_LINK = 'https://pigsoil.tech/verify-success.html';
+        const WEB_DASHBOARD_URL = '/dashboard.html';
+        const BUYER_DASHBOARD_URL = '/buyer-dashboard.html';
+        const LOGIN_URL = '/login.html';
+        const DEFAULT_PROFILE_PIC = 'https://i.pinimg.com/736x/d7/95/c3/d795c373a0539e64c7ee69bb0af3c5c3.jpg';
+
+        /**
+         * Detect if user is on Android
+         */
+        function isAndroid() {
+            return /android/i.test(navigator.userAgent);
+        }
+
+        /**
+         * Normalize userType to underscore format
+         */
+        function normalizeUserType(userType) {
+            if (!userType) return 'swine_farmer';
+            
+            if (userType === 'Swine Farmer') return 'swine_farmer';
+            if (userType === 'Organic Fertilizer Buyer') return 'fertilizer_buyer';
+            
+            if (userType === 'swine_farmer' || userType === 'fertilizer_buyer') {
+                return userType;
+            }
+            
+            return 'swine_farmer';
+        }
+
+        /**
+         * Redirect to appropriate dashboard based on user type
+         */
+        function redirectToDashboard(userType) {
+            const normalizedType = normalizeUserType(userType);
+            
+            console.log('🔍 Redirecting based on userType:', normalizedType);
+            
+            if (normalizedType === 'swine_farmer') {
+                console.log('🐷 Redirecting swine farmer to dashboard');
+                window.location.href = WEB_DASHBOARD_URL;
+            } else if (normalizedType === 'fertilizer_buyer') {
+                console.log('🌱 Redirecting fertilizer buyer to buyer dashboard');
+                window.location.href = BUYER_DASHBOARD_URL;
+            } else {
+                console.log('❓ Unknown user type, defaulting to dashboard');
+                window.location.href = WEB_DASHBOARD_URL;
+            }
+        }
+
+        /**
+         * Handle web user routing
+         */
+        async function handleWebUser(user) {
+            try {
+                console.log('💻 Web user detected:', user.uid);
+                
+                // Get user data from Firestore
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const userType = userData.userType;
+                    
+                    console.log('📋 User type:', userType);
+                    console.log('👤 Username:', userData.userName);
+                    
+                    // Cache complete user data (matches shared-user-manager.js cache keys)
+                    const completeUserData = {
+                        ...userData,
+                        userID: user.uid,
+                        emailVerified: user.emailVerified,
+                        userProfilePictureUrl: userData.userProfilePictureUrl || DEFAULT_PROFILE_PIC
+                    };
+                    
+                    localStorage.setItem('pigsoil_user_data', JSON.stringify(completeUserData));
+                    localStorage.setItem('pigsoil_user_auth', JSON.stringify({
+                        uid: user.uid,
+                        email: user.email,
+                        emailVerified: user.emailVerified
+                    }));
+                    localStorage.setItem('pigsoil_user', JSON.stringify(completeUserData));
+                    localStorage.setItem('pigsoil_profile_pic', completeUserData.userProfilePictureUrl);
+                    localStorage.setItem('pigsoil_cache_timestamp', Date.now().toString());
+                    
+                    console.log('✅ User data cached to localStorage');
+                    
+                    // Redirect to appropriate dashboard
+                    redirectToDashboard(userType);
+                } else {
+                    console.error('⚠️ No user data found in Firestore');
+                    window.location.href = LOGIN_URL + '?error=no_user_data';
+                }
+            } catch (error) {
+                console.error('❌ Error handling web user:', error);
+                window.location.href = LOGIN_URL + '?error=routing_failed';
+            }
+        }
+
+        /**
+         * Main router logic
+         */
+        async function routeUser() {
+            console.log('🚀 Auth Router started');
+            
+            // Check platform first
+            if (isAndroid()) {
+                console.log('📱 Android device detected - redirecting to deep link');
+                window.location.href = ANDROID_DEEP_LINK;
+                return;
+            }
+            
+            // Web platform - check authentication
+            console.log('💻 Web platform detected - checking authentication');
+            
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    console.log('✅ User is logged in:', user.email);
+                    await handleWebUser(user);
+                } else {
+                    console.log('❌ User not logged in - redirecting to login');
+                    window.location.href = LOGIN_URL;
+                }
+            });
+        }
+
+        // Start routing immediately
+        routeUser();
+    </script>
+</body>
+</html>

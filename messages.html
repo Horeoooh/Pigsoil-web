@@ -65,15 +65,8 @@
         </div>
     </div>
 
-    <!-- CRITICAL FIX: Import shared-user-manager.js BEFORE messages.js -->
-    <script type="module">
-        // Import shared user manager to handle navigation
-        import '/js/shared-user-manager.js';
-        
-        // Then import messages functionality
-        import '/js/messages.js';
-        
-        console.log('💬 Messages page loaded with user manager integration');
-    </script>
+    <script type="module" src="/js/dashboard-auth-guard.js"></script>
+    <script type="module" src="/js/shared-user-manager.js"></script>
+    <script type="module" src="/js/messages.js"></script>
 </body>
 </html>
