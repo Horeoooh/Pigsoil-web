@@ -120,6 +120,10 @@
             background: rgba(76, 175, 80, 0.1);
         }
 
+        .user-info {
+            text-align: right;
+        }
+
         .user-avatar {
             width: 36px;
             height: 36px;
@@ -137,6 +141,7 @@
             font-weight: 600;
             color: #333;
             font-size: 14px;
+            display: block;
         }
 
         .user-role {
@@ -964,9 +969,10 @@
             </div>
             
             <ul class="nav-menu">
-                <li><a href="/dashboard.html">Dashboard</a></li>
-                <li><a href="/farmermarket.html">Market</a></li>
-                <li><a href="/guides.html">Guides</a></li>
+                <li><a href="/dashboard.html" data-nav="dashboard">Dashboard</a></li>
+                <li><a href="/farmermarket.html" data-nav="market">Market</a></li>
+                <li style="display: none;"><a href="/transactions.html" data-nav="transactions">Transactions</a></li>
+                <li><a href="/guides.html" data-nav="guides">Guides</a></li>
             </ul>
             
             <div class="user-section">
@@ -978,12 +984,11 @@
                     </svg>
                 </button>
                 <a href="/setting-acc.html" class="user-profile">
-                    <div>
+                    <div class="user-info">
                         <span class="user-name" id="headerUserName">Loading...</span>
+                        <span class="user-role" id="headerUserRole">Please wait</span>
                     </div>
-                    <div class="user-avatar" id="headerUserAvatar">
-                        <img src="https://i.pinimg.com/736x/d7/95/c3/d795c373a0539e64c7ee69bb0af3c5c3.jpg" alt="User" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                    </div>
+                    <div class="user-avatar" id="headerUserAvatar">...</div>
                 </a>
             </div>
         </nav>

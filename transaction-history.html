@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History - PigSoil+</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(103deg, #FFEED0 0%, #FFC7B8 170%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .page-header {
+            background: white;
+            padding: 20px 32px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #f5f5f5;
+            color: #4CAF50;
+        }
+
+        .header-info {
+            flex: 1;
+        }
+
+        .header-info h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Loading State */
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 20px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            display: none;
+        }
+
+        .empty-state.show {
+            display: block;
+        }
+
+        .empty-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .empty-state p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        /* Transaction History Cards */
+        .history-section {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .transaction-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .transaction-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s;
+        }
+
+        .transaction-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .transaction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .transaction-main-info {
+            flex: 1;
+        }
+
+        .product-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .transaction-date {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge.completed {
+            background: #E8F5E9;
+            color: #4CAF50;
+        }
+
+        .status-badge.agreed {
+            background: #FFF9C4;
+            color: #F57F17;
+        }
+
+        .status-badge.confirmed {
+            background: #E3F2FD;
+            color: #2196F3;
+        }
+
+        .status-badge.pending,
+        .status-badge.cancellation_requested {
+            background: #FFF3E0;
+            color: #FF9800;
+        }
+
+        .status-badge.cancelled {
+            background: #FFEBEE;
+            color: #F44336;
+        }
+
+        .transaction-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .detail-value.price {
+            color: #4CAF50;
+            font-size: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .btn {
+                flex: 1;
+            }
+
+            .transaction-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="page-header">
+        <div class="header-content">
+            <button class="back-btn" id="backBtn" aria-label="Go back">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </button>
+            <div class="header-info">
+                <h1>Transaction History with <span id="sellerName">Seller</span></h1>
+                <p class="header-subtitle"><span id="transactionCount">0</span> transactions</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" id="messageSellerBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Message Seller
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Loading State -->
+        <div class="loading-container" id="loadingContainer">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState">
+            <div class="empty-icon">📋</div>
+            <h3>No Transaction History</h3>
+            <p>You haven't completed any transactions with this seller yet.</p>
+        </div>
+
+        <!-- Transaction History -->
+        <section class="history-section" id="historySection" style="display: none;">
+            <h2 class="section-title">All Transactions</h2>
+            <div class="transaction-list" id="transactionList">
+                <!-- Transaction cards will be dynamically added here -->
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="/js/transaction-history.js"></script>
+</body>
+</html>

@@ -246,6 +246,19 @@ function updateNavigationLinks() {
             newHref = isBuyer ? '/buyer-marketplace.html' : '/farmermarket.html';
             console.log(`  🛒 Market link updated: ${oldHref} → ${newHref} (isBuyer: ${isBuyer})`);
         }
+        else if (navType === 'transactions') {
+            // Show/hide transactions link based on user type
+            const parentLi = link.closest('li');
+            if (isBuyer) {
+                if (parentLi) parentLi.style.display = '';
+                link.style.display = '';
+                console.log(`  💳 Transactions link shown for buyer`);
+            } else {
+                if (parentLi) parentLi.style.display = 'none';
+                link.style.display = 'none';
+                console.log(`  💳 Transactions link hidden for farmer`);
+            }
+        }
         
         // Only update if href actually changed
         if (newHref !== oldHref) {

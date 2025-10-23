@@ -1,6 +1,13 @@
 // Subscription Settings JavaScript - Full Version with Xendit Integration
 import { auth, db } from './init.js';
-import { DEFAULT_PROFILE_PIC } from './shared-user-manager.js';
+import { 
+    getCurrentUser,
+    getCurrentUserData,
+    getCachedUserData,
+    getCachedProfilePic,
+    DEFAULT_PROFILE_PIC,
+    onUserDataChange
+} from './shared-user-manager.js';
 import xenditService from './xendit-service.js';
 import { 
     onAuthStateChanged,
@@ -57,16 +64,90 @@ const modalBody = document.getElementById('modalBody');
 const modalActions = document.getElementById('modalActions');
 
 const headerUserName = document.getElementById('headerUserName');
+const headerUserRole = document.getElementById('headerUserRole');
 const headerUserAvatar = document.getElementById('headerUserAvatar');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Subscription Settings initialized');
     
+    // Load user profile immediately
+    loadUserProfile();
+    
+    // Listen for user data changes
+    onUserDataChange(() => {
+        loadUserProfile();
+    });
+    
     checkAuthState();
     setupEventListeners();
     handleUrlParameters();
 });
+
+// Load user profile from cache or current data
+function loadUserProfile() {
+    const userData = getCurrentUserData() || getCachedUserData();
+    const user = getCurrentUser();
+    
+    if (!userData && !user) {
+        console.log('⏳ No user data available yet');
+        return;
+    }
+    
+    const userName = userData?.userName || user?.displayName || 'User';
+    const userType = userData?.userType || 'swine_farmer';
+    
+    // Get profile picture with proper fallback chain
+    let profilePicUrl = userData?.userProfilePictureUrl || user?.photoURL || getCachedProfilePic();
+    
+    // If still no profile pic or it's the default, use the DEFAULT_PROFILE_PIC
+    if (!profilePicUrl || profilePicUrl === DEFAULT_PROFILE_PIC) {
+        profilePicUrl = DEFAULT_PROFILE_PIC;
+    }
+    
+    // Determine user role display
+    let roleDisplay = 'Active User';
+    if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
+        roleDisplay = 'Swine Farmer';
+    } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+        roleDisplay = 'Organic Fertilizer Buyer';
+    }
+    
+    // Generate initials
+    const initials = userName.split(' ')
+        .map(word => word.charAt(0))
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+    
+    // Update header elements
+    if (headerUserName) headerUserName.textContent = userName;
+    if (headerUserRole) headerUserRole.textContent = roleDisplay;
+    
+    if (headerUserAvatar) {
+        // Always use background image with either user's pic or default pic
+        headerUserAvatar.style.backgroundImage = `url(${profilePicUrl})`;
+        headerUserAvatar.style.backgroundSize = 'cover';
+        headerUserAvatar.style.backgroundPosition = 'center';
+        headerUserAvatar.style.backgroundRepeat = 'no-repeat';
+        headerUserAvatar.textContent = '';
+        
+        // Fallback to initials if image fails to load
+        const img = new Image();
+        img.onerror = () => {
+            headerUserAvatar.style.backgroundImage = 'none';
+            headerUserAvatar.textContent = initials;
+        };
+        img.src = profilePicUrl;
+    }
+    
+    console.log('👤 User profile loaded:', { 
+        userName, 
+        roleDisplay, 
+        profilePicUrl, 
+        usingDefault: profilePicUrl === DEFAULT_PROFILE_PIC 
+    });
+}
 
 function checkAuthState() {
     onAuthStateChanged(auth, async (user) => {
@@ -286,65 +367,8 @@ function updateUI() {
 }
 
 function updateHeaderDisplay() {
-    // Import cached data functions from shared-user-manager
-    const getCachedData = () => {
-        try {
-            const cachedData = localStorage.getItem('pigsoil_user_data');
-            return cachedData ? JSON.parse(cachedData) : null;
-        } catch (error) {
-            return null;
-        }
-    };
-    
-    const getCachedProfilePic = () => {
-        try {
-            return localStorage.getItem('pigsoil_profile_pic') || DEFAULT_PROFILE_PIC;
-        } catch (error) {
-            return DEFAULT_PROFILE_PIC;
-        }
-    };
-    
-    // Try to use cached data first for immediate display
-    const cachedData = getCachedData();
-    const userName = currentUserData?.userName || 
-                     currentUser?.displayName || 
-                     cachedData?.userName || 
-                     'Loading...';
-    
-    const profilePicture = currentUserData?.userProfilePictureUrl || 
-                          currentUser?.photoURL || 
-                          getCachedProfilePic();
-    
-    if (headerUserName) headerUserName.textContent = userName;
-    
-    if (headerUserAvatar) {
-        if (profilePicture && profilePicture !== DEFAULT_PROFILE_PIC) {
-            headerUserAvatar.style.backgroundImage = `url(${profilePicture})`;
-            headerUserAvatar.style.backgroundSize = 'cover';
-            headerUserAvatar.style.backgroundPosition = 'center';
-            headerUserAvatar.textContent = '';
-        } else {
-            // Show initials if no profile picture
-            const initials = userName === 'Loading...' ? '...' : generateInitials(userName);
-            headerUserAvatar.style.backgroundImage = 'none';
-            headerUserAvatar.textContent = initials;
-        }
-        
-        // Ensure the img tag inside is updated too
-        const avatarImg = headerUserAvatar.querySelector('img');
-        if (avatarImg) {
-            avatarImg.src = profilePicture;
-        }
-    }
-}
-
-function generateInitials(name) {
-    if (!name) return '?';
-    return name.split(' ')
-               .map(word => word.charAt(0))
-               .join('')
-               .substring(0, 2)
-               .toUpperCase();
+    // Delegate to loadUserProfile for consistency
+    loadUserProfile();
 }
 
 function getPlanName() {
