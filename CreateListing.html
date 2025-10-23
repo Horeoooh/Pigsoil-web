@@ -1241,7 +1241,8 @@
             position: selectedLocation,
             map: map,
             draggable: true,
-            title: 'Your swine farm location'
+            title: 'Your swine farm location',
+            animation: google.maps.Animation.DROP
         });
         
         if (locationSearch) {
@@ -1266,6 +1267,17 @@
             });
         }
         
+        // Real-time preview update while dragging
+        marker.addListener('drag', (event) => {
+            const location = {
+                lat: event.latLng.lat(),
+                lng: event.latLng.lng()
+            };
+            // Show dragging status in preview
+            updateLocationPreviewWhileDragging(location);
+        });
+        
+        // Final update when drag ends
         marker.addListener('dragend', (event) => {
             const location = {
                 lat: event.latLng.lat(),
@@ -1280,6 +1292,8 @@
                 lng: event.latLng.lng()
             };
             marker.setPosition(location);
+            marker.setAnimation(google.maps.Animation.BOUNCE);
+            setTimeout(() => marker.setAnimation(null), 750);
             reverseGeocode(location);
         });
             updateLocationPreview();
@@ -1326,8 +1340,44 @@
     }
 }
 
+    // Real-time preview update while dragging marker
+    function updateLocationPreviewWhileDragging(location) {
+        const previewName = document.getElementById('previewLocationName');
+        const previewAddress = document.getElementById('previewLocationAddress');
+        
+        if (previewName) {
+            previewName.textContent = '📍 Dragging...';
+            previewName.style.color = '#FF9800';
+            previewName.style.transition = 'all 0.2s';
+        }
+        
+        if (previewAddress) {
+            const lat = location.lat.toFixed(6);
+            const lng = location.lng.toFixed(6);
+            previewAddress.textContent = `Lat: ${lat}, Lng: ${lng}`;
+            previewAddress.style.color = '#999';
+            previewAddress.style.fontFamily = 'monospace';
+            previewAddress.style.fontSize = '13px';
+        }
+    }
+
    function reverseGeocode(location) {
         if (!geocoder) return;
+        
+        // Show loading state immediately
+        const previewName = document.getElementById('previewLocationName');
+        const previewAddress = document.getElementById('previewLocationAddress');
+        
+        if (previewName) {
+            previewName.textContent = '🔍 Finding location...';
+            previewName.style.color = '#2196F3';
+        }
+        if (previewAddress) {
+            previewAddress.textContent = 'Please wait...';
+            previewAddress.style.color = '#999';
+            previewAddress.style.fontFamily = 'Poppins, Arial, sans-serif';
+            previewAddress.style.fontSize = '14px';
+        }
         
         geocoder.geocode({ location: location }, (results, status) => {
             if (status === 'OK' && results[0]) {
@@ -1339,8 +1389,27 @@
                 selectedLocation.address = result.formatted_address;
                 selectedLocation.placeId = result.place_id || '';
                 
-                // Update preview
+                // Update preview with success animation
                 updateLocationPreview();
+                
+                // Flash success indicator
+                if (previewName) {
+                    const originalColor = previewName.style.color;
+                    previewName.style.color = '#4CAF50';
+                    previewName.style.fontWeight = '600';
+                    setTimeout(() => {
+                        previewName.style.fontWeight = '600';
+                    }, 500);
+                }
+            } else {
+                // Handle error
+                if (previewName) {
+                    previewName.textContent = '⚠️ Location not found';
+                    previewName.style.color = '#e74c3c';
+                }
+                if (previewAddress) {
+                    previewAddress.textContent = 'Please try a different location';
+                }
             }
         });
     }

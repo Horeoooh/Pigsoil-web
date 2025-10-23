@@ -27,7 +27,9 @@ import {
     query,
     where,
     getDocs,
-    writeBatch
+    writeBatch,
+    addDoc,
+    serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 import {
     ref,
@@ -43,7 +45,8 @@ const COLLECTIONS = {
     PRODUCT_LISTINGS: 'product_listings',
     MESSAGES: 'messages',
     CONVERSATIONS: 'conversations',
-    NOTIFICATIONS: 'notifications'
+    NOTIFICATIONS: 'notifications',
+    ADDRESSES: 'addresses'
 };
 
 let currentUser = null;
@@ -54,11 +57,25 @@ let confirmationResult = null;
 let pendingNewPhone = null;
 let hasPasswordProvider = false;
 
+// Google Maps variables for address
+let addressMap;
+let addressMarker;
+let selectedAddress = {
+    lat: 10.3157,  // Default to Cebu City
+    lng: 123.8854,
+    name: 'Select address',
+    formattedAddress: 'Cebu City, Philippines',
+    placeId: ''
+};
+let addressGeocoder;
+let addressAutocomplete;
+
 // DOM elements
 const usernameInput = document.getElementById('username');
 const emailInput = document.getElementById('email');
 const phoneInput = document.getElementById('phone');
 const userTypeSelect = document.getElementById('userType');
+const addressInput = document.getElementById('address');
 const profileForm = document.getElementById('profileForm');
 const alertMessage = document.getElementById('alertMessage');
 const saveBtn = document.getElementById('saveBtn');
@@ -73,6 +90,7 @@ const profilePictureInput = document.getElementById('profilePictureInput');
 const changePhoneBtn = document.getElementById('changePhoneBtn');
 const changeEmailBtn = document.getElementById('changeEmailBtn');
 const changePasswordBtn = document.getElementById('changePasswordBtn');
+const changeAddressBtn = document.getElementById('changeAddressBtn');
 const passwordSection = document.getElementById('passwordSection');
 
 // Modals
@@ -81,8 +99,15 @@ const smsVerificationModal = document.getElementById('smsVerificationModal');
 const passwordChangeModal = document.getElementById('passwordChangeModal');
 const addEmailModal = document.getElementById('addEmailModal');
 const changeEmailModal = document.getElementById('changeEmailModal');
+const addressChangeModal = document.getElementById('addressChangeModal');
 
 //merged
+
+// Initialize Google Maps
+window.initMap = function() {
+    console.log('🗺️ Google Maps API loaded for profile settings');
+    addressGeocoder = new google.maps.Geocoder();
+};
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔧 Profile Settings page initialized');
@@ -140,6 +165,11 @@ async function loadUserData(uid) {
     if (userDoc.exists()) {
         currentUserData = userDoc.data();
         console.log('✅ User data loaded:', currentUserData);
+        
+        // Load address if userAddressID exists
+        if (currentUserData.userAddressID) {
+            await loadUserAddress(currentUserData.userAddressID);
+        }
     } else {
         currentUserData = {
             userEmail: currentUser.email || null,
@@ -149,9 +179,31 @@ async function loadUserData(uid) {
             userIsActive: true,
             userPhoneVerified: true,
             userCreatedAt: Date.now(),
-            userUpdatedAt: Date.now()
+            userUpdatedAt: Date.now(),
+            userAddressID: null
         };
         await setDoc(userDocRef, currentUserData);
+    }
+}
+
+async function loadUserAddress(addressId) {
+    try {
+        const addressDocRef = doc(db, COLLECTIONS.ADDRESSES, addressId);
+        const addressDoc = await getDoc(addressDocRef);
+        
+        if (addressDoc.exists()) {
+            const addressData = addressDoc.data();
+            selectedAddress = {
+                lat: addressData.addressLatitude,
+                lng: addressData.addressLongitude,
+                name: addressData.addressName || 'Your Address',
+                formattedAddress: addressData.addressName || 'Saved Address',
+                placeId: addressData.addressPlaceId || ''
+            };
+            console.log('✅ Address loaded:', selectedAddress);
+        }
+    } catch (error) {
+        console.error('Error loading address:', error);
     }
 }
 
@@ -174,6 +226,15 @@ function populateForm() {
     }
     
     if (userTypeSelect && currentUserData.userType) userTypeSelect.value = currentUserData.userType;
+    
+    // Populate address field
+    if (addressInput) {
+        if (currentUserData.userAddressID && selectedAddress.name) {
+            addressInput.value = selectedAddress.name;
+        } else {
+            addressInput.value = 'No address set';
+        }
+    }
     
     checkEmailAccountStatus();
     updateProfileDisplay();
@@ -256,12 +317,14 @@ function setupEventListeners() {
     if (changePhoneBtn) changePhoneBtn.addEventListener('click', openPhoneChangeModal);
     if (changeEmailBtn) changeEmailBtn.addEventListener('click', handleEmailButtonClick);
     if (changePasswordBtn) changePasswordBtn.addEventListener('click', openPasswordChangeModal);
+    if (changeAddressBtn) changeAddressBtn.addEventListener('click', openAddressChangeModal);
     
     setupPhoneChangeModal();
     setupSmsVerificationModal();
     setupPasswordChangeModal();
     setupAddEmailModal();
     setupChangeEmailModal();
+    setupAddressChangeModal();
 }
 
 // ============================================================
@@ -1119,6 +1182,373 @@ function showModalAlert(modalAlertId, message, type) {
 function hideModalAlert(modalAlertId) {
     const modalAlert = document.getElementById(modalAlertId);
     if (modalAlert) modalAlert.style.display = 'none';
+}
+
+// ============================================================
+// ADDRESS CHANGE MODAL (Google Maps)
+// ============================================================
+
+function setupAddressChangeModal() {
+    const closeBtn = document.getElementById('addressModalClose');
+    const cancelBtn = document.getElementById('cancelAddressChange');
+    const confirmBtn = document.getElementById('confirmAddressChange');
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeAddressChangeModal);
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeAddressChangeModal);
+    }
+    
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', handleConfirmAddressChange);
+    }
+    
+    if (addressChangeModal) {
+        addressChangeModal.addEventListener('click', function(e) {
+            if (e.target === addressChangeModal) {
+                closeAddressChangeModal();
+            }
+        });
+    }
+}
+
+function openAddressChangeModal() {
+    if (addressChangeModal) {
+        addressChangeModal.classList.add('show');
+        setTimeout(() => {
+            initializeAddressMap();
+        }, 300);
+    }
+}
+
+function closeAddressChangeModal() {
+    if (addressChangeModal) {
+        addressChangeModal.classList.remove('show');
+    }
+}
+
+function initializeAddressMap() {
+    const mapContainer = document.getElementById('addressMapContainer');
+    const addressSearch = document.getElementById('addressSearch');
+    
+    if (!mapContainer) {
+        console.error('Map container not found');
+        return;
+    }
+    
+    addressMap = new google.maps.Map(mapContainer, {
+        center: selectedAddress,
+        zoom: 13,
+        mapTypeId: 'roadmap',
+        styles: [{ featureType: 'all', stylers: [{ saturation: -10 }] }]
+    });
+    
+    addressMarker = new google.maps.Marker({
+        position: selectedAddress,
+        map: addressMap,
+        draggable: true,
+        title: 'Your address',
+        animation: google.maps.Animation.DROP
+    });
+    
+    if (addressSearch) {
+        addressAutocomplete = new google.maps.places.Autocomplete(addressSearch, {
+            bounds: new google.maps.LatLngBounds(
+                new google.maps.LatLng(9.5, 123.0),
+                new google.maps.LatLng(11.5, 125.0)
+            ),
+            strictBounds: true,
+            componentRestrictions: { country: 'PH' }
+        });
+        
+        addressAutocomplete.addListener('place_changed', () => {
+            const place = addressAutocomplete.getPlace();
+            if (place.geometry) {
+                const location = {
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng()
+                };
+                updateAddressMapLocation(location, place);
+            }
+        });
+    }
+    
+    // Real-time preview update while dragging
+    addressMarker.addListener('drag', (event) => {
+        const location = {
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng()
+        };
+        // Show dragging status in preview
+        updateAddressPreviewWhileDragging(location);
+    });
+    
+    // Final update when drag ends
+    addressMarker.addListener('dragend', (event) => {
+        const location = {
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng()
+        };
+        reverseGeocodeAddress(location);
+    });
+    
+    addressMap.addListener('click', (event) => {
+        const location = {
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng()
+        };
+        addressMarker.setPosition(location);
+        addressMarker.setAnimation(google.maps.Animation.BOUNCE);
+        setTimeout(() => addressMarker.setAnimation(null), 750);
+        reverseGeocodeAddress(location);
+    });
+        updateAddressPreview();
+}
+
+function updateAddressMapLocation(location, place = null) {
+    selectedAddress.lat = location.lat;
+    selectedAddress.lng = location.lng;
+    
+    if (place && place.formatted_address) {
+        selectedAddress.formattedAddress = place.formatted_address;
+        selectedAddress.name = place.name || 'Selected Location';
+        selectedAddress.address = place.formatted_address;
+        selectedAddress.placeId = place.place_id || '';
+    }
+    
+    if (addressMap && addressMarker) {
+        addressMap.setCenter(location);
+        addressMarker.setPosition(location);
+    }
+    
+    // Update preview
+    updateAddressPreview();
+}
+
+function updateAddressPreview() {
+    const previewName = document.getElementById('previewAddressName');
+    const previewDetails = document.getElementById('previewAddressDetails');
+    
+    if (previewName && selectedAddress) {
+        previewName.textContent = selectedAddress.name || 'Selected Location';
+        previewName.style.color = '#4CAF50';
+        
+        // Animate update
+        previewName.style.transition = 'all 0.3s';
+        previewName.style.transform = 'scale(1.05)';
+        setTimeout(() => {
+            previewName.style.transform = 'scale(1)';
+        }, 300);
+    }
+    
+    if (previewDetails && selectedAddress) {
+        previewDetails.textContent = selectedAddress.formattedAddress || selectedAddress.address || 'Location selected';
+    }
+}
+
+// Real-time preview update while dragging marker
+function updateAddressPreviewWhileDragging(location) {
+    const previewName = document.getElementById('previewAddressName');
+    const previewDetails = document.getElementById('previewAddressDetails');
+    
+    if (previewName) {
+        previewName.textContent = '📍 Dragging...';
+        previewName.style.color = '#FF9800';
+        previewName.style.transition = 'all 0.2s';
+    }
+    
+    if (previewDetails) {
+        const lat = location.lat.toFixed(6);
+        const lng = location.lng.toFixed(6);
+        previewDetails.textContent = `Lat: ${lat}, Lng: ${lng}`;
+        previewDetails.style.color = '#999';
+        previewDetails.style.fontFamily = 'monospace';
+        previewDetails.style.fontSize = '13px';
+    }
+}
+
+function reverseGeocodeAddress(location) {
+    if (!addressGeocoder) return;
+    
+    // Show loading state immediately
+    const previewName = document.getElementById('previewAddressName');
+    const previewDetails = document.getElementById('previewAddressDetails');
+    
+    if (previewName) {
+        previewName.textContent = '🔍 Finding address...';
+        previewName.style.color = '#2196F3';
+    }
+    if (previewDetails) {
+        previewDetails.textContent = 'Please wait...';
+        previewDetails.style.color = '#999';
+        previewDetails.style.fontFamily = 'Poppins, Arial, sans-serif';
+        previewDetails.style.fontSize = '14px';
+    }
+    
+    addressGeocoder.geocode({ location: location }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+            const result = results[0];
+            selectedAddress.lat = location.lat;
+            selectedAddress.lng = location.lng;
+            selectedAddress.formattedAddress = result.formatted_address;
+            selectedAddress.name = extractAddressLocationName(result);
+            selectedAddress.address = result.formatted_address;
+            selectedAddress.placeId = result.place_id || '';
+            
+            // Update preview with success animation
+            updateAddressPreview();
+            
+            // Flash success indicator
+            if (previewName) {
+                const originalColor = previewName.style.color;
+                previewName.style.color = '#4CAF50';
+                previewName.style.fontWeight = '600';
+                setTimeout(() => {
+                    previewName.style.fontWeight = '600';
+                }, 500);
+            }
+        } else {
+            // Handle error
+            if (previewName) {
+                previewName.textContent = '⚠️ Address not found';
+                previewName.style.color = '#e74c3c';
+            }
+            if (previewDetails) {
+                previewDetails.textContent = 'Please try a different location';
+            }
+        }
+    });
+}
+
+function extractAddressLocationName(result) {
+    console.log('📍 Extracting address from:', result.address_components.map(c => ({
+        name: c.long_name,
+        types: c.types
+    })));
+    
+    // Priority 1: Establishment or Point of Interest (e.g., "SM City Cebu")
+    for (let component of result.address_components) {
+        if (component.types.includes('establishment') || 
+            component.types.includes('point_of_interest')) {
+            console.log('✅ Using establishment:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Priority 2: Route/Street Name (e.g., "Osmena Boulevard")
+    for (let component of result.address_components) {
+        if (component.types.includes('route')) {
+            console.log('✅ Using route:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Priority 3: Neighborhood or Sublocality (e.g., "Mabolo", "IT Park")
+    for (let component of result.address_components) {
+        if (component.types.includes('neighborhood') || 
+            component.types.includes('sublocality') ||
+            component.types.includes('sublocality_level_1')) {
+            console.log('✅ Using neighborhood:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Priority 4: Administrative Level 3 (often Barangay in Philippines)
+    for (let component of result.address_components) {
+        if (component.types.includes('administrative_area_level_3')) {
+            console.log('✅ Using admin level 3:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Priority 5: Administrative Level 2 (municipality/city)
+    for (let component of result.address_components) {
+        if (component.types.includes('administrative_area_level_2')) {
+            console.log('✅ Using admin level 2:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Priority 6: Locality (city name)
+    for (let component of result.address_components) {
+        if (component.types.includes('locality')) {
+            console.log('✅ Using locality:', component.long_name);
+            return component.long_name;
+        }
+    }
+    
+    // Fallback: Use first part of formatted address
+    if (result.formatted_address) {
+        const firstPart = result.formatted_address.split(',')[0].trim();
+        console.log('✅ Using formatted address first part:', firstPart);
+        return firstPart;
+    }
+    
+    console.log('⚠️ Fallback to generic name');
+    return 'Selected Location';
+}
+
+async function handleConfirmAddressChange() {
+    if (!selectedAddress.lat || !selectedAddress.lng) {
+        showModalAlert('addressAlert', 'Please select a valid address', 'error');
+        return;
+    }
+    
+    try {
+        // Show loading state
+        const confirmBtn = document.getElementById('confirmAddressChange');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<span class="loading"></span> Saving...';
+        }
+        
+        // Create address document in addresses collection
+        const addressData = {
+            addressCreatedAt: serverTimestamp(),
+            addressLatitude: selectedAddress.lat,
+            addressLongitude: selectedAddress.lng,
+            addressName: selectedAddress.name || 'Selected Location',
+            addressPlaceId: ''
+        };
+        
+        const addressRef = await addDoc(collection(db, COLLECTIONS.ADDRESSES), addressData);
+        const addressId = addressRef.id;
+        console.log('✅ Address saved to addresses collection with ID:', addressId);
+        
+        // Update user document with new addressId
+        const userDocRef = doc(db, COLLECTIONS.USERS, currentUser.uid);
+        await updateDoc(userDocRef, {
+            userAddressID: addressId,
+            userUpdatedAt: Date.now()
+        });
+        
+        // Update local data
+        currentUserData.userAddressID = addressId;
+        
+        // Update UI
+        if (addressInput) {
+            addressInput.value = selectedAddress.name;
+        }
+        
+        showModalAlert('addressAlert', 'Address saved successfully!', 'success');
+        
+        setTimeout(() => {
+            closeAddressChangeModal();
+            showAlert('Address updated successfully!', 'success');
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Error saving address:', error);
+        showModalAlert('addressAlert', 'Error saving address: ' + error.message, 'error');
+    } finally {
+        const confirmBtn = document.getElementById('confirmAddressChange');
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = 'Save Address';
+        }
+    }
 }
 
 const style = document.createElement('style');

@@ -13,7 +13,9 @@ import {
     collection, 
     query, 
     where, 
-    getDocs, 
+    getDocs,
+    getDoc,
+    doc,
     orderBy,
     onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
@@ -49,7 +51,8 @@ if (checkUserTypeAndRedirect()) {
 const COLLECTIONS = {
     PRODUCT_LISTINGS: 'product_listings',
     USERS: 'users',
-    CONVERSATIONS: 'conversations'
+    CONVERSATIONS: 'conversations',
+    ADDRESSES: 'addresses'
 };
 
 let allListings = [];
@@ -58,6 +61,42 @@ let currentFilter = 'My Listings';
 let currentUser = null;
 let unsubscribeListings = null;
 let unsubscribeUnreadCount = null;
+
+// Google Maps variables
+let buyersMap = null;
+let buyersMapMarkers = [];
+let farmerMarker = null;
+let googleMapsLoaded = false;
+
+// Check if Google Maps is loaded
+function checkGoogleMapsLoaded() {
+    return typeof google !== 'undefined' && typeof google.maps !== 'undefined';
+}
+
+// Wait for Google Maps to load
+function waitForGoogleMaps(maxWait = 5000) {
+    return new Promise((resolve, reject) => {
+        if (checkGoogleMapsLoaded()) {
+            googleMapsLoaded = true;
+            resolve(true);
+            return;
+        }
+        
+        const startTime = Date.now();
+        const checkInterval = setInterval(() => {
+            if (checkGoogleMapsLoaded()) {
+                googleMapsLoaded = true;
+                clearInterval(checkInterval);
+                console.log('✅ Google Maps API loaded');
+                resolve(true);
+            } else if (Date.now() - startTime > maxWait) {
+                clearInterval(checkInterval);
+                console.error('❌ Google Maps API failed to load within timeout');
+                reject(new Error('Google Maps API load timeout'));
+            }
+        }, 100);
+    });
+}
 
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🛒 Farmer Market initialized');
@@ -407,7 +446,13 @@ function setupEventListeners() {
             this.classList.add('active');
             
             const filterText = this.textContent.trim();
-            applyFilter(filterText);
+            
+            // If "Nearby Buyers" is clicked, show the map modal
+            if (filterText === 'Nearby Buyers') {
+                openNearbyBuyersModal();
+            } else {
+                applyFilter(filterText);
+            }
         });
     });
     
@@ -423,6 +468,9 @@ function setupEventListeners() {
             }, 300);
         });
     }
+    
+    // Nearby Buyers Modal event listeners
+    setupNearbyBuyersModal();
 }
 
 function applyFilter(filterText) {
@@ -584,5 +632,411 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// ============================================================
+// COMPLETE FIX: NEARBY BUYERS MAP MODAL
+// This restructured approach initializes the map AFTER the modal is visible
+// ============================================================
+
+let mapInitialized = false;
+
+// Setup modal event listeners
+function setupNearbyBuyersModal() {
+    const modal = document.getElementById('nearbyBuyersModal');
+    const closeBtn = document.getElementById('nearbyBuyersModalClose');
+    const closeBtn2 = document.getElementById('closeNearbyBuyersModal');
+    
+    if (closeBtn) closeBtn.addEventListener('click', closeNearbyBuyersModal);
+    if (closeBtn2) closeBtn2.addEventListener('click', closeNearbyBuyersModal);
+    
+    // 🔧 CRITICAL: Initialize map ONLY when modal is FULLY SHOWN
+    if (modal) {
+        // Remove any existing listeners first
+        modal.removeEventListener('shown', handleModalShown);
+        
+        // Use custom event for when modal animation completes
+        modal.addEventListener('shown', handleModalShown);
+    }
+}
+
+// Handle modal shown event
+async function handleModalShown() {
+    console.log('🗺️ Modal is now fully visible, initializing map...');
+    
+    if (!mapInitialized) {
+        try {
+            await waitForGoogleMaps();
+            await initializeNearbyBuyersMap();
+            mapInitialized = true;
+        } catch (error) {
+            console.error('❌ Failed to initialize map:', error);
+            const buyersInfoElement = document.getElementById('buyersInfo');
+            if (buyersInfoElement) {
+                buyersInfoElement.innerHTML = `
+                    <p class="buyers-count" style="color: #e74c3c;">
+                        ⚠️ Failed to load map. Please refresh the page.
+                    </p>
+                `;
+            }
+        }
+    } else {
+        // Map already initialized, just resize and re-center
+        if (buyersMap) {
+            google.maps.event.trigger(buyersMap, 'resize');
+            const center = buyersMap.getCenter();
+            buyersMap.setCenter(center);
+            console.log('🔄 Map resized for reopened modal');
+        }
+    }
+}
+
+// Open modal function
+async function openNearbyBuyersModal() {
+    const modal = document.getElementById('nearbyBuyersModal');
+    if (!modal) {
+        console.error('❌ Modal element not found');
+        return;
+    }
+    
+    console.log('📂 Opening Nearby Buyers Modal...');
+    
+    // Show the modal
+    modal.classList.add('show');
+    
+    // 🔧 FIX: Ensure map container has dimensions *before* initializing the map.
+    const mapElement = document.getElementById('nearbyBuyersMap');
+    if (mapElement) {
+        mapElement.style.height = '500px'; // Or any other appropriate height
+        mapElement.style.display = 'block';
+    }
+
+    // Use a short timeout to allow the modal to become visible and for CSS to apply.
+    setTimeout(() => {
+        const event = new Event('shown');
+        modal.dispatchEvent(event);
+    }, 150); // A small delay is often sufficient.
+}
+
+// Close modal function
+function closeNearbyBuyersModal() {
+    const modal = document.getElementById('nearbyBuyersModal');
+    if (modal) {
+        modal.classList.remove('show');
+        console.log('📂 Modal closed');
+    }
+}
+
+// Initialize the map (called AFTER modal is visible)
+async function initializeNearbyBuyersMap() {
+    console.log('🗺️ Initializing Nearby Buyers Map...');
+    
+    try {
+        const mapElement = document.getElementById('nearbyBuyersMap');
+        const buyersInfoElement = document.getElementById('buyersInfo');
+        
+        if (!mapElement) {
+            console.error('❌ Map element not found');
+            return;
+        }
+        
+        // 🔧 CRITICAL FIX: Force explicit height to prevent zero-height issue
+        // This is a common problem with maps in modals
+        mapElement.style.width = '100%';
+        mapElement.style.height = '500px';
+        mapElement.style.minHeight = '500px';
+        mapElement.style.display = 'block';
+        
+        // Give the browser a moment to apply the styles
+        await new Promise(resolve => setTimeout(resolve, 50));
+        
+        // Check if element is actually visible
+        const rect = mapElement.getBoundingClientRect();
+        console.log('📐 Map element dimensions:', {
+            width: rect.width,
+            height: rect.height,
+            visible: rect.width > 0 && rect.height > 0
+        });
+        
+        if (rect.width === 0 || rect.height === 0) {
+            console.error('❌ Map container still has zero dimensions after forcing size!');
+            if (buyersInfoElement) {
+                buyersInfoElement.innerHTML = `
+                    <p class="buyers-count" style="color: #e74c3c;">
+                        ⚠️ Map display error. Please refresh the page and try again.
+                    </p>
+                `;
+            }
+            return;
+        }
+        
+        // Get current user data
+        const currentUserData = getCurrentUserData();
+        if (!currentUserData) {
+            console.error('❌ Current user data not available');
+            return;
+        }
+        
+        // Remove loading indicator
+        const loadingIndicator = mapElement.querySelector('.map-loading');
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'none';
+        }
+        
+        // Get farmer's location
+        let farmerLocation = null;
+        
+        if (currentUserData.userAddressID) {
+            const addressDoc = await getDoc(doc(db, COLLECTIONS.ADDRESSES, currentUserData.userAddressID));
+            
+            if (addressDoc.exists()) {
+                const addressData = addressDoc.data();
+                farmerLocation = {
+                    lat: addressData.addressLatitude,
+                    lng: addressData.addressLongitude,
+                    name: addressData.addressName || currentUserData.userName || 'You'
+                };
+            }
+        }
+        
+        // Default to Cebu City if no location
+        if (!farmerLocation) {
+            farmerLocation = {
+                lat: 10.3157,
+                lng: 123.8854,
+                name: 'You (Default Location)'
+            };
+        }
+        
+        console.log('📍 Farmer location:', farmerLocation);
+        console.log('🔨 Creating Google Map instance...');
+        
+        // Create the map
+        buyersMap = new google.maps.Map(mapElement, {
+            center: farmerLocation,
+            zoom: 12,
+            mapTypeControl: true,
+            streetViewControl: false,
+            fullscreenControl: true,
+            zoomControl: true,
+            styles: [
+                {
+                    featureType: 'poi',
+                    elementType: 'labels',
+                    stylers: [{ visibility: 'off' }]
+                }
+            ]
+        });
+        
+        console.log('✅ Map instance created');
+        
+        // Wait for map to be idle (fully loaded)
+        await new Promise((resolve) => {
+            google.maps.event.addListenerOnce(buyersMap, 'idle', () => {
+                console.log('✅ Map is idle and ready');
+                resolve();
+            });
+        });
+        
+        // Add farmer's marker (current user)
+        farmerMarker = new google.maps.Marker({
+            position: farmerLocation,
+            map: buyersMap,
+            title: farmerLocation.name,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 12,
+                fillColor: '#2196F3',
+                fillOpacity: 1,
+                strokeColor: '#ffffff',
+                strokeWeight: 3
+            },
+            zIndex: 1000
+        });
+        
+        console.log('✅ Farmer marker added');
+        
+        // Add info window for farmer
+        const farmerInfoWindow = new google.maps.InfoWindow({
+            content: `
+                <div class="buyer-info-window">
+                    <div class="buyer-info-name">📍 ${farmerLocation.name}</div>
+                    <div class="buyer-info-type">Your Location</div>
+                </div>
+            `
+        });
+        
+        farmerMarker.addListener('click', () => {
+            farmerInfoWindow.open(buyersMap, farmerMarker);
+        });
+        
+        // Fetch all fertilizer buyers
+        const buyersQuery = query(
+            collection(db, COLLECTIONS.USERS),
+            where('userType', '==', 'fertilizer_buyer')
+        );
+        
+        const buyersSnapshot = await getDocs(buyersQuery);
+        console.log(`📦 Found ${buyersSnapshot.size} fertilizer buyers`);
+        
+        let buyersWithLocation = 0;
+        const bounds = new google.maps.LatLngBounds();
+        bounds.extend(farmerLocation);
+        
+        // Clear existing markers
+        buyersMapMarkers.forEach(marker => marker.setMap(null));
+        buyersMapMarkers = [];
+        
+        // Add buyer markers
+        for (const buyerDoc of buyersSnapshot.docs) {
+            const buyerData = buyerDoc.data();
+            
+            console.log(`\n👤 Processing buyer: ${buyerData.userName || 'Unknown'}`);
+            
+            if (!buyerData.userAddressID) {
+                console.warn(`   ⚠️ SKIPPED: No userAddressID`);
+                continue;
+            }
+            
+            try {
+                const addressDoc = await getDoc(doc(db, COLLECTIONS.ADDRESSES, buyerData.userAddressID));
+                
+                if (!addressDoc.exists()) {
+                    console.warn(`   ⚠️ SKIPPED: Address not found`);
+                    continue;
+                }
+                
+                const addressData = addressDoc.data();
+                const lat = parseFloat(addressData.addressLatitude);
+                const lng = parseFloat(addressData.addressLongitude);
+                
+                if (isNaN(lat) || isNaN(lng)) {
+                    console.warn(`   ⚠️ SKIPPED: Invalid coordinates`);
+                    continue;
+                }
+                
+                const buyerLocation = { lat, lng };
+                console.log(`   ✅ Adding marker at:`, buyerLocation);
+                
+                // Create buyer marker
+                const buyerMarker = new google.maps.Marker({
+                    position: buyerLocation,
+                    map: buyersMap,
+                    title: buyerData.userName || 'Organic Fertilizer Buyer',
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 10,
+                        fillColor: '#4CAF50',
+                        fillOpacity: 1,
+                        strokeColor: '#ffffff',
+                        strokeWeight: 3
+                    },
+                    animation: google.maps.Animation.DROP
+                });
+                
+                // Calculate distance
+                const distance = calculateDistance(
+                    farmerLocation.lat,
+                    farmerLocation.lng,
+                    buyerLocation.lat,
+                    buyerLocation.lng
+                );
+                
+                const profilePicUrl = buyerData.userProfilePictureUrl || DEFAULT_PROFILE_PIC;
+
+                // Create info window
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `
+                        <div class="buyer-info-window" style="display: flex; align-items: center; padding: 8px 5px; width: 280px;">
+                            <img src="${profilePicUrl}" alt="${buyerData.userName || 'Buyer'}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; margin-right: 12px;">
+                            <div class="buyer-info-details" style="flex-grow: 1;">
+                                <div class="buyer-info-name" style="font-weight: bold; margin-bottom: 3px;">🌱 ${buyerData.userName || 'Organic Fertilizer Buyer'}</div>
+                                <div class="buyer-info-address" style="font-size: 12px; color: #555; margin-bottom: 3px;">
+                                    📍 ${distance.toFixed(1)} km away
+                                </div>
+                                <div class="buyer-info-type" style="font-size: 11px; color: #777; font-style: italic;">Organic Fertilizer Buyer</div>
+                            </div>
+                            <button onclick="viewBuyer('${buyerDoc.id}')" style="background: #4CAF50; color: white; border: none; border-radius: 4px; padding: 8px 12px; font-size: 12px; cursor: pointer; margin-left: 10px;">View</button>
+                        </div>
+                    `
+                });
+                
+                // Open the info window by default
+                infoWindow.open(buyersMap, buyerMarker);
+
+                buyerMarker.addListener('click', () => {
+                    infoWindow.open(buyersMap, buyerMarker);
+                });
+                
+                buyersMapMarkers.push(buyerMarker);
+                bounds.extend(buyerLocation);
+                buyersWithLocation++;
+                
+            } catch (error) {
+                console.error(`   ❌ Error:`, error);
+            }
+        }
+        
+        console.log(`\n📊 SUMMARY:`);
+        console.log(`   - Total: ${buyersSnapshot.size}`);
+        console.log(`   - With location: ${buyersWithLocation}`);
+        console.log(`   - Skipped: ${buyersSnapshot.size - buyersWithLocation}`);
+        
+        // Update info text
+        if (buyersInfoElement) {
+            buyersInfoElement.innerHTML = `
+                <p class="buyers-count">
+                    Found <strong>${buyersWithLocation}</strong> organic fertilizer buyer${buyersWithLocation !== 1 ? 's' : ''} 
+                    with location near you (out of ${buyersSnapshot.size} total buyers)
+                </p>
+            `;
+        }
+        
+        // Fit map to show all markers
+        if (buyersWithLocation > 0) {
+            buyersMap.fitBounds(bounds);
+            
+            // Limit zoom level
+            google.maps.event.addListenerOnce(buyersMap, 'idle', () => {
+                if (buyersMap.getZoom() > 15) {
+                    buyersMap.setZoom(15);
+                }
+            });
+        }
+        
+        console.log(`✅ Map fully initialized with ${buyersWithLocation} buyer markers`);
+        
+    } catch (error) {
+        console.error('❌ Error initializing map:', error);
+        const buyersInfoElement = document.getElementById('buyersInfo');
+        if (buyersInfoElement) {
+            buyersInfoElement.innerHTML = `
+                <p class="buyers-count" style="color: #e74c3c;">
+                    ⚠️ Error loading map. Please try again.
+                </p>
+            `;
+        }
+    }
+}
+
+// Calculate distance between two coordinates (Haversine formula)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+// Placeholder function for viewing a buyer's profile
+window.viewBuyer = function(buyerId) {
+    console.log(`👤 TODO: Implement navigation to buyer profile for ID: ${buyerId}`);
+    // Example navigation:
+    // window.location.href = `/buyer-profile.html?id=${buyerId}`;
+    alert(`Viewing buyer: ${buyerId}`);
+};
 
 console.log('🐷✅ PigSoil+ Farmer Market loaded!');

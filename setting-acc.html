@@ -596,6 +596,15 @@
                             </select>
                         </div>
 
+                        <div class="form-group">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" id="address" class="form-input" placeholder="No address set"
+                                title="Address" aria-label="Address" readonly>
+                            <button type="button" class="btn-link" id="changeAddressBtn" style="margin-top: 8px; color: #4CAF50; font-size: 13px;">
+                                Change Address
+                            </button>
+                        </div>
+
                         <div class="button-group">
                             <button type="submit" class="btn btn-success" id="saveBtn" 
                                     title="Save Changes" aria-label="Save account changes">
@@ -750,91 +759,183 @@
             </div>
         </div>
 
+        <!-- Address Change Modal (Matching CreateListing.html) -->
+        <div id="addressChangeModal" class="modal-overlay">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">📍 Select Address</h2>
+                    <button class="modal-close" id="addressModalClose">&times;</button>
+                </div>
+                <input type="text" id="addressSearch" class="location-search" placeholder="Search for your address...">
+                <div id="addressMapContainer" class="map-container"></div>
+                
+                <!-- Address Preview -->
+                <div id="addressPreview" style="background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: start; gap: 12px;">
+                        <span style="font-size: 24px;">📍</span>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 16px; color: #333; margin-bottom: 4px;" id="previewAddressName">Select an address</div>
+                            <div style="font-size: 14px; color: #666; line-height: 1.5;" id="previewAddressDetails">Click on the map or search to select your address</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button class="btn-secondary" id="cancelAddressChange">Cancel</button>
+                    <button class="btn-primary" id="confirmAddressChange">Save Address</button>
+                </div>
+            </div>
+        </div>
+
         <style>
+            /* Google Maps Modal Styles (Matching CreateListing.html) */
             .modal-overlay {
-                display: none;
                 position: fixed;
                 top: 0;
                 left: 0;
-                right: 0;
-                bottom: 0;
+                width: 100%;
+                height: 100%;
                 background: rgba(0, 0, 0, 0.5);
-                z-index: 9999;
+                display: none;
                 align-items: center;
                 justify-content: center;
+                z-index: 1000;
+                -webkit-backdrop-filter: blur(5px);
+                backdrop-filter: blur(5px);
             }
 
             .modal-overlay.show {
                 display: flex;
             }
 
-            .modal-content {
+            .modal {
                 background: white;
-                border-radius: 12px;
+                border-radius: 20px;
+                padding: 30px;
+                max-width: 800px;
                 width: 90%;
-                max-width: 500px;
-                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-                animation: modalSlideIn 0.3s ease;
-            }
-
-            @keyframes modalSlideIn {
-                from {
-                    transform: translateY(-50px);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateY(0);
-                    opacity: 1;
-                }
+                max-height: 80vh;
+                overflow-y: auto;
+                position: relative;
             }
 
             .modal-header {
-                padding: 20px 24px;
-                border-bottom: 1px solid #eee;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+                margin-bottom: 20px;
             }
 
-            .modal-header h3 {
+            .modal-title {
                 margin: 0;
-                font-size: 18px;
                 color: #333;
+                font-size: 20px;
+                font-weight: 600;
             }
 
             .modal-close {
                 background: none;
                 border: none;
-                font-size: 28px;
-                color: #999;
+                font-size: 24px;
                 cursor: pointer;
-                padding: 0;
-                width: 32px;
-                height: 32px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 50%;
-                transition: all 0.3s;
+                color: #666;
+                transition: color 0.3s;
             }
 
             .modal-close:hover {
-                background: #f5f5f5;
                 color: #333;
             }
 
-            .modal-body {
-                padding: 24px;
+            .map-container {
+                width: 100%;
+                height: 400px;
+                border-radius: 12px;
+                overflow: hidden;
+                margin-bottom: 20px;
+                border: 2px solid #e0e0e0;
             }
 
-            .modal-footer {
-                padding: 16px 24px;
-                border-top: 1px solid #eee;
+            .location-search {
+                width: 100%;
+                padding: 12px 16px;
+                border: 2px solid #e0e0e0;
+                border-radius: 12px;
+                font-size: 14px;
+                font-family: 'Poppins', Arial, sans-serif;
+                margin-bottom: 15px;
+                outline: none;
+                transition: border-color 0.3s;
+            }
+
+            .location-search:focus {
+                border-color: #4CAF50;
+            }
+
+            .modal-buttons {
                 display: flex;
                 gap: 12px;
                 justify-content: flex-end;
             }
+
+            .btn-secondary {
+                background: #f5f5f5;
+                color: #333;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+
+            .btn-secondary:hover {
+                background: #e0e0e0;
+            }
+
+            .btn-primary {
+                background: #4CAF50;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+
+            .btn-primary:hover {
+                background: #45a049;
+            }
+
+            /* Modal responsive styles */
+            @media (max-width: 768px) {
+                .modal {
+                    width: 95%;
+                    padding: 20px;
+                    margin: 20px;
+                }
+
+                .map-container {
+                    height: 300px;
+                }
+
+                .modal-buttons {
+                    flex-direction: column;
+                }
+
+                .btn-secondary, .btn-primary {
+                    width: 100%;
+                    margin-bottom: 8px;
+                }
+            }
         </style>
+
+        <!-- Google Maps API Script -->
+        <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDxldiepJaqTaCW9kxCr-3cYgSlVD0fQYg&libraries=places,marker&loading=async&callback=initMap">
+        </script>
 
         <script type="module" src="/js/dashboard-auth-guard.js"></script>
         <script type="module" src="/js/profile-settings.js"></script>
