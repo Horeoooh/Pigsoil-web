@@ -172,7 +172,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             gap: 8px;
             position: relative;
@@ -191,12 +191,16 @@
             height: 20px;
             font-size: 12px;
             font-weight: 600;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             position: absolute;
             top: -8px;
             right: -8px;
+        }
+
+        .message-count.has-unread {
+            display: flex;
         }
 
         /* Hero Section */
@@ -206,6 +210,13 @@
             padding: 32px;
             margin-bottom: 24px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .hero-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
         }
 
         .hero-title {
@@ -218,6 +229,12 @@
         .hero-subtitle {
             color: #666;
             font-size: 16px;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
         }
 
         /* Filter Section */
@@ -508,15 +525,17 @@
     <main class="main-content">
         <!-- Hero Section -->
         <section class="hero-section">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="hero-header">
                 <div>
                     <h1 class="hero-title">Swine Compost Marketplace</h1>
                     <p class="hero-subtitle">Browse quality organic fertilizer from verified swine farmers</p>
                 </div>
-                <a href="/messages.html" class="messages-btn">
-                    💬 Messages
-                    <span class="message-count" style="display: none;">0</span>
-                </a>
+                <div class="hero-actions">
+                    <a href="/messages.html" class="messages-btn">
+                        Messages
+                        <span class="message-count" id="messageCount"></span>
+                    </a>
+                </div>
             </div>
         </section>
 

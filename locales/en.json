@@ -1,0 +1,204 @@
+{
+  "nav": {
+    "support": "Support"
+  },
+  "language": {
+    "current": "English",
+    "switch": "Switch to Cebuano"
+  },
+  "buttons": {
+    "signUp": "Sign Up",
+    "signIn": "Sign In",
+    "haveAccount": "↻ I have an account",
+    "newUser": "⚲ I'm new to PigSoil+"
+  },
+  "divider": {
+    "or": "OR"
+  },
+  "index": {
+    "hero": {
+      "badge": "🚀 AI-Powered Farming Revolution",
+      "title": "Transform Your Farm",
+      "subtitle": "Turn swine waste into organic gold with intelligent farming solutions.",
+      "description": "PigSoil+ revolutionizes swine waste analysis through AI-powered composting guidance and a thriving marketplace. Join thousands of Filipino farmers already transforming their operations into sustainable, profitable enterprises."
+    },
+    "features": {
+      "ai": {
+        "title": "Manong Bot AI",
+        "description": "24/7 intelligent assistant in English & Cebuano"
+      },
+      "track": {
+        "title": "Track Compost",
+        "description": "Keep track of multiple compost batches effectively"
+      },
+      "marketplace": {
+        "title": "Local Marketplace",
+        "description": "Connect with buyers in your community"
+      }
+    }
+  },
+  "login": {
+    "title": "Welcome back",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "Enter your email address",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forgot password?",
+    "loginButton": "Log In",
+    "signingIn": "Signing In...",
+    "phoneButton": "Continue with Phone",
+    "noAccount": "Don't have an account?",
+    "signUpLink": "Sign up here",
+    "errors": {
+      "fillAllFields": "Please fill in all fields.",
+      "validEmail": "Please enter a valid email address.",
+      "passwordLength": "Password must be at least 6 characters long.",
+      "useEmail": "Please use your email address to sign in.",
+      "verifyEmail": "Please verify your email before logging in.",
+      "loginFailed": "Login failed. Please try again.",
+      "noAccount": "No account found with this email address. Please sign up first.",
+      "wrongPassword": "Incorrect password. Please try again.",
+      "invalidEmail": "Invalid email address format.",
+      "accountDisabled": "This account has been disabled. Please contact support.",
+      "tooManyAttempts": "Too many failed attempts. Please try again later.",
+      "invalidCredentials": "Invalid email or password. Please check your credentials.",
+      "networkError": "Network error. Please check your internet connection."
+    },
+    "success": {
+      "loginSuccessful": "Login successful! Redirecting...",
+      "emailVerified": "✅ Email verified successfully! Please log in to continue."
+    }
+  },
+  "signup": {
+    "title": "Join PigSoil+",
+    "fullNameLabel": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "Enter your email address",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Create a password (min 6 characters)",
+    "userTypeLabel": "I am a:",
+    "farmer": "Swine Farmer",
+    "buyer": "Organic Fertilizer Buyer",
+    "signupButton": "Create Account",
+    "creatingAccount": "Creating Account...",
+    "phoneSignup": "Continue With Phone",
+    "haveAccount": "Already have an account?",
+    "loginLink": "Sign in here",
+    "errors": {
+      "fillAllFields": "Please fill in all fields.",
+      "usernameShort": "Username must be at least 3 characters long.",
+      "usernameLong": "Username cannot exceed 30 characters.",
+      "validEmail": "Please enter a valid email address.",
+      "passwordLength": "Password must be at least 6 characters long.",
+      "passwordMismatch": "Passwords do not match.",
+      "usernameTaken": "Username is already taken. Please choose another.",
+      "signupFailed": "Failed to create account. Please try again.",
+      "emailInUse": "This email is already registered.",
+      "weakPassword": "Password is too weak.",
+      "invalidEmail": "Invalid email format."
+    },
+    "success": {
+      "accountCreated": "Account created successfully! Redirecting..."
+    }
+  },
+  "support": {
+    "welcome": {
+      "title": "Welcome to PigSoil+",
+      "subtitle": "We're here to help you get started and answer your questions"
+    },
+    "contact": {
+      "title": "Contact Us",
+      "emailLabel": "Email",
+      "emailValue": "support@pigsoil.tech",
+      "phoneLabel": "Phone",
+      "phoneValue": "+63 917 456 7890"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "What is PigSoil+?",
+      "a1": "PigSoil+ helps swine farmers turn swine manure into quality organic fertilizer. Track your composting process, get step-by-step guides, and connect with buyers through our marketplace.",
+      "q2": "How do I start composting?",
+      "a2": "Choose between Basic Swine Manure or Hot Composting method in the Batches tab. Follow the checklist and get reminders for turning, watering, and monitoring your compost.",
+      "q3": "What is the marketplace?",
+      "a3": "Connect with organic fertilizer buyers. List your finished compost, browse listings, and communicate directly through in-app messaging. Arrange your own payment terms face-to-face.",
+      "q4": "What are the subscription plans?",
+      "a4": "Free: Every feature accessible, but with limitations to 10 Manong Bot uses weekly, 5 camera AI scans weekly. Essential (₱149/month): Everything in free, and unlimited Manong Bot uses, 5 camera scans. Premium (₱199/month): Everything unlimited including camera AI scans.",
+      "q5": "Can I use the app offline?",
+      "a5": "Yes! Access composting guides, update batches, and add notes offline. Your data syncs automatically when you reconnect to the internet.",
+      "q6": "How do I message sellers in products I'm interested in?",
+      "a6": "Tap any listing to view details, then use the message button to chat directly. Arrange meetings to inspect products and discuss payment terms in person."
+    }
+  },
+  "forgotPassword": {
+    "title": "Reset Password",
+    "subtitle": "Enter your email address and we'll send you a link to reset your password",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "Enter your registered email",
+    "resetButton": "Send Reset Link",
+    "sending": "Sending...",
+    "backToLogin": "Back to login",
+    "errors": {
+      "invalidEmail": "Please enter a valid email address",
+      "emptyEmail": "Email address is required",
+      "userNotFound": "No account found with this email address",
+      "tooManyRequests": "Too many requests. Please try again later",
+      "networkError": "Network error. Please check your connection",
+      "genericError": "An error occurred. Please try again"
+    },
+    "success": {
+      "title": "Check Your Email!",
+      "message": "We've sent a password reset link to:",
+      "instruction": "Click the link in the email to reset your password. The link will expire in 1 hour.",
+      "closeButton": "Got it, thanks!"
+    }
+  },
+  "emailVerification": {
+    "title": "Verify Your Email",
+    "description": "We've sent a verification email to:",
+    "resendButton": "📨 Resend Verification Email",
+    "resendIn": "Resend in",
+    "sending": "Sending...",
+    "checkButton": "✅ I've Verified My Email",
+    "checking": "Checking...",
+    "backToLogin": "Back to login",
+    "messages": {
+      "noUser": "No user logged in. Please sign up again.",
+      "emailSent": "✅ Verification email sent! Check your inbox.",
+      "alreadyVerified": "Email already verified! Redirecting...",
+      "sendingEmail": "📧 Sending verification email...",
+      "checkEmail": "📬 Check your email and click the verification link to continue.",
+      "pleaseSignup": "Please sign up first.",
+      "notVerified": "⚠️ Email not verified yet. Please check your email and click the verification link.",
+      "verificationError": "Error checking verification. Please try again.",
+      "verified": "✅ Email verified! Redirecting to dashboard...",
+      "tooManyRequests": "Too many requests. Please try again later.",
+      "networkError": "Network error. Check your connection."
+    }
+  },
+  "phoneRegistration": {
+    "title": "Continue With Phone",
+    "subtitle": "Enter your phone number to get started",
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "+63 9XX XXX XXXX",
+    "sendButton": "📱 Send Verification Code",
+    "sending": "Sending...",
+    "backToSignup": "← Back to sign up"
+  },
+  "smsVerification": {
+    "title": "Enter SMS Code Sent to",
+    "resend": "Resend",
+    "verifyButton": "Verify",
+    "back": "← Back",
+    "completeProfile": {
+      "title": "Complete Your Profile",
+      "subtitle": "Just a few more details to get started",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Choose your username",
+      "userTypeLabel": "I am a:",
+      "farmer": "Swine Farmer",
+      "buyer": "Organic Fertilizer Buyer",
+      "completeButton": "Complete Registration"
+    }
+  }
+}

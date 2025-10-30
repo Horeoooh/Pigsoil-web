@@ -123,10 +123,6 @@ function initMethodSelector() {
                 this.style.transform = '';
             }, 150);
             
-            // Show notification
-            const methodName = method === 'basic' ? 'Basic Swine Manure Composting' : 'Hot Composting Method';
-            showNotification(`Switched to ${methodName}`, 'success');
-            
             // Smooth scroll to top of guide
             document.querySelector('.container').scrollIntoView({
                 behavior: 'smooth',

@@ -1,0 +1,204 @@
+{
+  "nav": {
+    "support": "Suporta"
+  },
+  "language": {
+    "current": "Cebuano",
+    "switch": "Usba sa English"
+  },
+  "buttons": {
+    "signUp": "Magparehistro",
+    "signIn": "Magsulod",
+    "haveAccount": "↻ Naa nay akong account",
+    "newUser": "⚲ Bag-o ko sa PigSoil+"
+  },
+  "divider": {
+    "or": "O"
+  },
+  "index": {
+    "hero": {
+      "badge": "🚀 AI-Powered nga Rebolusyon sa Panguma",
+      "title": "Bag-oha ang Imong Uma",
+      "subtitle": "Usba ang hugaw sa baboy ngadto sa organikong bulawan pinaagi sa intelligent farming solutions.",
+      "description": "Ang PigSoil+ nagbag-o sa pag-analisar sa hugaw sa baboy pinaagi sa AI-powered composting guidance ug usa ka mauswagon nga marketplace. Apil sa liboan mga magsusuma sa Pilipinas nga nagbag-o na sa ilang negosyo ngadto sa sustainable ug mapuslanon nga panginabuhi."
+    },
+    "features": {
+      "ai": {
+        "title": "Manong Bot AI",
+        "description": "24/7 intelligent assistant sa English ug Cebuano"
+      },
+      "track": {
+        "title": "Bantayi ang Compost",
+        "description": "Bantayi ang daghang compost batches nga epektibo"
+      },
+      "marketplace": {
+        "title": "Lokal nga Marketplace",
+        "description": "Konektahi ang mga mopalit sa imong komunidad"
+      }
+    }
+  },
+  "login": {
+    "title": "Maayong pagbalik",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "Isulod ang imong email address",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Isulod ang imong password",
+    "forgotPassword": "Nakalimot sa password?",
+    "loginButton": "Magsulod",
+    "signingIn": "Nagsulod...",
+    "phoneButton": "Magpadayon gamit ang Phone",
+    "noAccount": "Wala kay account?",
+    "signUpLink": "Magparehistro dinhi",
+    "errors": {
+      "fillAllFields": "Palihug pun-a ang tanang blanko.",
+      "validEmail": "Palihug isulod ang valid nga email address.",
+      "passwordLength": "Ang password kinahanglan hindi mubu sa 6 ka karakter.",
+      "useEmail": "Palihug gamita ang imong email address para magsulod.",
+      "verifyEmail": "Palihug i-verify ang imong email una ka magsulod.",
+      "loginFailed": "Napakyas ang pag-login. Palihug sulayi pag-usab.",
+      "noAccount": "Walay account nga nakit-an niining email address. Palihug pag-sign up una.",
+      "wrongPassword": "Sayop nga password. Palihug sulayi pag-usab.",
+      "invalidEmail": "Dili valid nga email address format.",
+      "accountDisabled": "Kining account gi-disable na. Palihug kontaka ang support.",
+      "tooManyAttempts": "Daghan kaayong napakyas nga pagsulay. Palihug sulayi pag-usab sa ulahi.",
+      "invalidCredentials": "Dili valid nga email o password. Palihug susiha ang imong credentials.",
+      "networkError": "Network error. Palihug susiha ang imong internet connection."
+    },
+    "success": {
+      "loginSuccessful": "Malampuson ang pag-login! Nag-redirect...",
+      "emailVerified": "✅ Gi-verify na ang email! Palihug pag-log in para magpadayon."
+    }
+  },
+  "signup": {
+    "title": "Apil sa PigSoil+",
+    "fullNameLabel": "Tibuok nga Ngalan",
+    "fullNamePlaceholder": "Isulod ang imong tibuok nga ngalan",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "Isulod ang imong email address",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Paghimo og password (min 6 ka karakter)",
+    "userTypeLabel": "Ako kay:",
+    "farmer": "Swine Farmer",
+    "buyer": "Organic Fertilizer Buyer",
+    "signupButton": "Paghimo og Account",
+    "creatingAccount": "Naghimo og Account...",
+    "phoneSignup": "Magpadayon gamit ang Phone",
+    "haveAccount": "Naa nay account?",
+    "loginLink": "Login dinhi",
+    "errors": {
+      "fillAllFields": "Palihug pun-a ang tanang blanko.",
+      "usernameShort": "Ang username kinahanglan hindi mubu sa 3 ka karakter.",
+      "usernameLong": "Ang username dili pwede molapas sa 30 ka karakter.",
+      "validEmail": "Palihug isulod ang valid nga email address.",
+      "passwordLength": "Ang password kinahanglan hindi mubu sa 6 ka karakter.",
+      "passwordMismatch": "Dili parehas ang mga password.",
+      "usernameTaken": "Gigamit na kining username. Palihug pilia og lain.",
+      "signupFailed": "Napakyas ang paghimo og account. Palihug sulayi pag-usab.",
+      "emailInUse": "Naka-rehistro na kining email.",
+      "weakPassword": "Huyang kaayo ang password.",
+      "invalidEmail": "Dili valid nga email format."
+    },
+    "success": {
+      "accountCreated": "Malampuson ang paghimo og account! Nag-redirect..."
+    }
+  },
+  "support": {
+    "welcome": {
+      "title": "Welcome sa PigSoil+",
+      "subtitle": "Naa mi dinhi aron motabang nimo magsugod ug motubag sa imong mga pangutana"
+    },
+    "contact": {
+      "title": "Kontaka Kami",
+      "emailLabel": "Email",
+      "emailValue": "support@pigsoil.tech",
+      "phoneLabel": "Phone",
+      "phoneValue": "+63 917 456 7890"
+    },
+    "faq": {
+      "title": "Kasagarang Gipangutana",
+      "q1": "Unsa ang PigSoil+?",
+      "a1": "Ang PigSoil+ nagtabang sa mga mag-uuma sa baboy nga maghimo sa hugaw sa baboy ngadto sa kalidad nga organikong pataba. Subaya ang imong composting process, pagkuha og step-by-step guides, ug konektahi ang mga mopalit pinaagi sa among marketplace.",
+      "q2": "Unsaon nako pagsugod sa pag-compost?",
+      "a2": "Pagpili tali sa Basic Swine Manure o Hot Composting method sa Batches tab. Sunda ang checklist ug pagkuha og mga pahinumdom para sa pag-turn, pag-tubig, ug pagbantay sa imong compost.",
+      "q3": "Unsa ang marketplace?",
+      "a3": "Konekta sa mga mopalit og organikong pataba. I-list ang imong nahuman nga compost, tan-awa ang mga listing, ug makigsulti direkta pinaagi sa in-app messaging. Maghikay sa imong kaugalingon nga mga bayad face-to-face.",
+      "q4": "Unsa ang mga subscription plans?",
+      "a4": "Free: Tanang features accessible, pero may limitasyon sa 10 Manong Bot uses kada semana, 5 camera AI scans weekly. Essential (₱149/buwan): Tanan sa free, ug unlimited Manong Bot uses, 5 camera scans. Premium (₱199/buwan): Tanan unlimited lakip ang camera AI scans.",
+      "q5": "Pwede ba nako gamiton ang app offline?",
+      "a5": "Oo! Access ang composting guides, update batches, ug pagdugang og mga nota offline. Ang imong datos mo-sync automatically kung makakonekta ka balik sa internet.",
+      "q6": "Unsaon nako pag-message sa mga nagbaligya sa mga produkto nga interesado ko?",
+      "a6": "I-tap ang bisan unsang listing aron makita ang mga detalye, dayon gamita ang message button aron direktang makig-chat. Maghikay og mga tigum aron masusi ang mga produkto ug hisgutan ang mga termino sa bayad personally."
+    }
+  },
+  "forgotPassword": {
+    "title": "I-reset ang Password",
+    "subtitle": "Isulod ang imong email address ug padad-an namo ka og link para i-reset ang imong password",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "Isulod ang imong naka-rehistro nga email",
+    "resetButton": "Ipadala ang Reset Link",
+    "sending": "Nagpadala...",
+    "backToLogin": "Balik sa login",
+    "errors": {
+      "invalidEmail": "Palihug isulod ang valid nga email address",
+      "emptyEmail": "Kinahanglan ang email address",
+      "userNotFound": "Walay account nga nakit-an niining email address",
+      "tooManyRequests": "Daghan kaayong requests. Palihug sulayi pag-usab sa ulahi",
+      "networkError": "Network error. Palihug susiha ang imong koneksyon",
+      "genericError": "Adunay nahitabo nga sayop. Palihug sulayi pag-usab"
+    },
+    "success": {
+      "title": "Susiha ang Imong Email!",
+      "message": "Gipadala namo ang password reset link sa:",
+      "instruction": "I-klik ang link sa email para i-reset ang imong password. Ang link mo-expire sa 1 ka oras.",
+      "closeButton": "Sige, salamat!"
+    }
+  },
+  "emailVerification": {
+    "title": "I-verify ang Imong Email",
+    "description": "Gipadala namo ang verification email sa:",
+    "resendButton": "📨 Ipadala pag-usab ang Verification Email",
+    "resendIn": "Ipadala pag-usab sa",
+    "sending": "Nagpadala...",
+    "checkButton": "✅ Gi-verify na nako ang Akong Email",
+    "checking": "Nagsusi...",
+    "backToLogin": "Balik sa login",
+    "messages": {
+      "noUser": "Walay naka-login nga user. Palihug pag-sign up pag-usab.",
+      "emailSent": "✅ Gipadala na ang verification email! Susiha ang imong inbox.",
+      "alreadyVerified": "Gi-verify na ang email! Nag-redirect...",
+      "sendingEmail": "📧 Nagpadala og verification email...",
+      "checkEmail": "📬 Susiha ang imong email ug i-klik ang verification link para magpadayon.",
+      "pleaseSignup": "Palihug pag-sign up una.",
+      "notVerified": "⚠️ Wala pa ma-verify ang email. Palihug susiha ang imong email ug i-klik ang verification link.",
+      "verificationError": "Error sa pagsusi sa verification. Palihug sulayi pag-usab.",
+      "verified": "✅ Gi-verify na ang email! Nag-redirect sa dashboard...",
+      "tooManyRequests": "Daghan kaayong requests. Palihug sulayi pag-usab sa ulahi.",
+      "networkError": "Network error. Susiha ang imong koneksyon."
+    }
+  },
+  "phoneRegistration": {
+    "title": "Magpadayon gamit ang Phone",
+    "subtitle": "Isulod ang imong phone number para magsugod",
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "+63 9XX XXX XXXX",
+    "sendButton": "📱 Ipadala ang Verification Code",
+    "sending": "Nagpadala...",
+    "backToSignup": "← Balik sa sign up"
+  },
+  "smsVerification": {
+    "title": "Isulod ang SMS Code nga gipadala sa",
+    "resend": "Ipadala pag-usab",
+    "verifyButton": "I-verify",
+    "back": "← Balik",
+    "completeProfile": {
+      "title": "Komplituha ang Imong Profile",
+      "subtitle": "Pipila lang ka detalye para magsugod",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Pilia ang imong username",
+      "userTypeLabel": "Ako kay:",
+      "farmer": "Mag-uuma sa Baboy",
+      "buyer": "Mopalit og Organikong Pataba",
+      "completeButton": "Komplituha ang Pagparehistro"
+    }
+  }
+}

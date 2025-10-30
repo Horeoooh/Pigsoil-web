@@ -36,11 +36,11 @@ function setLoading(loading) {
     if (signupButton) {
         if (loading) {
             signupButton.classList.add('loading');
-            signupButton.innerHTML = '<span>Creating Account...</span>';
+            signupButton.innerHTML = `<span>${window.i18n.t('signup.creatingAccount')}</span>`;
             signupButton.disabled = true;
         } else {
             signupButton.classList.remove('loading');
-            signupButton.innerHTML = '<span>✏️</span><span>Create Account</span>';
+            signupButton.innerHTML = `<span>✏️</span><span>${window.i18n.t('signup.signupButton')}</span>`;
             signupButton.disabled = false;
         }
     }
@@ -65,32 +65,32 @@ function validateForm() {
     const userType = document.querySelector('input[name="userType"]:checked');
 
     if (!username || !email || !password || !confirmPassword || !userType) {
-        showAlert('Please fill in all fields.', 'error');
+        showAlert(window.i18n.t('signup.errors.fillAllFields'), 'error');
         return false;
     }
 
     if (username.length < 3) {
-        showAlert('Username must be at least 3 characters long.', 'error');
+        showAlert(window.i18n.t('signup.errors.usernameShort'), 'error');
         return false;
     }
 
     if (username.length > 30) {
-        showAlert('Username cannot exceed 30 characters.', 'error');
+        showAlert(window.i18n.t('signup.errors.usernameLong'), 'error');
         return false;
     }
 
     if (!/\S+@\S+\.\S+/.test(email)) {
-        showAlert('Please enter a valid email address.', 'error');
+        showAlert(window.i18n.t('signup.errors.validEmail'), 'error');
         return false;
     }
 
     if (password.length < 6) {
-        showAlert('Password must be at least 6 characters long.', 'error');
+        showAlert(window.i18n.t('signup.errors.passwordLength'), 'error');
         return false;
     }
 
     if (password !== confirmPassword) {
-        showAlert('Passwords do not match.', 'error');
+        showAlert(window.i18n.t('signup.errors.passwordMismatch'), 'error');
         return false;
     }
 
@@ -107,7 +107,7 @@ async function handleSignup(userData) {
         // Check if username already exists
         const usernameExists = await checkUsernameExists(userData.username);
         if (usernameExists) {
-            throw new Error('Username is already taken. Please choose another.');
+            throw new Error(window.i18n.t('signup.errors.usernameTaken'));
         }
 
         // Create Firebase Auth user
@@ -144,7 +144,7 @@ async function handleSignup(userData) {
             console.warn('⚠️ Failed to send verification email:', emailError);
         }
 
-        showAlert('Account created successfully! Redirecting...', 'success');
+        showAlert(window.i18n.t('signup.success.accountCreated'), 'success');
         
         // Quick redirect - email-verification.html will save to Firestore
         setTimeout(() => {
@@ -153,17 +153,17 @@ async function handleSignup(userData) {
         
     } catch (error) {
         console.error('Signup error:', error);
-        let errorMessage = 'Failed to create account. Please try again.';
+        let errorMessage = window.i18n.t('signup.errors.signupFailed');
         
         switch (error.code) {
             case 'auth/email-already-in-use':
-                errorMessage = 'This email is already registered.';
+                errorMessage = window.i18n.t('signup.errors.emailInUse');
                 break;
             case 'auth/weak-password':
-                errorMessage = 'Password is too weak.';
+                errorMessage = window.i18n.t('signup.errors.weakPassword');
                 break;
             case 'auth/invalid-email':
-                errorMessage = 'Invalid email format.';
+                errorMessage = window.i18n.t('signup.errors.invalidEmail');
                 break;
             default:
                 if (error.message.includes('already taken')) {

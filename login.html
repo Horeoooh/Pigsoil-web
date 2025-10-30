@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - PigSoil+</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- i18next for internationalization -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -42,6 +46,7 @@
             align-items: center;
             height: 100%;
             padding: 0 20px;
+            gap: 20px;
         }
 
         .logo {
@@ -69,6 +74,9 @@
             display: flex;
             gap: 64px;
             align-items: center;
+            flex: 1;
+            justify-content: flex-end;
+            margin-right: 80px;
         }
 
         nav a {
@@ -101,10 +109,21 @@
             text-decoration: none;
             font-size: 14px;
             transition: all 0.3s;
+            outline: none;
         }
 
         .language-btn:hover {
             background: #e9ecef;
+        }
+
+        .language-btn:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .language-btn:active {
+            outline: none;
+            transform: scale(0.98);
         }
 
         .sign-up-btn {
@@ -445,36 +464,36 @@
             </a>
             
             <nav>
-                <a href="#about">About</a>
-                <a href="#support">Support</a>
+                <a href="/support.html" data-i18n="nav.support">Support</a>
             </nav>
             
             <div class="header-actions">
-                <a href="#" class="language-btn">
+                <a href="#" class="language-btn" id="languageSwitcher">
                     <svg class="globe-icon" viewBox="0 0 24 24">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
                     </svg>
-                    English
+                    <span class="language-text" data-i18n="language.current">English</span>
                 </a>
-                <a href="/signup.html" class="sign-up-btn">Sign Up</a>
-                <a href="/login.html" class="sign-in-btn">Sign In</a>
+                <a href="/signup.html" class="sign-up-btn" data-i18n="buttons.signUp">Sign Up</a>
+                <a href="/login.html" class="sign-in-btn" data-i18n="buttons.signIn">Sign In</a>
             </div>
         </div>
     </header>
 
     <main class="main-content">
         <div class="login-container">
-            <h1 class="welcome-title">Welcome back to PigSoil+</h1>
+            <h1 class="welcome-title" data-i18n="login.title">Welcome back</h1>
             
             <div id="alertMessage" class="alert"></div>
             
             <form id="loginForm">
                 <div class="form-group">
-                    <label class="form-label" for="username">Email Address</label>
+                    <label class="form-label" for="username" data-i18n="login.emailLabel">Email Address</label>
                     <input 
                         type="email" 
                         id="username" 
                         class="form-input" 
+                        data-i18n="[placeholder]login.emailPlaceholder"
                         placeholder="Enter your email address"
                         required
                         autocomplete="email"
@@ -482,11 +501,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="password">Password</label>
+                    <label class="form-label" for="password" data-i18n="login.passwordLabel">Password</label>
                     <input 
                         type="password" 
                         id="password" 
                         class="form-input" 
+                        data-i18n="[placeholder]login.passwordPlaceholder"
                         placeholder="Enter your password"
                         required
                         autocomplete="current-password"
@@ -495,30 +515,46 @@
                 </div>
 
                 <div class="options-row" style="justify-content: flex-end;">
-                    <a href="/forgot-password.html" class="forgot-password">Forgot password?</a>
+                    <a href="/forgot-password.html" class="forgot-password" data-i18n="login.forgotPassword">Forgot password?</a>
                 </div>
 
                 <button type="submit" class="login-btn" id="loginButton">
-                    <span>Log In</span>
+                    <span data-i18n="login.loginButton">Log In</span>
                 </button>
             </form>
 
             <div class="divider">
-                <span>or</span>
+                <span data-i18n="divider.or">or</span>
             </div>
 
             <a href="/phone-registration.html" class="phone-login-btn" id="phoneLoginButton">
-                <span>Continue with Phone</span>
+                <span data-i18n="login.phoneButton">Continue with Phone</span>
             </a>
 
             <div style="text-align: center; margin-top: 1rem; color: #666;">
-                Don't have an account? 
-                <a href="/signup.html" class="signup-link" style="display: inline;">Sign up here</a>
+                <span data-i18n="login.noAccount">Don't have an account?</span> 
+                <a href="/signup.html" class="signup-link" style="display: inline;" data-i18n="login.signUpLink">Sign up here</a>
             </div>
         </div>
     </main>
 
+    <script src="/js/i18n.js"></script>
     <script type="module" src="/js/auth-guard.js"></script>
     <script type="module" src="/js/login.js"></script>
+    <script>
+        // Initialize i18next when DOM is ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.i18nManager.initialize();
+            
+            // Add language switcher click event
+            const languageSwitcher = document.getElementById('languageSwitcher');
+            if (languageSwitcher) {
+                languageSwitcher.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.i18nManager.switchLanguage();
+                });
+            }
+        });
+    </script>
 </body>
 </html>

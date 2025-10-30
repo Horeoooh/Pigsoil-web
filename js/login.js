@@ -52,11 +52,11 @@ function setLoading(loading) {
     if (loginButton) {
         if (loading) {
             loginButton.classList.add('loading');
-            loginButton.innerHTML = '<span>Signing In...</span>';
+            loginButton.innerHTML = `<span>${window.i18n.t('login.signingIn')}</span>`;
             loginButton.disabled = true;
         } else {
             loginButton.classList.remove('loading');
-            loginButton.innerHTML = '<span>✏️</span><span>Log In</span>';
+            loginButton.innerHTML = `<span>✏️</span><span>${window.i18n.t('login.loginButton')}</span>`;
             loginButton.disabled = false;
         }
     }
@@ -163,7 +163,7 @@ async function handleEmailLogin(email, password) {
         setLoading(true);
 
         if (!isEmail(email)) {
-            throw new Error('Please use your email address to sign in.');
+            throw new Error(window.i18n.t('login.errors.useEmail'));
         }
 
         console.log('🔐 Attempting to sign in user:', email);
@@ -180,7 +180,7 @@ async function handleEmailLogin(email, password) {
         // Check if email is verified
         if (!user.emailVerified) {
             console.log('⚠️ Email not verified, redirecting to verification page');
-            showAlert('Please verify your email before logging in.', 'error');
+            showAlert(window.i18n.t('login.errors.verifyEmail'), 'error');
             
             setTimeout(() => {
                 window.location.href = '/email-verification.html';
@@ -197,39 +197,39 @@ async function handleEmailLogin(email, password) {
         });
 
         // Login successful
-        showAlert('Login successful! Redirecting...', 'success');
+        showAlert(window.i18n.t('login.success.loginSuccessful'), 'success');
         
         // Redirect with user data
         redirectToAppropriateScreen(userData);
 
     } catch (error) {
         console.error('❌ Login error:', error);
-        let errorMessage = 'Login failed. Please try again.';
+        let errorMessage = window.i18n.t('login.errors.loginFailed');
         
         switch (error.code) {
             case 'auth/user-not-found':
-                errorMessage = 'No account found with this email address. Please sign up first.';
+                errorMessage = window.i18n.t('login.errors.noAccount');
                 break;
             case 'auth/wrong-password':
-                errorMessage = 'Incorrect password. Please try again.';
+                errorMessage = window.i18n.t('login.errors.wrongPassword');
                 break;
             case 'auth/invalid-email':
-                errorMessage = 'Invalid email address format.';
+                errorMessage = window.i18n.t('login.errors.invalidEmail');
                 break;
             case 'auth/user-disabled':
-                errorMessage = 'This account has been disabled. Please contact support.';
+                errorMessage = window.i18n.t('login.errors.accountDisabled');
                 break;
             case 'auth/too-many-requests':
-                errorMessage = 'Too many failed attempts. Please try again later.';
+                errorMessage = window.i18n.t('login.errors.tooManyAttempts');
                 break;
             case 'auth/invalid-credential':
-                errorMessage = 'Invalid email or password. Please check your credentials.';
+                errorMessage = window.i18n.t('login.errors.invalidCredentials');
                 break;
             case 'auth/network-request-failed':
-                errorMessage = 'Network error. Please check your internet connection.';
+                errorMessage = window.i18n.t('login.errors.networkError');
                 break;
             default:
-                errorMessage = `Login failed: ${error.message}`;
+                errorMessage = `${window.i18n.t('login.errors.loginFailed')}: ${error.message}`;
         }
         
         showAlert(errorMessage, 'error');
@@ -247,17 +247,17 @@ if (loginForm) {
         const password = passwordInput.value;
 
         if (!email || !password) {
-            showAlert('Please fill in all fields.', 'error');
+            showAlert(window.i18n.t('login.errors.fillAllFields'), 'error');
             return;
         }
 
         if (email.length < 3) {
-            showAlert('Please enter a valid email address.', 'error');
+            showAlert(window.i18n.t('login.errors.validEmail'), 'error');
             return;
         }
 
         if (password.length < 6) {
-            showAlert('Password must be at least 6 characters long.', 'error');
+            showAlert(window.i18n.t('login.errors.passwordLength'), 'error');
             return;
         }
 
@@ -323,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if user just verified their email
     const emailJustVerified = sessionStorage.getItem('emailJustVerified');
     if (emailJustVerified === 'true') {
-        showAlert('✅ Email verified successfully! Please log in to continue.', 'success');
+        showAlert(window.i18n.t('login.success.emailVerified'), 'success');
         sessionStorage.removeItem('emailJustVerified');
     }
     

@@ -17,7 +17,8 @@ const CACHE_KEYS = {
     USER_DATA: 'pigsoil_user_data',
     USER_AUTH: 'pigsoil_user_auth',
     PROFILE_PIC: 'pigsoil_profile_pic',
-    CACHE_TIMESTAMP: 'pigsoil_cache_timestamp'
+    CACHE_TIMESTAMP: 'pigsoil_cache_timestamp',
+    LANGUAGE_PREFERENCE: 'pigsoil_language_preference'
 };
 
 const DEFAULT_PROFILE_PIC = 'https://i.pinimg.com/736x/d7/95/c3/d795c373a0539e64c7ee69bb0af3c5c3.jpg';
@@ -422,6 +423,7 @@ function clearUserCache() {
         localStorage.removeItem(CACHE_KEYS.USER_AUTH);
         localStorage.removeItem(CACHE_KEYS.PROFILE_PIC);
         localStorage.removeItem(CACHE_KEYS.CACHE_TIMESTAMP);
+        // Keep language preference even after logout
         console.log('🗑️ Cleared user cache');
     } catch (error) {
         console.error('❌ Error clearing cache:', error);
@@ -515,6 +517,30 @@ export function isCacheValid() {
         const cacheAge = Date.now() - parseInt(cachedTimestamp);
         return cacheAge < CACHE_EXPIRY_MS;
     } catch (error) {
+        return false;
+    }
+}
+
+// LANGUAGE PREFERENCE FUNCTIONS
+export function getLanguagePreference() {
+    try {
+        return localStorage.getItem(CACHE_KEYS.LANGUAGE_PREFERENCE) || 'en';
+    } catch (error) {
+        console.error('❌ Error getting language preference:', error);
+        return 'en';
+    }
+}
+
+export function setLanguagePreference(language) {
+    try {
+        if (['en', 'ceb'].includes(language)) {
+            localStorage.setItem(CACHE_KEYS.LANGUAGE_PREFERENCE, language);
+            console.log('💾 Language preference saved:', language);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('❌ Error setting language preference:', error);
         return false;
     }
 }

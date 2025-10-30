@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support - PigSoil+</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- i18next for internationalization -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f4e4c1 0%, #f0d0a0 100%);
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        /* Header - Consistent with index.html */
+        .header {
+            background: white;
+            padding: 16px 64px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 48px;
+            gap: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+        }
+
+        .logo-text {
+            height: 40px;
+            width: 171px;
+            object-fit: contain;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 64px;
+            align-items: center;
+            flex: 1;
+            justify-content: flex-end;
+            margin-right: 80px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 400;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #2d5a3d;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .language-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: #f8f9fa;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .language-btn:hover {
+            background: #e9ecef;
+        }
+
+        .language-btn:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .language-btn:active {
+            outline: none;
+            transform: scale(0.98);
+        }
+
+        .sign-up-btn {
+            background: transparent;
+            color: #2d5a3d;
+            padding: 10px 24px;
+            border: 2px solid #2d5a3d;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .sign-up-btn:hover {
+            background: #2d5a3d;
+            color: white;
+        }
+
+        .sign-in-btn {
+            background: #2d5a3d;
+            color: white;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+        }
+
+        .sign-in-btn:hover {
+            background: #1f3d2a;
+        }
+
+        .globe-icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #2d5a3d;
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #1f3d2a;
+            transform: translateX(-2px);
+        }
+
+        .back-btn svg {
+            transition: transform 0.3s ease;
+        }
+
+        .back-btn:hover svg {
+            transform: translateX(-3px);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 32px 20px;
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 36px 32px;
+            text-align: center;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .welcome-section h1 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2d5a3d;
+            margin-bottom: 12px;
+        }
+
+        .welcome-section p {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .contact-section h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2d5a3d;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .contact-icon {
+            width: 42px;
+            height: 42px;
+            background: #2d5a3d;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .contact-details {
+            flex: 1;
+        }
+
+        .contact-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .contact-value {
+            font-size: 16px;
+            font-weight: 500;
+            color: #2d5a3d;
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .faq-section h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2d5a3d;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .faq-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            border-color: #2d5a3d;
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 16px 20px;
+            background: white;
+            border: none;
+            text-align: left;
+            font-family: 'Poppins', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: #2d5a3d;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        .faq-question:hover {
+            background: #f8f9fa;
+        }
+
+        .faq-icon {
+            font-size: 18px;
+            transition: transform 0.3s ease;
+            color: #2d5a3d;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+            background: #f8f9fa;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding: 16px 20px;
+        }
+
+        .faq-answer p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .container {
+                padding: 20px 15px;
+            }
+
+            .welcome-section {
+                padding: 28px 20px;
+            }
+
+            .welcome-section h1 {
+                font-size: 28px;
+            }
+
+            .welcome-section p {
+                font-size: 15px;
+            }
+
+            .contact-section,
+            .faq-section {
+                padding: 24px 18px;
+            }
+
+            .contact-section h2,
+            .faq-section h2 {
+                font-size: 22px;
+            }
+
+            .contact-item {
+                padding: 14px;
+            }
+
+            .contact-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+            }
+
+            .contact-value {
+                font-size: 15px;
+            }
+
+            .faq-question {
+                padding: 14px 16px;
+                font-size: 14px;
+            }
+
+            .faq-answer p {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .welcome-section h1 {
+                font-size: 24px;
+            }
+
+            .contact-item {
+                flex-direction: column;
+                text-align: center;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <a href="/index.html" class="logo">
+                <img src="/images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+                <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
+            </a>
+            
+            <nav class="nav-links">
+                <a href="/support.html" data-i18n="nav.support">Support</a>
+            </nav>
+            
+            <div class="header-actions">
+                <a href="#" class="language-btn" id="languageSwitcher">
+                    <svg class="globe-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                    </svg>
+                    <span class="language-text" data-i18n="language.current">English</span>
+                </a>
+                <a href="/signup.html" class="sign-up-btn" data-i18n="buttons.signUp">Sign Up</a>
+                <a href="/login.html" class="sign-in-btn" data-i18n="buttons.signIn">Sign In</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+            <h1 data-i18n="support.welcome.title">Welcome to PigSoil+</h1>
+            <p data-i18n="support.welcome.subtitle">We're here to help you get started and answer your questions</p>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="contact-section">
+            <h2 data-i18n="support.contact.title">Contact Us</h2>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <div class="contact-icon">✉️</div>
+                    <div class="contact-details">
+                        <div class="contact-label" data-i18n="support.contact.emailLabel">Email</div>
+                        <div class="contact-value" data-i18n="support.contact.emailValue">support@pigsoil.tech</div>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">📞</div>
+                    <div class="contact-details">
+                        <div class="contact-label" data-i18n="support.contact.phoneLabel">Phone</div>
+                        <div class="contact-value" data-i18n="support.contact.phoneValue">+63 917 456 7890</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq-section">
+            <h2 data-i18n="support.faq.title">Frequently Asked Questions</h2>
+            <div class="faq-list">
+                <!-- FAQ 1 -->
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span data-i18n="support.faq.q1">What is PigSoil+?</span>
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-i18n="support.faq.a1">PigSoil+ helps swine farmers turn swine manure into quality organic fertilizer. Track your composting process, get step-by-step guides, and connect with buyers through our marketplace.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 2 -->
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span data-i18n="support.faq.q2">How do I start composting?</span>
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-i18n="support.faq.a2">Choose between Basic Swine Manure or Hot Composting method in the Batches tab. Follow the checklist and get reminders for turning, watering, and monitoring your compost.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 3 -->
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span data-i18n="support.faq.q3">What is the marketplace?</span>
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-i18n="support.faq.a3">Connect with organic fertilizer buyers. List your finished compost, browse listings, and communicate directly through in-app messaging. Arrange your own payment terms face-to-face.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 4 -->
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span data-i18n="support.faq.q4">What are the subscription plans?</span>
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-i18n="support.faq.a4">Free: Every feature accessible, but with limitations to 10 Manong Bot uses weekly, 5 camera AI scans weekly. Essential (₱149/month): Everything in free, and unlimited Manong Bot uses, 5 camera scans. Premium (₱199/month): Everything unlimited including camera AI scans.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 5 -->
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span data-i18n="support.faq.q5">Can I use the app offline?</span>
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-i18n="support.faq.a5">Yes! Access composting guides, update batches, and add notes offline. Your data syncs automatically when you reconnect to the internet.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 6 -->
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span data-i18n="support.faq.q6">How do I message sellers in products I'm interested in?</span>
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-i18n="support.faq.a6">Tap any listing to view details, then use the message button to chat directly. Arrange meetings to inspect products and discuss payment terms in person.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="/js/i18n.js"></script>
+    <script type="module">
+        import { isAuthenticated, isFertilizerBuyer } from '/js/shared-user-manager.js';
+
+        // Initialize i18next when DOM is ready
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize i18next
+            await window.i18nManager.initialize();
+            
+            // Add language switcher click event
+            const languageSwitcher = document.getElementById('languageSwitcher');
+            if (languageSwitcher) {
+                languageSwitcher.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.i18nManager.switchLanguage();
+                });
+            }
+
+            // FAQ Accordion functionality
+            const faqItems = document.querySelectorAll('.faq-item');
+            
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                
+                question.addEventListener('click', () => {
+                    const isActive = item.classList.contains('active');
+                    
+                    // Close all FAQ items
+                    faqItems.forEach(faqItem => {
+                        faqItem.classList.remove('active');
+                    });
+                    
+                    // Open clicked item if it wasn't active
+                    if (!isActive) {
+                        item.classList.add('active');
+                    }
+                });
+            });
+
+            // Check authentication and update navbar
+            checkAuthAndUpdateNavbar();
+        });
+
+        function checkAuthAndUpdateNavbar() {
+            // Wait a bit for auth to initialize
+            setTimeout(() => {
+                if (isAuthenticated()) {
+                    console.log('👤 User is logged in, showing back button');
+                    showBackButton();
+                } else {
+                    console.log('🔓 User is not logged in, showing full navbar');
+                    // Keep the default navbar
+                }
+            }, 500);
+        }
+
+        function showBackButton() {
+            const navContainer = document.querySelector('.nav-container');
+            const isBuyer = isFertilizerBuyer();
+            const dashboardUrl = isBuyer ? '/buyer-dashboard.html' : '/dashboard.html';
+            
+            // Replace navbar content with back button
+            navContainer.innerHTML = `
+                <a href="/index.html" class="logo">
+                    <img src="/images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+                    <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
+                </a>
+                
+                <a href="${dashboardUrl}" class="back-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to Dashboard
+                </a>
+            `;
+        }
+    </script>
+</body>
+</html>

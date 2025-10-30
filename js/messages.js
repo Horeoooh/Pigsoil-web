@@ -503,10 +503,26 @@ function updateChatHeader(participantName, participantDetails, conversationData)
         transactionBanner.remove();
     }
     
+    // CRITICAL: Check current user's participant type from conversation
+    const currentUser = getCurrentUser();
+    const currentUserId = currentUser?.uid;
+    const currentUserParticipantDetail = conversationData.participantDetails?.[currentUserId];
+    const userType = currentUserParticipantDetail?.participantUserType || 'swine_farmer';
+    
     // Check if propose deal button exists
     const existingProposeBtn = document.getElementById('proposeDealBtn');
     const chatHeaderActions = document.querySelector('.chat-header-actions');
     
+    // CRITICAL: Only show deal proposal button for buyers (fertilizer_buyer)
+    if (userType !== 'fertilizer_buyer') {
+        // Hide button permanently for sellers
+        if (existingProposeBtn) {
+            existingProposeBtn.remove();
+        }
+        return; // Early exit for non-buyers
+    }
+    
+    // Existing buyer logic below
     if (conversationData.canProposeDeal === true && currentListing) {
         // Show propose deal button if it doesn't exist
         if (!existingProposeBtn && chatHeaderActions) {
@@ -618,25 +634,34 @@ function renderChatUI(participantName, participantDetails, conversationData) {
     
     const currentUser = getCurrentUser();
     const userData = getCurrentUserData();
+    const currentUserId = currentUser?.uid;
+    
+    // CRITICAL: Get current user's participant type from conversation
+    const currentUserParticipantDetail = conversationData.participantDetails?.[currentUserId];
+    const userType = currentUserParticipantDetail?.participantUserType || 'swine_farmer';
     
     let transactionStatusHTML = '';
     let dealProposalButtonHTML = '';
     
-    if (conversationData.canProposeDeal === true && currentListing) {
-        dealProposalButtonHTML = `
-            <button class="btn-propose-deal" id="proposeDealBtn">
-                <img src="/images/deal-proposal.png" alt="Deal" style="width: 16px; height: 16px;">
-                Propose Deal
-            </button>
-        `;
-    } else if (conversationData.canProposeDeal === false) {
-        transactionStatusHTML = `
-            <div class="transaction-status-banner">
-                <span class="status-icon">⏳</span>
-                <span>Deal proposal in progress</span>
-            </div>
-        `;
+    // CRITICAL: Only show deal proposal button for buyers (fertilizer_buyer)
+    if (userType === 'fertilizer_buyer') {
+        if (conversationData.canProposeDeal === true && currentListing) {
+            dealProposalButtonHTML = `
+                <button class="btn-propose-deal" id="proposeDealBtn">
+                    <img src="/images/deal-proposal.png" alt="Deal" style="width: 16px; height: 16px;">
+                    Propose Deal
+                </button>
+            `;
+        } else if (conversationData.canProposeDeal === false) {
+            transactionStatusHTML = `
+                <div class="transaction-status-banner">
+                    <span class="status-icon">⏳</span>
+                    <span>Deal proposal in progress</span>
+                </div>
+            `;
+        }
     }
+    // For sellers (swine_farmer), dealProposalButtonHTML remains empty (button hidden)
     
     chatPanel.innerHTML = `
         <div class="chat-header">

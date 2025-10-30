@@ -40,6 +40,7 @@
             margin: 0 auto;
             height: 100%;
             padding: 0 20px;
+            gap: 20px;
         }
 
         .logo {
@@ -63,6 +64,9 @@
             display: flex;
             gap: 64px;
             align-items: center;
+            flex: 1;
+            justify-content: flex-end;
+            margin-right: 80px;
         }
 
         .nav-links a {
@@ -95,10 +99,19 @@
             text-decoration: none;
             font-size: 14px;
             transition: all 0.3s;
+            outline: none;
         }
 
         .language-btn:hover {
             background: #e9ecef;
+        }
+
+        .language-btn:focus {
+            outline: none;
+        }
+
+        .language-btn:active {
+            outline: none;
         }
 
         .globe-icon {
@@ -333,16 +346,15 @@
             </div>
             
             <nav class="nav-links">
-                <a href="#about">About</a>
-                <a href="#support">Support</a>
+                <a href="/support.html">Support</a>
             </nav>
             
             <div class="header-actions">
-                <a href="#" class="language-btn">
+                <a href="#" class="language-btn" id="languageSwitcher">
                     <svg class="globe-icon" viewBox="0 0 24 24">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
                     </svg>
-                    English
+                    <span data-i18n="language.current">English</span>
                 </a>
             </div>
         </div>
@@ -350,24 +362,24 @@
 
     <main class="main-container">
         <div class="phone-form-container">
-            <a href="/signup.html" class="back-link">← Back to sign up</a>
+            <a href="/signup.html" class="back-link" data-i18n="phoneRegistration.backToSignup">← Back to sign up</a>
             
-            <h1 class="form-title">Continue With Phone</h1>
+            <h1 class="form-title" data-i18n="phoneRegistration.title">Continue With Phone</h1>
             
             <div id="alertMessage" class="alert"></div>
             
             <form id="phoneForm">
                 <div class="form-group">
-                    <label for="phone" class="form-label">Phone Number</label>
+                    <label for="phone" class="form-label" data-i18n="phoneRegistration.phoneLabel">Phone Number</label>
                     <div class="input-with-icon">
-                        <input type="tel" id="phone" name="phone" class="form-input" placeholder="+63 9XX XXX XXXX" required>
+                        <input type="tel" id="phone" name="phone" class="form-input" data-i18n-placeholder="phoneRegistration.phonePlaceholder" placeholder="+63 9XX XXX XXXX" required>
                         <span class="input-icon">📱</span>
                     </div>
                 </div>
 
                 <button type="submit" class="phone-btn" id="phoneButton">
                     <span>📱</span>
-                    <span>Send Verification Code</span>
+                    <span data-i18n="phoneRegistration.sendButton">Send Verification Code</span>
                 </button>
             </form>
 
@@ -411,7 +423,22 @@
                 e.target.value = formatted;
             }
         });
+
+        // Initialize i18next
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.i18nManager.initialize();
+            
+            // Add language switcher click event
+            const languageSwitcher = document.getElementById('languageSwitcher');
+            if (languageSwitcher) {
+                languageSwitcher.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.i18nManager.switchLanguage();
+                });
+            }
+        });
     </script>
+    <script src="/js/i18n.js"></script>
     <script type="module" src="/js/auth-guard.js"></script>
 </body>
 </html>

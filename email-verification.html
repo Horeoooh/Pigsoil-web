@@ -60,6 +60,39 @@
             object-fit: contain;
         }
 
+        .language-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: #f8f9fa;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .language-btn:hover {
+            background: #e9ecef;
+        }
+
+        .language-btn:focus {
+            outline: none;
+        }
+
+        .language-btn:active {
+            outline: none;
+        }
+
+        .globe-icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
         /* Main Content */
         .main-container {
             flex: 1;
@@ -303,6 +336,12 @@
                 <img src="/images/pig logo.png" alt="PigSoil Logo" class="logo-img">
                 <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
             </a>
+            <a href="#" class="language-btn" id="languageSwitcher">
+                <svg class="globe-icon" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+                <span data-i18n="language.current">English</span>
+            </a>
         </div>
     </header>
 
@@ -311,11 +350,11 @@
             <!-- Default State (Email Verification Pending) -->
             <div id="pendingState">
                 <div class="email-icon">📧</div>
-                <h1 class="title">Verify Your Email</h1>
+                <h1 class="title" data-i18n="emailVerification.title">Verify Your Email</h1>
                 
                 <div id="alertMessage" class="alert"></div>
                 
-                <p class="description">
+                <p class="description" data-i18n="emailVerification.description">
                     We've sent a verification link to:
                 </p>
                 
@@ -330,21 +369,21 @@
                 
                 <div class="resend-section">
                     <button id="resendBtn" class="resend-btn">
-                        <span id="resendBtnText">📨 Resend Verification Email</span>
+                        <span id="resendBtnText" data-i18n="emailVerification.resendButton">📨 Resend Verification Email</span>
                     </button>
                 </div>
 
                 <div style="margin-bottom: 24px;">
                     <button id="checkVerificationBtn" class="resend-btn" style="background: #2e7d32;">
-                        <span id="checkBtnText">✅ I've Verified My Email</span>
+                        <span id="checkBtnText" data-i18n="emailVerification.checkButton">✅ I've Verified My Email</span>
                     </button>
                 </div>
                 
                 <div class="divider">
-                    <span>or</span>
+                    <span data-i18n="divider.or">or</span>
                 </div>
                 
-                <a href="/login.html" class="back-link">← Back to Login</a>
+                <a href="/login.html" class="back-link" data-i18n="emailVerification.backToLogin">← Back to Login</a>
             </div>
 
             <!-- Success State (Email Verified) -->
@@ -499,11 +538,11 @@ savePendingSignupData();
             
             cooldownInterval = setInterval(() => {
                 if (resendCooldown > 0) {
-                    updateResendButton(true, `Resend in ${resendCooldown}s`);
+                    updateResendButton(true, `${window.i18n.t('emailVerification.resendIn')} ${resendCooldown}s`);
                     resendCooldown--;
                 } else {
                     clearInterval(cooldownInterval);
-                    updateResendButton(false, '📨 Resend Verification Email');
+                    updateResendButton(false, window.i18n.t('emailVerification.resendButton'));
                 }
             }, 1000);
         }
@@ -511,12 +550,12 @@ savePendingSignupData();
         // Resend verification email
         async function resendVerification() {
             try {
-                updateResendButton(true, 'Sending...');
+                updateResendButton(true, window.i18n.t('emailVerification.sending'));
                 
                 const user = auth.currentUser;
                 
                 if (!user) {
-                    showAlert('No user logged in. Please sign up again.', 'error');
+                    showAlert(window.i18n.t('emailVerification.messages.noUser'), 'error');
                     setTimeout(() => {
                         window.location.href = '/signup.html';
                     }, 2000);
@@ -536,21 +575,21 @@ savePendingSignupData();
 
                 await sendEmailVerification(user, actionCodeSettings);
                 
-                showAlert('✅ Verification email sent! Check your inbox.', 'success');
+                showAlert(window.i18n.t('emailVerification.messages.emailSent'), 'success');
                 startCooldown(60);
                 
             } catch (error) {
                 console.error('Error sending verification email:', error);
                 
-                let errorMessage = 'Failed to send verification email.';
+                let errorMessage = window.i18n.t('emailVerification.messages.networkError');
                 if (error.code === 'auth/too-many-requests') {
-                    errorMessage = 'Too many requests. Please try again later.';
+                    errorMessage = window.i18n.t('emailVerification.messages.tooManyRequests');
                 } else if (error.code === 'auth/network-request-failed') {
-                    errorMessage = 'Network error. Check your connection.';
+                    errorMessage = window.i18n.t('emailVerification.messages.networkError');
                 }
                 
                 showAlert(errorMessage, 'error');
-                updateResendButton(false, '📨 Resend Verification Email');
+                updateResendButton(false, window.i18n.t('emailVerification.resendButton'));
             }
         }
 
@@ -564,7 +603,7 @@ savePendingSignupData();
                 await user.reload();
                 if (user.emailVerified) {
                     console.log('✅ Email already verified, redirecting to dashboard');
-                    showAlert('Email already verified! Redirecting...', 'success');
+                    showAlert(window.i18n.t('emailVerification.messages.alreadyVerified'), 'success');
                     
                     // Update Firestore
                     try {
@@ -623,12 +662,12 @@ savePendingSignupData();
                 }
                 
                 // Auto-send verification email on page load if not verified
-                showAlert('📧 Sending verification email...', 'info');
+                showAlert(window.i18n.t('emailVerification.messages.sendingEmail'), 'info');
                 await resendVerification();
                 
                 // Show instruction to check email
                 setTimeout(() => {
-                    showAlert('📬 Check your email and click the verification link to continue.', 'info');
+                    showAlert(window.i18n.t('emailVerification.messages.checkEmail'), 'info');
                 }, 2000);
                 
                 // Start auto-checking for verification (matches Android's onResume)
@@ -636,7 +675,7 @@ savePendingSignupData();
                 
             } else {
                 // No user logged in, redirect to signup
-                showAlert('Please sign up first.', 'error');
+                showAlert(window.i18n.t('emailVerification.messages.pleaseSignup'), 'error');
                 setTimeout(() => {
                     window.location.href = '/signup.html';
                 }, 2000);
@@ -650,12 +689,12 @@ savePendingSignupData();
         checkVerificationBtn.addEventListener('click', async () => {
             try {
                 checkVerificationBtn.disabled = true;
-                checkBtnText.textContent = 'Checking...';
+                checkBtnText.textContent = window.i18n.t('emailVerification.checking');
                 checkVerificationBtn.classList.add('loading');
 
                 const user = auth.currentUser;
                 if (!user) {
-                    showAlert('No user logged in. Please sign up again.', 'error');
+                    showAlert(window.i18n.t('emailVerification.messages.noUser'), 'error');
                     setTimeout(() => {
                         window.location.href = '/signup.html';
                     }, 2000);
@@ -667,7 +706,7 @@ savePendingSignupData();
 
                 if (user.emailVerified) {
                     console.log('✅ Email verified confirmed!');
-                    showAlert('✅ Email verified! Redirecting to dashboard...', 'success');
+                    showAlert(window.i18n.t('emailVerification.messages.verified'), 'success');
                     
                     // Stop auto-check interval
                     if (autoCheckInterval) {
@@ -730,16 +769,16 @@ savePendingSignupData();
                         window.location.href = '/dashboard.html';
                     }
                 } else {
-                    showAlert('⚠️ Email not verified yet. Please check your email and click the verification link.', 'error');
+                    showAlert(window.i18n.t('emailVerification.messages.notVerified'), 'error');
                     checkVerificationBtn.disabled = false;
-                    checkBtnText.textContent = '✅ I\'ve Verified My Email';
+                    checkBtnText.textContent = window.i18n.t('emailVerification.checkButton');
                     checkVerificationBtn.classList.remove('loading');
                 }
             } catch (error) {
                 console.error('Error checking verification:', error);
-                showAlert('Error checking verification. Please try again.', 'error');
+                showAlert(window.i18n.t('emailVerification.messages.verificationError'), 'error');
                 checkVerificationBtn.disabled = false;
-                checkBtnText.textContent = '✅ I\'ve Verified My Email';
+                checkBtnText.textContent = window.i18n.t('emailVerification.checkButton');
                 checkVerificationBtn.classList.remove('loading');
             }
         });
@@ -758,7 +797,7 @@ savePendingSignupData();
                             clearInterval(autoCheckInterval);
                             
                             // Show success and redirect
-                            showAlert('✅ Email verified! Redirecting to dashboard...', 'success');
+                            showAlert(window.i18n.t('emailVerification.messages.verified'), 'success');
                             
                             // Update Firestore
                             try {
@@ -842,8 +881,24 @@ savePendingSignupData();
                 });
             }
         });
+
+        // Initialize i18next
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.i18nManager.initialize();
+            
+            // Add language switcher click event
+            const languageSwitcher = document.getElementById('languageSwitcher');
+            if (languageSwitcher) {
+                languageSwitcher.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.i18nManager.switchLanguage();
+                });
+            }
+        });
     </script>
+    <script src="/js/i18n.js"></script>
     <script type="module" src="/js/auth-guard.js"></script>
 </body>
 </html>
+
 
