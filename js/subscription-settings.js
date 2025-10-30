@@ -623,14 +623,19 @@ function updateUsageSection() {
     const isDualRole = currentUserData.isDualRole || false;
     const isFertilizerBuyerOnly = userType === 'fertilizer_buyer' && !isDualRole;
     
+    const manongBotUsageContainer = document.getElementById('manongBotUsageContainer');
+    const cameraAiUsageContainer = document.getElementById('cameraAiUsageContainer');
+
     // Hide usage section completely for fertilizer buyers
     if (isFertilizerBuyerOnly) {
-        usageSection.style.display = 'none';
-        return;
+        usageSection.style.display = 'block';
+        if (manongBotUsageContainer) manongBotUsageContainer.style.display = 'block';
+        if (cameraAiUsageContainer) cameraAiUsageContainer.style.display = 'none';
+    } else {
+        usageSection.style.display = 'block';
+        if (manongBotUsageContainer) manongBotUsageContainer.style.display = 'block';
+        if (cameraAiUsageContainer) cameraAiUsageContainer.style.display = 'block';
     }
-    
-    // Always show usage section for farmers/dual role
-    usageSection.style.display = 'block';
     
     // Get current usage values
     const manongUsed = currentUserData.weeklyManongBotPromptsUsed || 0;
@@ -651,17 +656,19 @@ function updateUsageSection() {
     }
     
     // Update Camera AI usage
-    if (isPremium()) {
-        // Unlimited for Premium only
-        cameraAiUsage.textContent = 'Unlimited';
-        cameraAiUsage.classList.add('unlimited');
-        cameraAiProgress.style.width = '100%';
-    } else {
-        // Free and Essential - show actual usage
-        cameraAiUsage.textContent = `${cameraUsed}/${FREE_WEEKLY_CAMERA_AI_LIMIT}`;
-        cameraAiUsage.classList.remove('unlimited');
-        const cameraPercent = Math.min((cameraUsed / FREE_WEEKLY_CAMERA_AI_LIMIT) * 100, 100);
-        cameraAiProgress.style.width = `${cameraPercent}%`;
+    if (!isFertilizerBuyerOnly) {
+        if (isPremium()) {
+            // Unlimited for Premium only
+            cameraAiUsage.textContent = 'Unlimited';
+            cameraAiUsage.classList.add('unlimited');
+            cameraAiProgress.style.width = '100%';
+        } else {
+            // Free and Essential - show actual usage
+            cameraAiUsage.textContent = `${cameraUsed}/${FREE_WEEKLY_CAMERA_AI_LIMIT}`;
+            cameraAiUsage.classList.remove('unlimited');
+            const cameraPercent = Math.min((cameraUsed / FREE_WEEKLY_CAMERA_AI_LIMIT) * 100, 100);
+            cameraAiProgress.style.width = `${cameraPercent}%`;
+        }
     }
     
     // Update reset timer
@@ -673,12 +680,16 @@ function updateUsageSection() {
         `;
     } else {
         // Show for paid users too if they have limits
-        if (isEssential() || isPremium()) {
+        if (isEssential() && !isFertilizerBuyerOnly) {
             weeklyReset.style.display = 'flex';
             weeklyReset.innerHTML = `
                 <span>🔄</span>
                 <span>${getWeeklyResetText()}</span>
             `;
+        } else if (isPremium()) {
+            weeklyReset.style.display = 'none';
+        } else {
+            weeklyReset.style.display = 'none';
         }
     }
 }

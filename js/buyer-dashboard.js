@@ -1,6 +1,13 @@
 // Buyer Dashboard functionality for PigSoil+ - Firebase Version with Loading States
 import { auth, db } from './init.js';   
-import '../js/shared-user-manager.js';
+import { 
+    getCurrentUser, 
+    getCurrentUserData, 
+    getCachedProfilePic,
+    onUserDataChange,
+    DEFAULT_PROFILE_PIC 
+} from './shared-user-manager.js';
+import notificationManager from './notification-manager.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 import { 
     collection, 
@@ -50,18 +57,15 @@ const COLLECTIONS = {
 let currentUser = null;
 let isLoading = false;
 
-const DEFAULT_PROFILE_PIC = 'https://i.pinimg.com/736x/d7/95/c3/d795c373a0539e64c7ee69bb0af3c5c3.jpg';
-
 // Load cached user data for instant UI display
 function loadCachedUserDataToUI() {
     try {
-        const cachedUserData = localStorage.getItem('pigsoil_user_data');
-        const cachedProfilePic = localStorage.getItem('pigsoil_profile_pic');
+        const userData = getCurrentUserData();
         
-        if (cachedUserData) {
-            const userData = JSON.parse(cachedUserData);
+        if (userData) {
             const userName = userData.userName || 'Buyer';
             const firstName = userName.split(' ')[0];
+            const profilePicUrl = userData.userProfilePictureUrl || DEFAULT_PROFILE_PIC;
             
             // Update name elements
             const buyerNameElement = document.getElementById('buyerName');
@@ -74,14 +78,14 @@ function loadCachedUserDataToUI() {
                 welcomeNameElement.textContent = firstName;
             }
             
-            // Update avatar with cached profile picture or default
-            const profilePicUrl = cachedProfilePic || userData.userProfilePictureUrl || DEFAULT_PROFILE_PIC;
+            // Set avatar using background image (no initials fallback)
             const avatarElement = document.getElementById('buyerAvatar');
-            if (avatarElement && profilePicUrl) {
+            if (avatarElement) {
                 avatarElement.style.backgroundImage = `url(${profilePicUrl})`;
                 avatarElement.style.backgroundSize = 'cover';
                 avatarElement.style.backgroundPosition = 'center';
-                avatarElement.textContent = ''; // Clear any text
+                avatarElement.style.backgroundRepeat = 'no-repeat';
+                avatarElement.textContent = ''; // Clear any text content
             }
             
             console.log('✅ Loaded cached user data to UI:', userName);
@@ -121,6 +125,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Show loading states immediately
     showLoading('transactionsList');
     
+    // Initialize FCM and notification manager
+    initializeFCM();
+    
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             console.log('User authenticated:', user.uid);
@@ -129,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             try {
                 // Load all data
                 await Promise.all([
-                    loadUserData(user.uid),
+                    loadUserData(user),
                     loadRecentTransactions()
                 ]);
             } catch (error) {
@@ -144,43 +151,141 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 });
 
-async function loadUserData(userId) {
-    try {
-        const userDocRef = doc(db, COLLECTIONS.USERS, userId);
-        const userDoc = await getDoc(userDocRef);
+// Listen for user data changes from shared manager
+onUserDataChange(({ user, userData }) => {
+    if (userData) {
+        updateHeaderProfile(userData, user);
+    }
+});
 
-        if (userDoc.exists()) {
-            currentUser = userDoc.data();
-            
-            const userName = currentUser.userName || 'Buyer';
-            const firstName = userName.split(' ')[0];
-            
-            // Update name elements
-            const buyerNameElement = document.getElementById('buyerName');
-            if (buyerNameElement) {
-                buyerNameElement.textContent = userName;
+// Initialize Firebase Cloud Messaging and Notification Manager
+async function initializeFCM() {
+    try {
+        console.log('🔔 Initializing FCM for buyer dashboard...');
+        
+        // Wait for user to be authenticated
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                console.log('✅ User authenticated, initializing notification manager...');
+                
+                // Initialize notification manager (will check/update FCM token)
+                const initialized = await notificationManager.initialize();
+                
+                if (initialized) {
+                    console.log('✅ Notification manager initialized successfully');
+                    
+                    // Update notification badge if needed
+                    updateNotificationBadge();
+                    
+                    // Listen for notification changes
+                    notificationManager.addListener(() => {
+                        updateNotificationBadge();
+                    });
+                } else {
+                    console.warn('⚠️ Notification manager initialized with limited functionality');
+                }
+            } else {
+                console.log('⚠️ No user authenticated, skipping FCM initialization');
             }
+        });
+    } catch (error) {
+        console.error('❌ Error initializing FCM:', error);
+    }
+}
+
+// Update notification badge with unread count
+function updateNotificationBadge() {
+    try {
+        const notificationBtn = document.getElementById('notificationBtn');
+        if (!notificationBtn) return;
+        
+        const unreadCount = notificationManager.getUnreadCount();
+        
+        // Remove existing badge if any
+        const existingBadge = notificationBtn.querySelector('.notification-badge');
+        if (existingBadge) {
+            existingBadge.remove();
+        }
+        
+        // Add badge if there are unread notifications
+        if (unreadCount > 0) {
+            const badge = document.createElement('span');
+            badge.className = 'notification-badge';
+            badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+            badge.style.cssText = `
+                position: absolute;
+                top: -4px;
+                right: -4px;
+                background: #ff4444;
+                color: white;
+                border-radius: 10px;
+                padding: 2px 6px;
+                font-size: 11px;
+                font-weight: 600;
+                min-width: 18px;
+                text-align: center;
+            `;
             
-            const welcomeNameElement = document.getElementById('welcomeName');
-            if (welcomeNameElement) {
-                welcomeNameElement.textContent = firstName;
-            }
+            // Make the button position relative if not already
+            notificationBtn.style.position = 'relative';
+            notificationBtn.appendChild(badge);
             
-            // Update avatar with profile picture or default
-            const profilePicUrl = currentUser.userProfilePictureUrl || DEFAULT_PROFILE_PIC;
-            const avatarElement = document.getElementById('buyerAvatar');
-            if (avatarElement) {
-                avatarElement.style.backgroundImage = `url(${profilePicUrl})`;
-                avatarElement.style.backgroundSize = 'cover';
-                avatarElement.style.backgroundPosition = 'center';
-                avatarElement.textContent = ''; // Clear any text
-            }
-            
-            console.log('User data loaded:', currentUser);
+            console.log(`🔔 Updated notification badge: ${unreadCount} unread`);
         }
     } catch (error) {
-        console.error('Error loading user data:', error);
+        console.error('❌ Error updating notification badge:', error);
     }
+}
+
+// Load user profile using shared-user-manager
+async function loadUserData(user) {
+    const userData = getCurrentUserData();
+    
+    if (userData) {
+        currentUser = userData;
+        updateHeaderProfile(userData, user);
+    } else {
+        // Fallback if shared manager hasn't loaded yet
+        try {
+            const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, user.uid));
+            if (userDoc.exists()) {
+                currentUser = userDoc.data();
+                updateHeaderProfile(currentUser, user);
+            }
+        } catch (error) {
+            console.error('Error loading user profile:', error);
+        }
+    }
+}
+
+// Update header profile with data
+function updateHeaderProfile(userData, user) {
+    const userName = userData.userName || user?.displayName || 'Buyer';
+    const firstName = userName.split(' ')[0];
+    const profilePicUrl = userData.userProfilePictureUrl || user?.photoURL || DEFAULT_PROFILE_PIC;
+    
+    // Update name elements
+    const buyerNameElement = document.getElementById('buyerName');
+    if (buyerNameElement) {
+        buyerNameElement.textContent = userName;
+    }
+    
+    const welcomeNameElement = document.getElementById('welcomeName');
+    if (welcomeNameElement) {
+        welcomeNameElement.textContent = firstName;
+    }
+    
+    // Set avatar using background image (no initials fallback)
+    const avatarElement = document.getElementById('buyerAvatar');
+    if (avatarElement) {
+        avatarElement.style.backgroundImage = `url(${profilePicUrl})`;
+        avatarElement.style.backgroundSize = 'cover';
+        avatarElement.style.backgroundPosition = 'center';
+        avatarElement.style.backgroundRepeat = 'no-repeat';
+        avatarElement.textContent = ''; // Clear any text content
+    }
+    
+    console.log('User data loaded:', userName);
 }
 
 async function loadRecentTransactions() {
@@ -436,11 +541,6 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-const notificationBtn = document.getElementById('notificationBtn');
-if (notificationBtn) {
-    notificationBtn.addEventListener('click', function() {
-        alert('Notifications feature coming soon!');
-    });
-}
+
 
 console.log('PigSoil+ Buyer Dashboard loaded!');

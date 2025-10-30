@@ -10,6 +10,7 @@ import {
     onUserDataChange,
     isSwineFarmer 
 } from './shared-user-manager.js';
+import notificationManager from './notification-manager.js';
 
 // ===== USER TYPE CHECK - REDIRECT FERTILIZER BUYERS =====
 function checkUserTypeAndRedirect() {
@@ -53,7 +54,89 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNotifications();
     
     setupUserDataListener();
+    
+    // Initialize FCM and notification manager
+    initializeFCM();
 });
+
+// Initialize Firebase Cloud Messaging and Notification Manager
+async function initializeFCM() {
+    try {
+        console.log('🔔 Initializing FCM for dashboard...');
+        
+        // Wait for user to be authenticated
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                console.log('✅ User authenticated, initializing notification manager...');
+                
+                // Initialize notification manager (will check/update FCM token)
+                const initialized = await notificationManager.initialize();
+                
+                if (initialized) {
+                    console.log('✅ Notification manager initialized successfully');
+                    
+                    // Update notification badge if needed
+                    updateNotificationBadge();
+                    
+                    // Listen for notification changes
+                    notificationManager.addListener(() => {
+                        updateNotificationBadge();
+                    });
+                } else {
+                    console.warn('⚠️ Notification manager initialized with limited functionality');
+                }
+            } else {
+                console.log('⚠️ No user authenticated, skipping FCM initialization');
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error initializing FCM:', error);
+    }
+}
+
+// Update notification badge with unread count
+function updateNotificationBadge() {
+    try {
+        const notificationBtn = document.getElementById('notificationBtn');
+        if (!notificationBtn) return;
+        
+        const unreadCount = notificationManager.getUnreadCount();
+        
+        // Remove existing badge if any
+        const existingBadge = notificationBtn.querySelector('.notification-badge');
+        if (existingBadge) {
+            existingBadge.remove();
+        }
+        
+        // Add badge if there are unread notifications
+        if (unreadCount > 0) {
+            const badge = document.createElement('span');
+            badge.className = 'notification-badge';
+            badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+            badge.style.cssText = `
+                position: absolute;
+                top: -4px;
+                right: -4px;
+                background: #ff4444;
+                color: white;
+                border-radius: 10px;
+                padding: 2px 6px;
+                font-size: 11px;
+                font-weight: 600;
+                min-width: 18px;
+                text-align: center;
+            `;
+            
+            // Make the button position relative if not already
+            notificationBtn.style.position = 'relative';
+            notificationBtn.appendChild(badge);
+            
+            console.log(`🔔 Updated notification badge: ${unreadCount} unread`);
+        }
+    } catch (error) {
+        console.error('❌ Error updating notification badge:', error);
+    }
+}
 
 // Load user profile from cache or current data
 function loadUserProfile() {

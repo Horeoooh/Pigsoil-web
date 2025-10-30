@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Notifications - PigSoil+</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', Arial, sans-serif;
+      background: linear-gradient(103deg, #FFEED0 0%, #FFC7B8 170%);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .test-btn {
+      padding: 16px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .test-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .test-btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-chat {
+      background: linear-gradient(135deg, #1976d2, #1565c0);
+    }
+
+    .btn-subscription {
+      background: linear-gradient(135deg, #f57c00, #e65100);
+    }
+
+    .btn-system {
+      background: linear-gradient(135deg, #7b1fa2, #6a1b9a);
+    }
+
+    .btn-view {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+    }
+
+    .btn-clear {
+      background: linear-gradient(135deg, #dc3545, #c82333);
+    }
+
+    .btn-icon {
+      font-size: 24px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .stat-card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #4CAF50;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .log-container {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      border-radius: 12px;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 16px;
+    }
+
+    .log-entry {
+      margin-bottom: 8px;
+      padding: 4px 0;
+      border-bottom: 1px solid #333;
+    }
+
+    .log-time {
+      color: #858585;
+      margin-right: 12px;
+    }
+
+    .log-success {
+      color: #4ec9b0;
+    }
+
+    .log-error {
+      color: #f48771;
+    }
+
+    .log-info {
+      color: #9cdcfe;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: white;
+      border: 2px solid #4CAF50;
+      color: #4CAF50;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s;
+      margin-bottom: 24px;
+    }
+
+    .back-btn:hover {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid #2196F3;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+
+    .info-box p {
+      font-size: 14px;
+      color: #1976d2;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .warning-box {
+      background: #fff3e0;
+      border-left: 4px solid #ff9800;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+
+    .warning-box p {
+      font-size: 14px;
+      color: #f57c00;
+      margin: 0;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/notifications.html" class="back-btn">
+      ← Back to Notifications
+    </a>
+
+    <div class="card">
+      <h1>🧪 Notification Testing</h1>
+      <p class="subtitle">Test the notification system and FCM integration</p>
+
+      <div class="info-box">
+        <p>
+          <strong>📱 FCM Status:</strong> <span id="fcmStatus">Checking...</span><br>
+          <strong>🔑 User ID:</strong> <span id="userId">Loading...</span><br>
+          <strong>🎫 FCM Token:</strong> <span id="fcmToken">Checking...</span>
+        </p>
+      </div>
+
+      <div class="section-title">
+        🎯 Create Test Notifications
+      </div>
+
+      <div class="btn-grid">
+        <button class="test-btn btn-chat" id="testChatBtn">
+          <span class="btn-icon">💬</span>
+          <span>Chat Message</span>
+        </button>
+
+        <button class="test-btn btn-subscription" id="testSubscriptionBtn">
+          <span class="btn-icon">⭐</span>
+          <span>Subscription</span>
+        </button>
+
+        <button class="test-btn btn-system" id="testSystemBtn">
+          <span class="btn-icon">🔔</span>
+          <span>System Alert</span>
+        </button>
+      </div>
+
+      <div class="section-title">
+        📊 Notification Statistics
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="totalCount">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="unreadCount">0</div>
+          <div class="stat-label">Unread</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="chatCount">0</div>
+          <div class="stat-label">Messages</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="subscriptionCount">0</div>
+          <div class="stat-label">Subscriptions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="systemCount">0</div>
+          <div class="stat-label">System</div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        🎬 Quick Actions
+      </div>
+
+      <div class="btn-grid">
+        <button class="test-btn btn-view" id="viewNotificationsBtn">
+          <span class="btn-icon">👁️</span>
+          <span>View Notifications</span>
+        </button>
+
+        <button class="test-btn btn-clear" id="clearAllBtn">
+          <span class="btn-icon">🗑️</span>
+          <span>Clear All</span>
+        </button>
+      </div>
+
+      <div class="warning-box">
+        <p>
+          <strong>⚠️ Note:</strong> Notifications are stored in localStorage and are specific to each user. FCM token updates are sent to Firestore for push notification support.
+        </p>
+      </div>
+
+      <div class="section-title">
+        📋 Activity Log
+      </div>
+
+      <div class="log-container" id="logContainer">
+        <div class="log-entry">
+          <span class="log-time">[--:--:--]</span>
+          <span class="log-info">Waiting for initialization...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import notificationManager from './js/notification-manager.js';
+    import { auth } from './js/init.js';
+
+    let logEntries = [];
+
+    // Log function
+    function addLog(message, type = 'info') {
+      const now = new Date();
+      const time = now.toLocaleTimeString();
+      const logClass = `log-${type}`;
+      
+      logEntries.push({ time, message, type });
+      
+      const logContainer = document.getElementById('logContainer');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `
+        <span class="log-time">[${time}]</span>
+        <span class="${logClass}">${message}</span>
+      `;
+      
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    // Update stats
+    function updateStats() {
+      const all = notificationManager.loadNotifications();
+      const unread = all.filter(n => !n.isRead);
+      const chat = all.filter(n => n.type === 'chat');
+      const subscription = all.filter(n => n.type === 'subscription');
+      const system = all.filter(n => n.type === 'system');
+
+      document.getElementById('totalCount').textContent = all.length;
+      document.getElementById('unreadCount').textContent = unread.length;
+      document.getElementById('chatCount').textContent = chat.length;
+      document.getElementById('subscriptionCount').textContent = subscription.length;
+      document.getElementById('systemCount').textContent = system.length;
+    }
+
+    // Initialize
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        addLog(`✅ User authenticated: ${user.uid}`, 'success');
+        document.getElementById('userId').textContent = user.uid;
+
+        // Initialize notification manager
+        addLog('🔔 Initializing notification manager...', 'info');
+        const initialized = await notificationManager.initialize();
+
+        if (initialized) {
+          addLog('✅ Notification manager initialized successfully', 'success');
+          document.getElementById('fcmStatus').textContent = '✅ Active';
+          document.getElementById('fcmStatus').style.color = '#4CAF50';
+        } else {
+          addLog('⚠️ Notification manager initialized with limited functionality', 'error');
+          document.getElementById('fcmStatus').textContent = '⚠️ Limited';
+          document.getElementById('fcmStatus').style.color = '#ff9800';
+        }
+
+        // Try to get FCM token
+        try {
+          const user = auth.currentUser;
+          if (user) {
+            // Note: FCM token is stored in Firestore, not easily accessible here
+            document.getElementById('fcmToken').textContent = 'Stored in Firestore';
+            addLog('📱 FCM token updated in Firestore', 'success');
+          }
+        } catch (error) {
+          document.getElementById('fcmToken').textContent = 'Not available';
+          addLog('❌ Could not retrieve FCM token', 'error');
+        }
+
+        // Update stats
+        updateStats();
+
+        // Listen for notification changes
+        notificationManager.addListener(() => {
+          updateStats();
+          addLog('🔄 Notifications updated', 'info');
+        });
+      } else {
+        addLog('❌ No user authenticated, redirecting...', 'error');
+        setTimeout(() => {
+          window.location.href = '/login.html';
+        }, 2000);
+      }
+    });
+
+    // Test buttons
+    document.getElementById('testChatBtn').addEventListener('click', () => {
+      const notification = notificationManager.simulateNotification('chat');
+      if (notification) {
+        addLog('✅ Created chat notification', 'success');
+        updateStats();
+      } else {
+        addLog('❌ Failed to create chat notification', 'error');
+      }
+    });
+
+    document.getElementById('testSubscriptionBtn').addEventListener('click', () => {
+      const notification = notificationManager.simulateNotification('subscription');
+      if (notification) {
+        addLog('✅ Created subscription notification', 'success');
+        updateStats();
+      } else {
+        addLog('❌ Failed to create subscription notification', 'error');
+      }
+    });
+
+    document.getElementById('testSystemBtn').addEventListener('click', () => {
+      const notification = notificationManager.simulateNotification('system');
+      if (notification) {
+        addLog('✅ Created system notification', 'success');
+        updateStats();
+      } else {
+        addLog('❌ Failed to create system notification', 'error');
+      }
+    });
+
+    document.getElementById('viewNotificationsBtn').addEventListener('click', () => {
+      addLog('🔗 Navigating to notifications page...', 'info');
+      window.location.href = '/notifications.html';
+    });
+
+    document.getElementById('clearAllBtn').addEventListener('click', () => {
+      if (confirm('Clear all notifications? This cannot be undone.')) {
+        const count = notificationManager.clearAll();
+        addLog(`🗑️ Cleared ${count} notifications`, 'success');
+        updateStats();
+      }
+    });
+
+    addLog('🚀 Test page loaded', 'success');
+  </script>
+</body>
+</html>

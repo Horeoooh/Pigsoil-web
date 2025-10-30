@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notification System Test - PigSoil+</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', Arial, sans-serif;
+      background: linear-gradient(103deg, #FFEED0 0%, #FFC7B8 170%);
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section h2 {
+      font-size: 20px;
+      color: #4CAF50;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    button {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .btn-primary {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #45a049;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: #2196F3;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #0b7dda;
+      transform: translateY(-2px);
+    }
+
+    .btn-warning {
+      background: #FF9800;
+      color: white;
+    }
+
+    .btn-warning:hover {
+      background: #e68900;
+      transform: translateY(-2px);
+    }
+
+    .btn-danger {
+      background: #f44336;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #da190b;
+      transform: translateY(-2px);
+    }
+
+    .btn-info {
+      background: #9C27B0;
+      color: white;
+    }
+
+    .btn-info:hover {
+      background: #7b1fa2;
+      transform: translateY(-2px);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .stat-card {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #4CAF50;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    .log {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 16px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      margin-top: 16px;
+    }
+
+    .log-entry {
+      margin-bottom: 8px;
+      padding: 4px;
+    }
+
+    .log-entry.success {
+      color: #4CAF50;
+    }
+
+    .log-entry.error {
+      color: #f44336;
+    }
+
+    .log-entry.info {
+      color: #2196F3;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 16px;
+      color: #4CAF50;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .alert-info {
+      background: #e3f2fd;
+      color: #1976d2;
+      border-left: 4px solid #1976d2;
+    }
+
+    .alert-warning {
+      background: #fff3e0;
+      color: #f57c00;
+      border-left: 4px solid #f57c00;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/dashboard.html" class="back-link">← Back to Dashboard</a>
+    
+    <h1>🔔 Notification System Test</h1>
+    <p class="subtitle">Test and debug the PigSoil+ web notification system</p>
+
+    <div class="alert alert-info">
+      <strong>ℹ️ Info:</strong> Make sure you're logged in and have granted notification permissions.
+    </div>
+
+    <!-- Stats Section -->
+    <div class="section">
+      <h2>📊 Notification Stats</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="totalCount">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="unreadCount">0</div>
+          <div class="stat-label">Unread</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="chatCount">0</div>
+          <div class="stat-label">Messages</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="subCount">0</div>
+          <div class="stat-label">Subscriptions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="systemCount">0</div>
+          <div class="stat-label">System</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Simulate Notifications -->
+    <div class="section">
+      <h2>🧪 Simulate Notifications</h2>
+      <div class="button-grid">
+        <button class="btn-secondary" onclick="simulateChat()">💬 Chat Message</button>
+        <button class="btn-warning" onclick="simulateSubscription()">⭐ Subscription</button>
+        <button class="btn-info" onclick="simulateSystem()">🔔 System Alert</button>
+        <button class="btn-primary" onclick="simulateMultiple()">🎲 Random 5</button>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="section">
+      <h2>⚙️ Actions</h2>
+      <div class="button-grid">
+        <button class="btn-primary" onclick="markAllRead()">✓ Mark All Read</button>
+        <button class="btn-secondary" onclick="refreshStats()">🔄 Refresh Stats</button>
+        <button class="btn-warning" onclick="checkToken()">🔑 Check FCM Token</button>
+        <button class="btn-danger" onclick="clearAll()">🗑️ Clear All</button>
+      </div>
+    </div>
+
+    <!-- Permission Test -->
+    <div class="section">
+      <h2>🔐 Permission Test</h2>
+      <div class="button-grid">
+        <button class="btn-info" onclick="requestPermission()">🔔 Request Permission</button>
+        <button class="btn-secondary" onclick="checkPermission()">📋 Check Permission</button>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="section">
+      <h2>📝 Activity Log</h2>
+      <div class="log" id="activityLog">
+        <div class="log-entry info">Ready to test notifications...</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import notificationManager from './js/notification-manager.js';
+    import { auth } from './js/init.js';
+
+    // Wait for auth
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        log('✅ User logged in: ' + user.uid, 'success');
+        refreshStats();
+      } else {
+        log('⚠️ No user logged in', 'error');
+      }
+    });
+
+    // Make functions global
+    window.simulateChat = () => {
+      const notification = notificationManager.simulateNotification('chat');
+      if (notification) {
+        log('💬 Chat notification created', 'success');
+        refreshStats();
+      }
+    };
+
+    window.simulateSubscription = () => {
+      const notification = notificationManager.simulateNotification('subscription');
+      if (notification) {
+        log('⭐ Subscription notification created', 'success');
+        refreshStats();
+      }
+    };
+
+    window.simulateSystem = () => {
+      const notification = notificationManager.simulateNotification('system');
+      if (notification) {
+        log('🔔 System notification created', 'success');
+        refreshStats();
+      }
+    };
+
+    window.simulateMultiple = () => {
+      const types = ['chat', 'subscription', 'system'];
+      for (let i = 0; i < 5; i++) {
+        const type = types[Math.floor(Math.random() * types.length)];
+        notificationManager.simulateNotification(type);
+      }
+      log('🎲 Created 5 random notifications', 'success');
+      refreshStats();
+    };
+
+    window.markAllRead = () => {
+      const count = notificationManager.markAllAsRead();
+      log(`✓ Marked ${count} notifications as read`, 'success');
+      refreshStats();
+    };
+
+    window.clearAll = () => {
+      if (confirm('Delete all notifications? This cannot be undone.')) {
+        const count = notificationManager.clearAll();
+        log(`🗑️ Cleared ${count} notifications`, 'success');
+        refreshStats();
+      }
+    };
+
+    window.refreshStats = () => {
+      const all = notificationManager.loadNotifications();
+      const unread = all.filter(n => !n.isRead);
+      const chat = all.filter(n => n.type === 'chat');
+      const sub = all.filter(n => n.type === 'subscription');
+      const system = all.filter(n => n.type === 'system');
+
+      document.getElementById('totalCount').textContent = all.length;
+      document.getElementById('unreadCount').textContent = unread.length;
+      document.getElementById('chatCount').textContent = chat.length;
+      document.getElementById('subCount').textContent = sub.length;
+      document.getElementById('systemCount').textContent = system.length;
+
+      log('🔄 Stats refreshed', 'info');
+    };
+
+    window.checkToken = async () => {
+      try {
+        log('🔍 Checking FCM token...', 'info');
+        await notificationManager.checkAndUpdateToken();
+        log('✅ Token check complete (see console)', 'success');
+      } catch (error) {
+        log('❌ Token check failed: ' + error.message, 'error');
+      }
+    };
+
+    window.requestPermission = async () => {
+      try {
+        const permission = await Notification.requestPermission();
+        log(`🔔 Permission: ${permission}`, permission === 'granted' ? 'success' : 'error');
+      } catch (error) {
+        log('❌ Permission request failed: ' + error.message, 'error');
+      }
+    };
+
+    window.checkPermission = () => {
+      const permission = Notification.permission;
+      log(`📋 Current permission: ${permission}`, permission === 'granted' ? 'success' : 'info');
+    };
+
+    function log(message, type = 'info') {
+      const logElement = document.getElementById('activityLog');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      const timestamp = new Date().toLocaleTimeString();
+      entry.textContent = `[${timestamp}] ${message}`;
+      logElement.insertBefore(entry, logElement.firstChild);
+      console.log(message);
+    }
+
+    // Initial stats
+    refreshStats();
+  </script>
+</body>
+</html>

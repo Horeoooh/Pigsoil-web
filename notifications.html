@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications - PigSoil+</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', Arial, sans-serif;
+      background: linear-gradient(103deg, #FFEED0 0%, #FFC7B8 170%);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      padding: 16px 24px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+
+    .back-btn:hover {
+      background: #f0f0f0;
+    }
+
+    .header-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .header-btn {
+      padding: 8px 16px;
+      border: 1px solid #4CAF50;
+      background: white;
+      color: #4CAF50;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .header-btn:hover {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .header-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .header-btn.danger {
+      border-color: #dc3545;
+      color: #dc3545;
+    }
+
+    .header-btn.danger:hover {
+      background: #dc3545;
+      color: white;
+    }
+
+    /* Main Content */
+    .main-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* Filter Section */
+    .filter-section {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .filter-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 12px;
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      border: 1px solid #dee2e6;
+      background: white;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      color: #666;
+    }
+
+    .filter-btn:hover {
+      border-color: #4CAF50;
+      color: #4CAF50;
+    }
+
+    .filter-btn.active {
+      background: #4CAF50;
+      border-color: #4CAF50;
+      color: white;
+    }
+
+    .filter-status {
+      font-size: 14px;
+      color: #666;
+      margin-top: 12px;
+    }
+
+    /* Notifications List */
+    .notifications-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .notification-item {
+      padding: 20px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      display: flex;
+      gap: 16px;
+    }
+
+    .notification-item:hover {
+      background: #f8f9fa;
+    }
+
+    .notification-item.unread {
+      background: #f0f9ff;
+    }
+
+    .notification-item.unread:hover {
+      background: #e6f4ff;
+    }
+
+    .notification-item.unread::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: #4CAF50;
+    }
+
+    .notification-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .notification-icon.chat {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .notification-icon.subscription {
+      background: #fff3e0;
+      color: #f57c00;
+    }
+
+    .notification-icon.system {
+      background: #f3e5f5;
+      color: #7b1fa2;
+    }
+
+    .notification-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .notification-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .notification-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .notification-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .notification-badge.chat {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .notification-badge.subscription {
+      background: #fff3e0;
+      color: #f57c00;
+    }
+
+    .notification-badge.system {
+      background: #f3e5f5;
+      color: #7b1fa2;
+    }
+
+    .notification-time {
+      font-size: 13px;
+      color: #999;
+      white-space: nowrap;
+    }
+
+    .notification-message {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .notification-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .notification-action-btn {
+      padding: 6px 14px;
+      border: 1px solid #dee2e6;
+      background: white;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .notification-action-btn:hover {
+      background: #f8f9fa;
+    }
+
+    .notification-action-btn.primary {
+      background: #4CAF50;
+      border-color: #4CAF50;
+      color: white;
+    }
+
+    .notification-action-btn.primary:hover {
+      background: #45a049;
+    }
+
+    .notification-action-btn.danger {
+      color: #dc3545;
+      border-color: #dc3545;
+    }
+
+    .notification-action-btn.danger:hover {
+      background: #fff5f5;
+    }
+
+    /* Empty State */
+    .empty-state {
+      padding: 80px 20px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+
+    .empty-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .empty-text {
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* Loading State */
+    .loading-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: #999;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f0f0f0;
+      border-top-color: #4CAF50;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 16px;
+      }
+
+      .header {
+        padding: 12px 16px;
+      }
+
+      .header-title {
+        font-size: 18px;
+      }
+
+      .stats-section {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .notification-item {
+        padding: 16px;
+      }
+
+      .notification-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+      }
+
+      .header-actions {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .header-btn {
+        font-size: 12px;
+        padding: 6px 12px;
+      }
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #333;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 10000;
+      animation: slideInUp 0.3s ease-out;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <button class="back-btn" id="backBtn" aria-label="Go back">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <h1 class="header-title">Recent Notifications</h1>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" id="markAllReadBtn">Mark All as Read</button>
+      <button class="header-btn danger" id="clearAllBtn">Clear All</button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Filter Section -->
+    <section class="filter-section">
+      <h2 class="filter-title">Filter Notifications</h2>
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="unread">Unread</button>
+        <button class="filter-btn" data-filter="read">Read</button>
+      </div>
+      <p class="filter-status" id="filterStatus">Showing: All Notifications</p>
+    </section>
+
+    <!-- Notifications List -->
+    <section class="notifications-container" id="notificationsContainer">
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Loading notifications...</p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import notificationManager from './js/notification-manager.js';
+    import { auth } from './js/init.js';
+
+    let currentFilter = 'all';
+
+    // Helper: get the current user's display name from cached user prefs
+    function getCachedUserName() {
+      try {
+        const cachedUserData = localStorage.getItem('pigsoil_user_data');
+        console.log('🔍 [getCachedUserName] Raw cached data:', cachedUserData);
+        
+        if (!cachedUserData) {
+          console.log('⚠️ [getCachedUserName] No cached user data found');
+          return null;
+        }
+        
+        const userData = JSON.parse(cachedUserData);
+        console.log('🔍 [getCachedUserName] Parsed user data:', userData);
+        
+        // Try common fields in order of likelihood
+        let userName = null;
+        if (userData.fullName) {
+          userName = userData.fullName;
+          console.log('✅ [getCachedUserName] Found fullName:', userName);
+        } else if (userData.userName) {
+          userName = userData.userName;
+          console.log('✅ [getCachedUserName] Found userName:', userName);
+        } else if (userData.name) {
+          userName = userData.name;
+          console.log('✅ [getCachedUserName] Found name:', userName);
+        } else if (userData.displayName) {
+          userName = userData.displayName;
+          console.log('✅ [getCachedUserName] Found displayName:', userName);
+        } else if (userData.firstName && userData.lastName) {
+          userName = `${userData.firstName} ${userData.lastName}`;
+          console.log('✅ [getCachedUserName] Found firstName + lastName:', userName);
+        } else {
+          userName = userData.firstName || userData.lastName || null;
+          console.log('✅ [getCachedUserName] Found firstName or lastName:', userName);
+        }
+        
+        console.log('🎯 [getCachedUserName] Final userName:', userName);
+        return userName;
+      } catch (e) {
+        console.error('❌ [getCachedUserName] Error:', e);
+        return null;
+      }
+    }
+
+    // Listen for messages from the service worker (background FCM)
+    window.addEventListener('message', (event) => {
+      const msg = event.data;
+      if (!msg || msg.type !== 'PIGSOIL_FCM') return;
+      const payload = msg.payload || {};
+      const { notification, data } = payload;
+
+      const user = auth.currentUser;
+      const currentUserId = user ? user.uid : null;
+      if (!currentUserId) return;
+
+      // Only save if recipientId matches, or if no recipientId provided (assume this device)
+      if (data && data.recipientId !== undefined && data.recipientId !== currentUserId) {
+        console.warn('SW->Page: Dropping message for different user', { recipientId: data.recipientId, currentUserId });
+        return;
+      }
+
+      if (notification) {
+        notificationManager.saveNotification({
+          type: (data && data.type) || 'system',
+          title: notification.title,
+          message: notification.body,
+          data: data || {}
+        });
+      }
+    });
+
+    // Initialize notification manager on page load
+    async function initializeNotifications() {
+      console.log('🔔 Initializing notifications page...');
+      
+      // Initialize notification manager (will setup FCM and listeners)
+      const initialized = await notificationManager.initialize();
+      
+      if (initialized) {
+        console.log('✅ Notification manager initialized on notifications page');
+      } else {
+        console.warn('⚠️ Notification manager initialized with limited functionality');
+      }
+    }
+
+    // Wait for auth
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log('✅ User logged in:', user.uid);
+        
+        // Initialize notification manager
+        initializeNotifications();
+        
+        // Load and display notifications
+        loadNotifications();
+        updateStats();
+      } else {
+        console.log('⚠️ No user logged in, redirecting...');
+        window.location.href = '/login.html';
+      }
+    });
+
+    // Listen for notification changes
+    notificationManager.addListener(() => {
+      loadNotifications();
+      updateStats();
+    });
+
+    // Back button - redirect to appropriate dashboard based on user type
+    document.getElementById('backBtn').addEventListener('click', () => {
+      try {
+        const cachedUserData = localStorage.getItem('pigsoil_user_data');
+        if (cachedUserData) {
+          const userData = JSON.parse(cachedUserData);
+          const userType = userData.userType;
+          
+          // Redirect to appropriate dashboard
+          if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+            window.location.href = '/buyer-dashboard.html';
+          } else {
+            window.location.href = '/dashboard.html';
+          }
+        } else {
+          // Default to farmer dashboard
+          window.location.href = '/dashboard.html';
+        }
+      } catch (error) {
+        console.error('Error determining user type:', error);
+        window.location.href = '/dashboard.html';
+      }
+    });
+
+    // Mark all as read
+    document.getElementById('markAllReadBtn').addEventListener('click', () => {
+      const count = notificationManager.markAllAsRead();
+      if (count > 0) {
+        showToast(`Marked ${count} notifications as read`);
+      } else {
+        showToast('All notifications already read');
+      }
+    });
+
+    // Clear all
+    document.getElementById('clearAllBtn').addEventListener('click', () => {
+      if (confirm('Delete all notifications? This cannot be undone.')) {
+        const count = notificationManager.clearAll();
+        showToast(`Cleared ${count} notifications`);
+      }
+    });
+
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Update active state
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Apply filter
+        currentFilter = btn.dataset.filter;
+        loadNotifications();
+        updateFilterStatus();
+      });
+    });
+
+    // Load and render notifications
+    function loadNotifications() {
+      const container = document.getElementById('notificationsContainer');
+      const notifications = notificationManager.getNotificationsByFilter(currentFilter);
+      // Extra safety: ensure we only render notifications for the current user
+      const currentUserId = auth.currentUser ? auth.currentUser.uid : null;
+      const currentName = getCachedUserName();
+      
+      console.log('📋 [loadNotifications] Current user name for filtering:', currentName);
+      
+      let scoped = Array.isArray(notifications)
+        ? notifications.filter(n => n && n.userId === currentUserId)
+        : [];
+      
+      // Filter out notifications where sender name matches current user name
+      if (currentName) {
+        scoped = scoped.filter(n => {
+          const senderName = n.senderName || n.title || '';
+          const isSameUser = senderName && currentName.trim().toLowerCase() === senderName.trim().toLowerCase();
+          
+          if (isSameUser) {
+            console.log('🚫 [loadNotifications] Filtering out notification from same user:', n);
+          }
+          
+          return !isSameUser; // Keep notifications that are NOT from the same user
+        });
+      }
+
+      if (scoped.length === 0) {
+        container.innerHTML = renderEmptyState();
+        return;
+      }
+
+      container.innerHTML = scoped.map(n => renderNotification(n)).join('');
+
+      // Attach event listeners
+      attachNotificationListeners();
+    }
+
+    // Render single notification
+    function renderNotification(notification) {
+      console.log('🎨 [renderNotification] Processing notification:', notification);
+      
+      const icon = getNotificationIcon(notification.type);
+      const timeAgo = notificationManager.formatTimestamp(notification.timestamp);
+      const unreadClass = notification.isRead ? '' : 'unread';
+      const currentName = getCachedUserName();
+      const senderName = notification.senderName || notification.title || '';
+      
+      console.log('🔍 [renderNotification] Comparison:');
+      console.log('  - Current user name:', currentName);
+      console.log('  - Sender name:', senderName);
+      console.log('  - notification.senderName:', notification.senderName);
+      console.log('  - notification.title:', notification.title);
+      
+      const isSameUser = currentName && senderName && currentName.trim().toLowerCase() === senderName.trim().toLowerCase();
+      console.log('  - Names match (isSameUser)?', isSameUser);
+      console.log('  - currentName trimmed/lower:', currentName ? currentName.trim().toLowerCase() : 'null');
+      console.log('  - senderName trimmed/lower:', senderName ? senderName.trim().toLowerCase() : 'null');
+      
+      // Don't show title or badge if it's the same user
+      const displayTitle = isSameUser ? '' : escapeHtml(notification.title);
+      console.log('  - Display title:', displayTitle);
+
+      return `
+        <div class="notification-item ${unreadClass}" data-id="${notification.id}">
+          <div class="notification-icon ${notification.type}">
+            ${icon}
+          </div>
+          <div class="notification-content">
+            <div class="notification-header">
+              ${displayTitle ? `
+                <div class="notification-title">
+                  ${displayTitle}
+                </div>
+              ` : ''}
+              <span class="notification-time">${timeAgo}</span>
+            </div>
+            <p class="notification-message">${escapeHtml(notification.message)}</p>
+            <div class="notification-actions">
+              ${!notification.isRead ? `
+                <button class="notification-action-btn primary mark-read-btn" data-id="${notification.id}">
+                  ✓ Mark as Read
+                </button>
+              ` : ''}
+              ${notification.type === 'chat' && notification.conversationId ? `
+                <button class="notification-action-btn view-message-btn" 
+                        data-conversation="${notification.conversationId}" 
+                        data-sender="${notification.senderId}">
+                  💬 View Message
+                </button>
+              ` : ''}
+              <button class="notification-action-btn danger delete-btn" data-id="${notification.id}">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Render empty state
+    function renderEmptyState() {
+      const messages = {
+        all: { icon: '🔔', title: 'No notifications yet', text: 'You\'re all caught up!' },
+        unread: { icon: '✅', title: 'All caught up!', text: 'No unread notifications' },
+        read: { icon: '📋', title: 'No read notifications', text: 'Mark notifications as read to see them here' }
+      };
+
+      const { icon, title, text } = messages[currentFilter] || messages.all;
+
+      return `
+        <div class="empty-state">
+          <div class="empty-icon">${icon}</div>
+          <h3 class="empty-title">${title}</h3>
+          <p class="empty-text">${text}</p>
+        </div>
+      `;
+    }
+
+    // Attach event listeners to notification items
+    function attachNotificationListeners() {
+      // Mark as read buttons
+      document.querySelectorAll('.mark-read-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.id;
+          notificationManager.markAsRead(id);
+          showToast('Marked as read');
+        });
+      });
+
+      // Delete buttons
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.id;
+          if (confirm('Delete this notification?')) {
+            notificationManager.deleteNotification(id);
+            showToast('Notification deleted');
+          }
+        });
+      });
+
+      // View message buttons
+      document.querySelectorAll('.view-message-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const conversationId = btn.dataset.conversation;
+          window.location.href = `/messages.html?conversation=${conversationId}`;
+        });
+      });
+
+      // Click on notification item to mark as read
+      document.querySelectorAll('.notification-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const id = item.dataset.id;
+          const notification = notificationManager.loadNotifications().find(n => n.id === id);
+          
+          if (notification && !notification.isRead) {
+            notificationManager.markAsRead(id);
+          }
+
+          // Navigate based on type
+          if (notification.type === 'chat' && notification.conversationId) {
+            window.location.href = `/messages.html?conversation=${notification.conversationId}`;
+          }
+        });
+      });
+    }
+
+    // Update statistics
+    function updateStats() {
+      const all = notificationManager.loadNotifications();
+      const unread = all.filter(n => !n.isRead);
+
+      // Update mark all read button
+      const markAllBtn = document.getElementById('markAllReadBtn');
+      markAllBtn.disabled = unread.length === 0;
+    }
+
+    // Update filter status text
+    function updateFilterStatus() {
+      const statusText = {
+        all: 'Showing: All Notifications',
+        unread: 'Showing: Unread Notifications',
+        read: 'Showing: Read Notifications'
+      };
+
+      document.getElementById('filterStatus').textContent = statusText[currentFilter] || statusText.all;
+    }
+
+    // Get notification icon
+    function getNotificationIcon(type) {
+      const icons = {
+        chat: '💬',
+        subscription: '⭐',
+        system: '🔔'
+      };
+      return icons[type] || '🔔';
+    }
+
+    // Escape HTML
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // Show toast notification
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.animation = 'slideOutDown 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Initial load
+    console.log('📋 Notifications page loaded');
+  </script>
+</body>
+</html>

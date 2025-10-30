@@ -970,19 +970,21 @@
             
             <ul class="nav-menu">
                 <li><a href="/dashboard.html" data-nav="dashboard">Dashboard</a></li>
+                                <li style="display: none;"><a href="/transactions.html" data-nav="transactions">Transactions</a></li>
                 <li><a href="/farmermarket.html" data-nav="market">Market</a></li>
-                <li style="display: none;"><a href="/transactions.html" data-nav="transactions">Transactions</a></li>
                 <li><a href="/guides.html" data-nav="guides">Guides</a></li>
             </ul>
             
             <div class="user-section">
                 
-                <button class="icon-btn" id="notificationBtn" title="Notifications">
+                 <a href ="/notifications.html">
+                    <button class="icon-btn" id="notificationBtn" aria-label="View notifications">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                     </svg>
-                </button>
+                    </button>
+                    </a>
                 <a href="/setting-acc.html" class="user-profile">
                     <div class="user-info">
                         <span class="user-name" id="headerUserName">Loading...</span>
@@ -1056,7 +1058,7 @@
                     </div>
                     
                     <div class="usage-grid">
-                        <div class="usage-card">
+                        <div class="usage-card" id="manongBotUsageContainer">
                             <div class="usage-header">
                                 <span class="usage-label">
                                     <span>🤖</span>
@@ -1065,11 +1067,10 @@
                                 <span class="usage-count" id="manongBotUsage">0/10</span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-fill" id="manongBotProgress" style="width: 0%"></div>
+                                <div class="progress-fill" id="manongBotProgress" style="width: 0%;"></div>
                             </div>
                         </div>
-
-                        <div class="usage-card">
+                        <div class="usage-card" id="cameraAiUsageContainer">
                             <div class="usage-header">
                                 <span class="usage-label">
                                     <span>📷</span>
@@ -1078,7 +1079,7 @@
                                 <span class="usage-count" id="cameraAiUsage">0/5</span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-fill" id="cameraAiProgress" style="width: 0%"></div>
+                                <div class="progress-fill" id="cameraAiProgress" style="width: 0%;"></div>
                             </div>
                         </div>
                     </div>

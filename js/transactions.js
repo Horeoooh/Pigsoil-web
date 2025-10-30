@@ -3,6 +3,7 @@ import { auth, db } from './init.js';
 import { 
     getCurrentUser, 
     getCurrentUserData, 
+    getCachedProfilePic,
     onUserDataChange,
     DEFAULT_PROFILE_PIC 
 } from './shared-user-manager.js';
