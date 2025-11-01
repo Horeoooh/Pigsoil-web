@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market - PigSoil+</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- i18next for internationalization -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
     <style>
         /* Reset and base styles */
         * {
@@ -555,9 +559,9 @@
             </div>
             
             <ul class="nav-menu">
-    <li><a href="/dashboard.html" data-nav="dashboard">Dashboard</a></li>
-    <li><a href="/farmermarket.html" data-nav="market">Market</a></li>
-    <li><a href="/guides.html" data-nav="guides">Guides</a></li>
+    <li><a href="/dashboard.html" data-nav="dashboard" data-i18n="dashboard.nav.dashboard">Dashboard</a></li>
+    <li><a href="/farmermarket.html" data-nav="market" data-i18n="dashboard.nav.market">Market</a></li>
+    <li><a href="/guides.html" data-nav="guides" data-i18n="dashboard.nav.guides">Guides</a></li>
 </ul>
             
             <div class="user-section">
@@ -586,13 +590,13 @@
         <section class="hero-section">
             <div class="hero-header">
                 <div>
-                    <h1 class="hero-title">Farmer Market</h1>
-                    <p class="hero-subtitle">Connect with buyers and sellers in your local farming community</p>
+                    <h1 class="hero-title" data-i18n="farmermarket.hero.title">My Marketplace</h1>
+                    <p class="hero-subtitle" data-i18n="farmermarket.hero.subtitle">Manage your compost listings and connect with buyers</p>
                 </div>
                 <div class="hero-actions">
-                    <a href="/CreateListing.html" class="btn-primary">Add a Listing</a>
+                    <a href="/CreateListing.html" class="btn-primary" data-i18n="farmermarket.hero.createButton">Create New Listing</a>
                    <a href="/messages.html" class="messages-btn">
-                        Messages
+                        <span data-i18n="farmermarket.hero.messagesButton">Messages</span>
                         <span class="message-count" id="messageCount"></span>
                     </a>
                 </div>
@@ -602,19 +606,19 @@
         <!-- Filter Section -->
         <section class="filter-section">
             <div class="filter-tabs">
-                <button class="tab-btn active">My Listings</button>
-                <button class="tab-btn">Active</button>
-                <button class="tab-btn">Sold</button>
-                <button class="tab-btn">Nearby Buyers</button>
+                <button class="tab-btn active" data-i18n="farmermarket.filters.myListings">My Listings</button>
+                <button class="tab-btn" data-i18n="farmermarket.filters.available">Available</button>
+                <button class="tab-btn" data-i18n="farmermarket.filters.soldOut">Sold Out</button>
+                <button class="tab-btn" id="nearbyBuyersBtn" data-i18n="farmermarket.hero.nearbyButton">Nearby Buyers</button>
             </div>
             <div class="search-container">
-                <input type="text" class="search-input" placeholder="Search your listings...">
+                <input type="text" class="search-input" data-i18n="[placeholder]farmermarket.filters.searchPlaceholder" placeholder="Search listings...">
             </div>
         </section>
 
         <!-- Listings Section -->
 <section class="listings-section">
-    <h2>My Listings</h2>
+    <h2 data-i18n="farmermarket.filters.myListings">My Listings</h2>
     <div class="listings-grid">
         <!-- Dynamic listings will be loaded here by JavaScript -->
         <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
@@ -630,7 +634,7 @@
     <div id="nearbyBuyersModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title">Nearby Fertilizer Buyers</h3>
+                <h3 class="modal-title" data-i18n="farmermarket.nearbyBuyers.title">Nearby Buyers</h3>
                 <button class="modal-close" id="nearbyBuyersModalClose" aria-label="Close modal">×</button>
             </div>
             <div class="modal-body">
@@ -638,7 +642,7 @@
                     <div id="nearbyBuyersMap" style="width: 100%; height: 100%;">
                         <div class="map-loading">
                             <div class="loading-spinner"></div>
-                            <p>Loading map...</p>
+                            <p data-i18n="farmermarket.nearbyBuyers.loading">Loading map...</p>
                         </div>
                     </div>
                 </div>
@@ -647,7 +651,7 @@
                 </div>
             </div>
             <div class="modal-buttons">
-                <button class="btn-secondary" id="closeNearbyBuyersModal">Close</button>
+                <button class="btn-secondary" id="closeNearbyBuyersModal" data-i18n="farmermarket.nearbyBuyers.closeButton">Close</button>
             </div>
         </div>
     </div>
@@ -896,6 +900,7 @@
         }
     </style>
 
+    <script src="/js/i18n.js"></script>
     <script type="module" src="/js/dashboard-auth-guard.js"></script>
     <script type="module" src="/js/farmermarket.js"></script>
     <script type="module" src="/js/shared-user-manager.js"></script>

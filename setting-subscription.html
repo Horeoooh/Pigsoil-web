@@ -6,6 +6,10 @@
     <title>Subscription Settings - PigSoil+</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- i18next for internationalization -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -969,14 +973,13 @@
             </div>
             
             <ul class="nav-menu">
-                <li><a href="/dashboard.html" data-nav="dashboard">Dashboard</a></li>
+                <li><a href="/dashboard.html" data-nav="dashboard" data-i18n="settings.nav.dashboard">Dashboard</a></li>
                                 <li style="display: none;"><a href="/transactions.html" data-nav="transactions">Transactions</a></li>
-                <li><a href="/farmermarket.html" data-nav="market">Market</a></li>
-                <li><a href="/guides.html" data-nav="guides">Guides</a></li>
+                <li><a href="/farmermarket.html" data-nav="market" data-i18n="settings.nav.market">Market</a></li>
+                <li><a href="/guides.html" data-nav="guides" data-i18n="settings.nav.guides">Guides</a></li>
             </ul>
             
             <div class="user-section">
-                
                  <a href ="/notifications.html">
                     <button class="icon-btn" id="notificationBtn" aria-label="View notifications">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1001,12 +1004,12 @@
             <aside class="sidebar">
                 <div class="sidebar-section">
                     <div class="sidebar-section-title">SETTINGS</div>
-                    <a href="/setting-acc.html" class="sidebar-item">Account</a>
-                    <button class="sidebar-item">Language</button>
-                    <button class="sidebar-item active">Subscription</button>
+                    <a href="/setting-acc.html" class="sidebar-item" data-i18n="settings.sidebar.accountSettings">Account</a>
+                    <a href="/setting-language.html" class="sidebar-item" title="Language Settings" aria-label="Manage language settings" data-i18n="settings.sidebar.language">Language</a>
+                    <button class="sidebar-item active" data-i18n="settings.sidebar.subscription">Subscription</button>
                 </div>
 
-                <button class="logout-btn" id="logoutBtn">
+                <button class="logout-btn" id="logoutBtn" data-i18n="settings.sidebar.logout">
                     🚪 Log Out
                 </button>
             </aside>
@@ -1017,8 +1020,8 @@
                         <span>⭐</span>
                         <span>Current Plan: Loading...</span>
                     </span>
-                    <h1>Subscription Plans</h1>
-                    <p>Choose the perfect plan for your farming needs. Upgrade or downgrade anytime.</p>
+                    <h1 data-i18n="settings.subscription.title">Subscription Plans</h1>
+                    <p data-i18n="settings.subscription.subtitle">Choose the perfect plan for your farming needs. Upgrade or downgrade anytime.</p>
                 </div>
 
                 <div id="alertMessage" class="alert"></div>
@@ -1047,12 +1050,12 @@
                 <div id="usageSection" class="usage-section" style="display: none;">
                     <h3>
                         <span>📊</span>
-                        <span>Your Usage This Week</span>
+                        <span data-i18n="settings.subscription.usage.title">Your Usage This Week</span>
                     </h3>
                     
                     <div class="mobile-only-notice">
                         <span class="notice-icon">📱</span>
-                        <div class="notice-text">
+                        <div class="notice-text" data-i18n="settings.subscription.usage.mobileOnlyNotice">
                             <strong>Mobile App Features:</strong> Manong Bot and Camera AI are available exclusively on the PigSoil mobile app. Download the app to access these AI-powered features!
                         </div>
                     </div>
@@ -1062,7 +1065,7 @@
                             <div class="usage-header">
                                 <span class="usage-label">
                                     <span>🤖</span>
-                                    <span>Manong Bot</span>
+                                    <span data-i18n="settings.subscription.usage.manongBot">Manong Bot</span>
                                 </span>
                                 <span class="usage-count" id="manongBotUsage">0/10</span>
                             </div>
@@ -1074,7 +1077,7 @@
                             <div class="usage-header">
                                 <span class="usage-label">
                                     <span>📷</span>
-                                    <span>Camera AI</span>
+                                    <span data-i18n="settings.subscription.usage.cameraAi">Camera AI</span>
                                 </span>
                                 <span class="usage-count" id="cameraAiUsage">0/5</span>
                             </div>
@@ -1092,8 +1095,8 @@
 
                 <div class="action-section">
                     <button class="btn btn-primary" id="actionBtn" disabled>Loading...</button>
-                    <button class="btn btn-secondary" id="manageBtn" style="display: none;">Cancel Subscription</button>
-                    <button class="btn btn-outline" id="contactBtn">Contact Support</button>
+                    <button class="btn btn-secondary" id="manageBtn" style="display: none;" data-i18n="settings.subscription.buttons.manage">Cancel Subscription</button>
+                    <button class="btn btn-outline" id="contactBtn" data-i18n="settings.subscription.buttons.contactSupport">Contact Support</button>
                 </div>
             </div>
         </div>
@@ -1124,8 +1127,15 @@
         </div>
     </div>
 
+    <script src="/js/i18n.js"></script>
     <script type="module" src="/js/dashboard-auth-guard.js"></script>
     <script type="module" src="/js/subscription-settings.js"></script>
     <script type="module" src="/js/shared-user-manager.js"></script>
+    <script>
+        // Initialize i18next when DOM is ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.i18nManager.initialize();
+        });
+    </script>
 </body>
 </html>

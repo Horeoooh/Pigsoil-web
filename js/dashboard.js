@@ -45,6 +45,11 @@ let currentUserData = null;
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Dashboard initialized');
     
+    // Initialize i18n
+    if (window.i18nManager) {
+        window.i18nManager.initialize();
+    }
+    
     // Load user profile immediately
     loadUserProfile();
     

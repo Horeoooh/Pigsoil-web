@@ -101,6 +101,11 @@ function waitForGoogleMaps(maxWait = 5000) {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🛒 Farmer Market initialized');
     
+    // Initialize i18n
+    if (window.i18nManager) {
+        await window.i18nManager.initialize();
+    }
+    
     // Load user profile immediately
     loadUserProfile();
     
@@ -277,7 +282,11 @@ function createListingCard(listing) {
     
     const isAvailable = listing.listingIsAvailable !== false && quantityLeft > 0;
     const statusClass = isAvailable ? 'available' : 'sold-out';
-    const statusText = isAvailable ? 'Available' : 'Sold Out';
+    
+    // Get translations
+    const statusText = isAvailable 
+        ? (i18next.t ? i18next.t('farmermarket.listingCard.available') : 'Available')
+        : (i18next.t ? i18next.t('farmermarket.listingCard.soldOut') : 'Sold Out');
     const statusIcon = isAvailable ? '✓' : '✗';
     
     // Calculate sold amount
@@ -296,6 +305,14 @@ function createListingCard(listing) {
         ? listing.listingProductImages[0] 
         : null;
     
+    const perKgText = i18next.t ? i18next.t('farmermarket.listingCard.perKg') : 'per kg';
+    const quantityLeftText = i18next.t ? i18next.t('farmermarket.listingCard.quantityLeft') : 'Quantity Left';
+    const originalText = i18next.t ? i18next.t('farmermarket.listingCard.originalQuantity') : 'Original';
+    const soldText = i18next.t ? i18next.t('farmermarket.listingCard.sold') : 'Sold';
+    const createdText = i18next.t ? i18next.t('farmermarket.listingCard.created') : 'Created';
+    const updatedText = i18next.t ? i18next.t('farmermarket.listingCard.updated') : 'Updated';
+    const viewButtonText = i18next.t ? i18next.t('farmermarket.listingCard.viewButton') : 'View Details';
+    
     card.innerHTML = `
         <div class="listing-image ${!isAvailable ? 'sold-out-bg' : ''}">
             ${mainImage ? 
@@ -312,33 +329,37 @@ function createListingCard(listing) {
         <div class="listing-details">
             <div class="listing-header">
                 <h3 class="listing-title">${productName}</h3>
-                <span class="listing-price">₱${pricePerKg.toFixed(2)}/kg</span>
+                <span class="listing-price">₱${pricePerKg.toFixed(2)} ${perKgText}</span>
             </div>
             <div class="listing-stats">
                 <div class="stat-item">
                     <span class="stat-icon">📦</span>
-                    <span>${quantityLeft.toFixed(1)}kg ${isAvailable ? 'remaining' : 'sold out'}</span>
+                    <span>${quantityLeftText}: ${quantityLeft.toFixed(1)}kg</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">📊</span>
+                    <span>${originalText}: ${originalQuantity.toFixed(1)}kg</span>
                 </div>
                 ${soldAmount > 0 ? `
                     <div class="stat-item">
                         <span class="stat-icon">✅</span>
-                        <span>${soldAmount.toFixed(1)}kg sold</span>
+                        <span>${soldText}: ${soldAmount.toFixed(1)}kg</span>
                     </div>
                 ` : ''}
             </div>
             <div class="listing-meta">
                 <div class="meta-item">
                     <span class="meta-icon">📅</span>
-                    <span>Created: ${createdDate}</span>
+                    <span>${createdText}: ${createdDate}</span>
                 </div>
                 ${updatedDate && updatedDate !== createdDate ? `
                     <div class="meta-item">
                         <span class="meta-icon">🔄</span>
-                        <span>Updated: ${updatedDate}</span>
+                        <span>${updatedText}: ${updatedDate}</span>
                     </div>
                 ` : ''}
             </div>
-            <button class="btn-view" onclick="viewListing('${listing.id}')">View & Manage</button>
+            <button class="btn-view" onclick="viewListing('${listing.id}')">${viewButtonText}</button>
         </div>
     `;
     

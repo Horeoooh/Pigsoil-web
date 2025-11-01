@@ -61,13 +61,13 @@ function checkIfAlreadyLoggedIn() {
                     // Redirect based on user type
                     if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
                         console.log('🐷 Redirecting swine farmer to dashboard');
-                        showAlert('Already logged in! Redirecting to dashboard...', 'success');
+                        showAlert(i18next.t('login.success.loginSuccessful'), 'success');
                         setTimeout(() => {
                             window.location.href = '/dashboard.html';
                         }, 1500);
                     } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
                         console.log('🌿 Redirecting fertilizer buyer to buyer dashboard');
-                        showAlert('Already logged in! Redirecting to buyer dashboard...', 'success');
+                        showAlert(i18next.t('login.success.loginSuccessful'), 'success');
                         setTimeout(() => {
                             window.location.href = '/buyer-dashboard.html';
                         }, 1500);
@@ -98,7 +98,7 @@ function initializeRecaptcha() {
             },
             'expired-callback': () => {
                 console.log('reCAPTCHA expired');
-                showAlert('reCAPTCHA expired. Please try again.', 'error');
+                showAlert(i18next.t('signup.errors.signupFailed'), 'error');
             }
         });
     }
@@ -118,7 +118,7 @@ async function startPhoneVerification(phoneNumber) {
         
         // Validate phone format
         if (!validatePhoneNumber(phoneNumber)) {
-            throw new Error('Please enter a valid Philippine mobile number (e.g., +639129731720).');
+            throw new Error(i18next.t('login.errors.invalidEmail'));
         }
         
         const recaptcha = initializeRecaptcha();
@@ -132,7 +132,7 @@ async function startPhoneVerification(phoneNumber) {
             phone: phoneNumber
         }));
         
-        showAlert('SMS code sent successfully!', 'success');
+        showAlert(i18next.t('phoneRegistration.success.smsSent'), 'success');
         
         // Redirect to SMS verification
         setTimeout(() => {
@@ -149,20 +149,20 @@ async function startPhoneVerification(phoneNumber) {
 
 // Handle SMS sending errors
 function handleSMSError(error) {
-    let errorMessage = 'Failed to send SMS code. Please try again.';
+    let errorMessage = i18next.t('signup.errors.signupFailed');
     
     if (error.message.includes('valid Philippine mobile')) {
         errorMessage = error.message;
     } else {
         switch (error.code) {
             case 'auth/invalid-phone-number':
-                errorMessage = 'Invalid phone number format.';
+                errorMessage = i18next.t('login.errors.invalidEmail');
                 break;
             case 'auth/too-many-requests':
-                errorMessage = 'Too many requests. Please try again later.';
+                errorMessage = i18next.t('login.errors.tooManyAttempts');
                 break;
             case 'auth/quota-exceeded':
-                errorMessage = 'SMS quota exceeded. Please try again later.';
+                errorMessage = i18next.t('login.errors.tooManyAttempts');
                 break;
         }
     }
@@ -179,7 +179,7 @@ function setupEventListeners() {
             
             const phone = phoneInput.value.trim();
             if (!phone) {
-                showAlert('Please enter your phone number.', 'error');
+                showAlert(i18next.t('login.errors.fillAllFields'), 'error');
                 return;
             }
             
@@ -193,11 +193,11 @@ function setLoading(loading) {
     if (phoneButton) {
         if (loading) {
             phoneButton.classList.add('loading');
-            phoneButton.innerHTML = '<span>Sending Code...</span>';
+            phoneButton.innerHTML = `<span>${i18next.t('phoneRegistration.sending')}</span>`;
             phoneButton.disabled = true;
         } else {
             phoneButton.classList.remove('loading');
-            phoneButton.innerHTML = '<span>📱</span><span>Send Verification Code</span>';
+            phoneButton.innerHTML = `<span>📱</span><span data-i18n="phoneRegistration.sendButton">${i18next.t('phoneRegistration.sendButton')}</span>`;
             phoneButton.disabled = false;
         }
     }

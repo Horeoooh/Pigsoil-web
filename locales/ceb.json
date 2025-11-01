@@ -8,7 +8,7 @@
   },
   "buttons": {
     "signUp": "Magparehistro",
-    "signIn": "Magsulod",
+    "signIn": "Maglogin",
     "haveAccount": "↻ Naa nay akong account",
     "newUser": "⚲ Bag-o ko sa PigSoil+"
   },
@@ -71,8 +71,8 @@
   },
   "signup": {
     "title": "Apil sa PigSoil+",
-    "fullNameLabel": "Tibuok nga Ngalan",
-    "fullNamePlaceholder": "Isulod ang imong tibuok nga ngalan",
+    "fullNameLabel": "Username",
+    "fullNamePlaceholder": "Isulod ang imong username",
     "emailLabel": "Email Address",
     "emailPlaceholder": "Isulod ang imong email address",
     "passwordLabel": "Password",
@@ -183,13 +183,21 @@
     "phonePlaceholder": "+63 9XX XXX XXXX",
     "sendButton": "📱 Ipadala ang Verification Code",
     "sending": "Nagpadala...",
-    "backToSignup": "← Balik sa sign up"
+    "backToSignup": "← Balik sa sign up",
+    "success": {
+      "smsSent": "Malampuson ang pagpadala sa SMS code!"
+    }
   },
   "smsVerification": {
     "title": "Isulod ang SMS Code nga gipadala sa",
     "resend": "Ipadala pag-usab",
     "verifyButton": "I-verify",
     "back": "← Balik",
+    "success": {
+      "smsSent": "Malampuson ang pagpadala sa SMS code!",
+      "phoneVerified": "Gi-verify na ang phone! Palihug komplituha ang imong profile.",
+      "welcomeBack": "Maayong pagbalik! Nag-redirect..."
+    },
     "completeProfile": {
       "title": "Komplituha ang Imong Profile",
       "subtitle": "Pipila lang ka detalye para magsugod",
@@ -199,6 +207,446 @@
       "farmer": "Mag-uuma sa Baboy",
       "buyer": "Mopalit og Organikong Pataba",
       "completeButton": "Komplituha ang Pagparehistro"
+    }
+  },
+  "dashboard": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "market": "Merkado",
+      "guides": "Mga Giya"
+    },
+    "transform": {
+      "title": "Bag-oha ang Hugaw sa Baboy ngadto sa Organikong Bulawan",
+      "pig": {
+        "title": "Hugaw sa Baboy",
+        "description": "Hilaw nga tae gikan sa imong uma"
+      },
+      "composting": {
+        "title": "Pag-Compost",
+        "description": "Natural nga proseso sa pagkadunot"
+      },
+      "gold": {
+        "title": "Organikong Bulawan",
+        "description": "Taas nga kalidad nga pataba"
+      },
+      "note": "Ang imong hugaw mas bililhon pa kaysa imong gihunahuna!"
+    },
+    "bot": {
+      "title": "Manong Bot",
+      "online": "Online 24/7",
+      "message": "Kumusta! Ania ko aron motabang nimo sa imong composting journey. Gusto ba nimong mahibalo bahin sa mga teknik sa pag-compost o nanginahanglan ba og tambag sa imong batch karon?",
+      "learnButton": "Kat-oni ang Pag-Compost",
+      "adviceButton": "Pagkuha og Tambag"
+    },
+    "quickActions": {
+      "title": "Daling Mga Aksyon",
+      "newListing": "Paghimo og Bag-ong Listing",
+      "viewBatches": "Tan-awa ang Akong mga Batch",
+      "browseMarket": "Suroy sa Marketplace",
+      "readGuides": "Basaha ang mga Giya"
+    }
+  },
+  "farmermarket": {
+    "hero": {
+      "title": "Akong Merkado",
+      "subtitle": "Pangitaan ang imong mga compost listing ug konektahi ang mga mopalit",
+      "createButton": "Paghimo og Bag-ong Listing",
+      "nearbyButton": "Duol nga mga Mopalit",
+      "messagesButton": "Mga Mensahe"
+    },
+    "filters": {
+      "myListings": "Akong mga Listing",
+      "available": "Anaa",
+      "soldOut": "Nahalin Na",
+      "searchPlaceholder": "Pangitaa ang mga listing..."
+    },
+    "listingCard": {
+      "available": "Anaa",
+      "soldOut": "Nahalin Na",
+      "perKg": "matag kg",
+      "quantityLeft": "Kantidad nga Nahibilin",
+      "originalQuantity": "Orihinal",
+      "sold": "Nahalin",
+      "created": "Gihimo",
+      "updated": "Gi-update",
+      "viewButton": "Tan-awa ang mga Detalye"
+    },
+    "empty": {
+      "noListings": "Walay listing nga nakit-an",
+      "createFirst": "Paghimo sa imong una nga listing aron magsugod sa pagbaligya!",
+      "noResults": "Walay listing nga mohaum sa imong pagpangita"
+    },
+    "nearbyBuyers": {
+      "title": "Duol nga mga Mopalit",
+      "loading": "Nag-load sa mapa...",
+      "buyersFound": "mga mopalit nakit-an sulod sa 50km",
+      "closeButton": "Sirado",
+      "buyerInfo": {
+        "distance": "km ang gilay-on",
+        "viewProfile": "Tan-awa ang Profile"
+      }
+    }
+  },
+  "createListing": {
+    "header": {
+      "title": "Paghimo og Bag-ong Listing",
+      "subtitle": "I-lista ang imong kalidad nga compost para ibaligya sa merkado"
+    },
+    "form": {
+      "productTitle": {
+        "label": "Titulo sa Compost *",
+        "placeholder": "pananglitan, Premium Organic Swine Compost - Andam na Gamiton"
+      },
+      "photos": {
+        "label": "Mga Litrato sa Compost *",
+        "hint": "I-upload og hindi mubu sa usa ka litrato sa imong swine compost • Ang una nga litrato mao ang panguna nga ikapakita",
+        "uploadText": "I-drag ug i-drop o i-klik para mag-upload",
+        "processing": "Nagproseso...",
+        "uploading": "Nag-upload..."
+      },
+      "technique": {
+        "label": "Teknik sa Pag-Compost nga Gigamit",
+        "basic": {
+          "title": "Basic Swine Manure",
+          "description": "Tradisyonal nga pamaagi sa pag-compost, 60-90 ka adlaw"
+        },
+        "hot": {
+          "title": "Hot Composting",
+          "description": "Paspas nga pamaagi gamit ang init, 30-45 ka adlaw"
+        }
+      },
+      "quantity": {
+        "label": "Kantidad (kg) *",
+        "placeholder": "pananglitan, 100"
+      },
+      "price": {
+        "label": "Presyo matag kg (₱) *",
+        "placeholder": "pananglitan, 15.00"
+      },
+      "description": {
+        "label": "Deskripsyon sa Compost",
+        "placeholder": "Ihulagway ang kalidad sa imong swine compost, pamaagi sa pag-compost nga gigamit, ug bisan unsang espesyal nga bahin...",
+        "counter": "mga karakter"
+      },
+      "location": {
+        "label": "Lokasyon sa Pagkuha/Pagkita",
+        "defaultName": "Pilia ang lokasyon sa uma",
+        "defaultAddress": "I-klik ang \"Usba\" aron mopili og lokasyon sa pagkuha",
+        "mapPlaceholder": "🗺️ I-klik ang \"Usba\" aron ibutang ang imong lokasyon sa pagkita",
+        "changeButton": "Usba"
+      },
+      "paymentNote": {
+        "title": "Direktang Komunikasyon ug Bayad",
+        "description": "Ang PigSoil+ nagkonekta sa mga mag-uuma sa baboy ngadto sa mga mopalit og organikong pataba pinaagi sa direktang pagmensahe. Ang mga kasabutan sa bayad (cash, installment, barter) gihikay sa pribado tali nimo ug sa mopalit panahon sa personal nga pagkita. Kining pamaagi nagtahod sa tradisyonal nga pamaagi sa komunidad sa agrikultura sa Pilipinas."
+      }
+    },
+    "validation": {
+      "titleRequired": "Kinahanglan ang titulo sa produkto",
+      "titleTooShort": "Ang titulo kinahanglan hindi mubu sa 3 ka karakter",
+      "titleTooLong": "Ang titulo dili pwede molapas sa 100 ka karakter",
+      "quantityRequired": "Kinahanglan ang kantidad",
+      "quantityInvalid": "Palihug isulod ang valid nga kantidad",
+      "quantityTooLow": "Ang minimum nga kantidad kay 1 kg",
+      "quantityTooHigh": "Ang maximum nga kantidad kay 10,000 kg",
+      "priceRequired": "Kinahanglan ang presyo",
+      "priceInvalid": "Palihug isulod ang valid nga presyo",
+      "priceTooLow": "Ang minimum nga presyo kay ₱1 matag kg",
+      "priceTooHigh": "Ang maximum nga presyo kay ₱5,000 matag kg",
+      "descriptionTooLong": "Ang deskripsyon dili pwede molapas sa 500 ka karakter",
+      "photosRequired": "Palihug pag-upload og hindi mubu sa 1 ka litrato sa produkto",
+      "photosTooMany": "Maximum 5 ka mga litrato lang ang gitugotan",
+      "photoInvalidType": "Palihug pilia og valid nga litrato (JPG, PNG, GIF, WebP)",
+      "photoTooLarge": "Ang gidak-on sa litrato kinahanglan hindi molapas sa 5MB",
+      "locationRequired": "Palihug pilia ang lokasyon sa pagkuha para sa imong swine compost",
+      "fixErrors": "Palihug ayuha ang tanang sayop una ipadala"
+    },
+    "buttons": {
+      "submit": "I-post ang Swine Compost Listing",
+      "submitting": "Naghimo og Listing...",
+      "cancel": "Kanselahon"
+    },
+    "modal": {
+      "title": "Pilia ang Lokasyon sa Pagkuha",
+      "search": "Pangitaa ang lokasyon sa imong uma...",
+      "preview": {
+        "title": "Napiling Lokasyon",
+        "name": "Ang ngalan sa lokasyon mopakita dinhi",
+        "address": "Ang bug-os nga address mopakita dinhi",
+        "loading": "Nangita sa lokasyon..."
+      },
+      "instructions": "Pangitaa ang lokasyon sa imong uma o i-drag ang marker sa eksakto nga lugar",
+      "confirmButton": "Kumpirmaha ang Lokasyon",
+      "cancelButton": "Kanselahon"
+    },
+    "progress": {
+      "preparing": "Nag-andam sa imong swine compost listing...",
+      "uploadingPhotos": "Nag-upload sa mga litrato sa compost...",
+      "savingLocation": "Nag-save sa lokasyon...",
+      "creating": "Naghimo og swine compost listing...",
+      "saving": "Nag-save sa database...",
+      "success": "Malampuson ang paghimo sa listing!"
+    },
+    "notifications": {
+      "photoRemoved": "Gikuha na ang litrato",
+      "photoReady": "Andam na ang litrato alang sa pag-upload!",
+      "photoProcessFailed": "Napakyas ang pag-proseso sa litrato. Palihug sulayi pag-usab.",
+      "errorReading": "May sayop sa pagbasa sa litrato",
+      "locationUpdated": "Malampuson ang pag-update sa lokasyon sa uma!",
+      "listingCreated": "Malampuson ang paghimo sa swine compost listing!",
+      "redirecting": "Nag-redirect sa merkado...",
+      "errorCreating": "May sayop sa paghimo sa listing",
+      "signInRequired": "Palihug pag-sign in aron makahimo og listing",
+      "farmerOnly": "Swine farmers lang ang makahimo og listing",
+      "profileLoadError": "May sayop sa pag-load sa profile. Palihug sulayi pag-usab.",
+      "firebaseConnected": "Firebase konektado na sa imong mga koleksyon!",
+      "firebaseFailed": "Napakyas ang koneksyon sa Firebase"
+    }
+  },
+  "settings": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "market": "Merkado",
+      "guides": "Mga Giya",
+      "accountSettings": "Mga Setting sa Account",
+      "subscription": "Subscription",
+      "support": "Suporta"
+    },
+    "sidebar": {
+      "accountSettings": "Account",
+      "language": "Pinulongan",
+      "subscription": "Subscription",
+      "logout": "Logout"
+    },
+    "language": {
+      "title": "Mga Setting sa Pinulongan",
+      "subtitle": "Pilia ang imong gusto nga pinulongan para sa PigSoil+ interface. Ang imong pagpili ma-save automatically.",
+      "options": {
+        "english": {
+          "name": "English"
+        },
+        "cebuano": {
+          "name": "Cebuano"
+        }
+      },
+      "alerts": {
+        "changed": "✅ Malampuson ang pag-usab sa pinulongan!"
+      }
+    },
+    "profile": {
+      "title": "Mga Setting sa Account",
+      "subtitle": "Pangitaan ang imong personal nga impormasyon ug seguridad",
+      "username": {
+        "label": "Username",
+        "placeholder": "Isulod ang imong username"
+      },
+      "email": {
+        "label": "Email Address",
+        "changeButton": "Usba ang Email"
+      },
+      "phone": {
+        "label": "Phone Number",
+        "changeButton": "Usba ang Phone"
+      },
+      "password": {
+        "label": "Password",
+        "changeButton": "Usba ang Password",
+        "addButton": "Pagdugang og Email & Password"
+      },
+      "userType": {
+        "label": "Tipo sa Account",
+        "farmer": "Mag-uuma sa Baboy",
+        "buyer": "Mopalit og Organikong Pataba",
+        "disabled": "Kontaka ang support aron mausab ang tipo sa account"
+      },
+      "address": {
+        "label": "Adres sa Uma/Negosyo",
+        "changeButton": "Usba ang Adres"
+      },
+      "profilePicture": {
+        "label": "Litrato sa Profile",
+        "uploadHint": "I-klik para mag-upload"
+      },
+      "accountRemoval": {
+        "title": "Pagtangtang sa Account",
+        "description": "Permanenteng tangtangon ang imong account ug tanang datos nga may kalabutan. Dili na kini mahimo nga i-undo.",
+        "button": "Tangtanga ang Akong Account"
+      },
+      "buttons": {
+        "saveChanges": "I-save ang mga Kausaban",
+        "saving": "Nag-save...",
+        "cancel": "Kanselahon"
+      }
+    },
+    "modals": {
+      "phoneChange": {
+        "title": "Usba ang Phone Number",
+        "newPhoneLabel": "Bag-ong Phone Number",
+        "newPhonePlaceholder": "+63 9XX XXX XXXX",
+        "sendCodeButton": "Ipadala ang Verification Code",
+        "cancelButton": "Kanselahon"
+      },
+      "smsVerification": {
+        "title": "Isulod ang SMS Code",
+        "sentTo": "Gipadala sa",
+        "codeLabel": "6-Digit Code",
+        "verifyButton": "I-verify ang Code",
+        "cancelButton": "Kanselahon"
+      },
+      "passwordChange": {
+        "title": "Usba ang Password",
+        "currentPasswordLabel": "Kasamtangan nga Password",
+        "currentPasswordPlaceholder": "Isulod ang kasamtangan nga password",
+        "newPasswordLabel": "Bag-ong Password",
+        "newPasswordPlaceholder": "Isulod ang bag-ong password (min 6 ka karakter)",
+        "confirmPasswordLabel": "Kumpirma ang Bag-ong Password",
+        "confirmPasswordPlaceholder": "I-type pag-usab ang bag-ong password",
+        "changeButton": "Usba ang Password",
+        "cancelButton": "Kanselahon"
+      },
+      "addEmail": {
+        "title": "Pagdugang og Email & Password",
+        "subtitle": "I-link ang imong phone account sa email ug password para sa dugang seguridad",
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "Isulod ang imong email address",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Paghimo og password (min 6 ka karakter)",
+        "confirmPasswordLabel": "Kumpirma ang Password",
+        "confirmPasswordPlaceholder": "I-type pag-usab ang imong password",
+        "addButton": "Idugang ang Email & Password",
+        "cancelButton": "Kanselahon"
+      },
+      "changeEmail": {
+        "title": "Usba ang Email Address",
+        "currentPasswordLabel": "Kasamtangan nga Password",
+        "currentPasswordPlaceholder": "Isulod ang password para makumpirma",
+        "newEmailLabel": "Bag-ong Email Address",
+        "newEmailPlaceholder": "Isulod ang bag-ong email address",
+        "changeButton": "Usba ang Email",
+        "cancelButton": "Kanselahon"
+      },
+      "addressChange": {
+        "title": "Usba ang Adres",
+        "searchPlaceholder": "Pangitaa ang imong lokasyon...",
+        "selectedLocation": "Napiling Lokasyon",
+        "confirmButton": "Kumpirma ang Lokasyon",
+        "cancelButton": "Kanselahon"
+      }
+    },
+    "alerts": {
+      "saveSuccess": "Malampuson ang pag-save sa mga kausaban!",
+      "saveFailed": "Napakyas ang pag-save sa mga kausaban. Palihug sulayi pag-usab.",
+      "phoneChangeSuccess": "Malampuson ang pag-update sa phone number!",
+      "phoneChangeFailed": "Napakyas ang pag-update sa phone number. Palihug sulayi pag-usab.",
+      "emailChangeSuccess": "Malampuson ang pag-update sa email! Palihug i-verify ang imong bag-ong email.",
+      "emailChangeFailed": "Napakyas ang pag-update sa email. Palihug sulayi pag-usab.",
+      "passwordChangeSuccess": "Malampuson ang pag-update sa password!",
+      "passwordChangeFailed": "Napakyas ang pag-update sa password. Palihug sulayi pag-usab.",
+      "addressChangeSuccess": "Malampuson ang pag-update sa adres!",
+      "addressChangeFailed": "Napakyas ang pag-update sa adres. Palihug sulayi pag-usab.",
+      "profilePictureSuccess": "Malampuson ang pag-update sa litrato sa profile!",
+      "profilePictureFailed": "Napakyas ang pag-upload sa litrato sa profile. Palihug sulayi pag-usab.",
+      "accountDeleteConfirm": "Sigurado ka ba nga tangtangon ang imong account? Dili na kini mahimo nga i-undo.",
+      "accountDeleted": "Malampuson ang pagtangtang sa account. Nag-redirect...",
+      "accountDeleteFailed": "Napakyas ang pagtangtang sa account. Palihug sulayi pag-usab.",
+      "logoutConfirm": "Sigurado ka ba nga mo-logout?"
+    },
+    "subscription": {
+      "title": "Mga Setting sa Subscription",
+      "subtitle": "Pangitaan ang imong subscription plan ug mga features",
+      "currentPlan": "Kasamtangan nga Plan",
+      "free": "Free Plan",
+      "essential": "Essential Plan",
+      "premium": "Premium Plan",
+      "plans": {
+        "free": {
+          "name": "Free",
+          "price": "Free",
+          "features": [
+            "Access sa Marketplace",
+            "Mga Giya sa Pag-Compost",
+            "Camera AI (5/semana)",
+            "Manong Bot (10/semana)"
+          ]
+        },
+        "essential": {
+          "name": "Essential",
+          "price": "₱149/buwan",
+          "badge": "Pinakabililhon",
+          "features": [
+            "Tanan sa Free",
+            "Unlimited Manong Bot (Mobile only)"
+          ]
+        },
+        "premium": {
+          "name": "Premium",
+          "price": "₱299/buwan",
+          "badge": "Pinakabantog",
+          "features": [
+            "Tanan sa Essential",
+            "Unlimited Camera AI (Mobile only)"
+          ]
+        }
+      },
+      "usage": {
+        "title": "Imong Paggamit Niining Semanaha",
+        "manongBot": "Mga Paggamit sa Manong Bot",
+        "cameraAi": "Mga Camera AI Scan",
+        "unlimited": "Walay Limitasyon",
+        "weeklyReset": "Mo-reset kada Lunes sa 12:00 AM",
+        "mobileOnlyNotice": "Ang Manong Bot ug Camera AI anaa lang sa PigSoil mobile app. I-download ang app aron makagamit niining AI-powered nga mga feature!"
+      },
+      "limits": {
+        "manongBotTitle": "⚠️ Naabot na ang Limitasyon sa Manong Bot Karong Semanaha",
+        "manongBotDescription": "Nagamit na nimo ang tanan nga 10 ka free Manong Bot conversations karong semanaha. Pag-upgrade sa Essential o Premium para sa unlimited access, o hulata hangtod Lunes para mo-reset ang imong limitasyon.",
+        "cameraAiTitle": "⚠️ Naabot na ang Limitasyon sa Camera AI Karong Semanaha",
+        "cameraAiDescription": "Nagamit na nimo ang tanan nga 5 ka free Camera AI scans karong semanaha. Pag-upgrade sa Premium para sa unlimited access, o hulata hangtod Lunes para mo-reset ang imong limitasyon."
+      },
+      "buttons": {
+        "upgrade": "I-upgrade ang Plan",
+        "downgrade": "Usba sa",
+        "manage": "Kanselahon ang Subscription",
+        "contactSupport": "Kontaka ang Support",
+        "subscribe": "Mag-subscribe Karon",
+        "subscribing": "Nagproseso..."
+      },
+      "modal": {
+        "upgrade": {
+          "title": "I-upgrade ang Subscription",
+          "icon": "🚀",
+          "confirmButton": "Kumpirma ang Pag-upgrade",
+          "cancelButton": "Kanselahon"
+        },
+        "downgrade": {
+          "title": "Usba ang Plan",
+          "icon": "⚠️",
+          "confirmButton": "Kumpirma ang Kausaban",
+          "cancelButton": "Kanselahon"
+        },
+        "cancel": {
+          "title": "Kanselahon ang Subscription",
+          "icon": "⚠️",
+          "message": "Sigurado ka ba nga kanselahon ang imong subscription? Mawala nimo ang access sa premium features.",
+          "confirmButton": "Oo, Kanselahon",
+          "cancelButton": "Padayona ang Subscription"
+        },
+        "details": {
+          "plan": "Plan",
+          "price": "Presyo",
+          "billingCycle": "Billing Cycle",
+          "monthly": "Binuwan",
+          "features": "Mga Features"
+        }
+      },
+      "alerts": {
+        "upgradeSuccess": "Malampuson ang pag-upgrade sa subscription!",
+        "upgradeFailed": "Napakyas ang pag-upgrade sa subscription. Palihug sulayi pag-usab.",
+        "cancelSuccess": "Malampuson ang pagkansela sa subscription.",
+        "cancelFailed": "Napakyas ang pagkansela sa subscription. Palihug sulayi pag-usab.",
+        "paymentSuccess": "Malampuson ang bayad! Ang imong subscription gi-activate na...",
+        "paymentFailed": "Gikansela o napakyas ang bayad. Palihug sulayi pag-usab.",
+        "activationSuccess": "Maayong pag-abut! Aktibo na ang imong subscription. Makalingaw sa imong unlimited features!",
+        "activationPending": "Giproseso pa ang imong bayad. Ang imong subscription ma-activate sa dili madugay."
+      }
     }
   }
 }

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Settings - PigSoil+</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- i18next for internationalization -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #fde2e4 0%, #fad0c4 100%);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #2d5a27;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+        }
+
+        .logo-text {
+            height: 40px;
+            width: 171px;
+            object-fit: contain;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            padding: 8px 0;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-menu a.active {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+        }
+
+        .nav-menu a:hover {
+            color: #4CAF50;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: #666;
+            transition: all 0.3s;
+            border-radius: 6px;
+        }
+
+        .icon-btn:hover {
+            color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #333;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .user-profile:hover {
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        .settings-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            min-height: 500px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: #F0F0F0;
+            width: 250px;
+            padding: 24px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-item {
+            padding: 12px 24px;
+            cursor: pointer;
+            color: #666;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-right: 3px solid transparent;
+            background: none;
+            border: none;
+            text-align: left;
+            width: 100%;
+            text-decoration: none;
+            display: block;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            line-height: normal;
+        }
+
+        .sidebar-item:hover {
+            background: #e9ecef;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .sidebar-item.active {
+            background: #e8f5e8;
+            color: #2d5a27;
+            border-right-color: #4CAF50;
+        }
+
+        a.sidebar-item {
+            color: #666;
+        }
+
+        a.sidebar-item:hover {
+            color: #333;
+            text-decoration: none;
+        }
+
+        a.sidebar-item:visited {
+            color: #666;
+        }
+
+        .sidebar-section {
+            margin-top: 24px;
+            padding-top: 16px;
+        }
+
+        .sidebar-section-title {
+            padding: 0 24px 12px;
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            margin-top: 32px;
+            padding: 12px 24px;
+            color: #dc3545;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .logout-btn:hover {
+            background: #f8f9fa;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 48px;
+        }
+
+        .language-header {
+            margin-bottom: 48px;
+        }
+
+        .language-header h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .language-header p {
+            color: #666;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .language-options {
+            display: grid;
+            gap: 20px;
+            max-width: 600px;
+        }
+
+        .language-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .language-card:hover {
+            border-color: #4CAF50;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .language-card.active {
+            border-color: #4CAF50;
+            background: #f1f8f4;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.2);
+        }
+
+        .language-icon {
+            font-size: 24px;
+            font-weight: 700;
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border-radius: 12px;
+            color: #666;
+        }
+
+        .language-card.active .language-icon {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .language-info {
+            flex: 1;
+        }
+
+        .language-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .language-native {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .check-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #4CAF50;
+            color: white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .language-card.active .check-icon {
+            display: flex;
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert.show {
+            display: flex;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .settings-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .content {
+                padding: 24px;
+            }
+
+            .language-header h1 {
+                font-size: 24px;
+            }
+
+            .language-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-container">
+            <div class="logo">
+                <img src="/images/pig logo.png" alt="PigSoil Logo" class="logo-img">
+                <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
+            </div>
+            
+            <ul class="nav-menu">
+                <li><a href="/dashboard.html" data-nav="dashboard" data-i18n="settings.nav.dashboard">Dashboard</a></li>
+                <li style="display: none;"><a href="/transactions.html" data-nav="transactions">Transactions</a></li>
+                <li><a href="/farmermarket.html" data-nav="market" data-i18n="settings.nav.market">Market</a></li>
+                <li><a href="/guides.html" data-nav="guides" data-i18n="settings.nav.guides">Guides</a></li>
+            </ul>
+            
+            <div class="user-section">
+                <a href="/notifications.html">
+                    <button class="icon-btn" id="notificationBtn" aria-label="View notifications">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                    </button>
+                </a>
+                <a href="/setting-acc.html" class="user-profile" title="User Profile" aria-label="View user profile settings">
+                    <div>
+                        <span class="user-name" id="headerUserName">Loading...</span>
+                    </div>
+                    <div class="user-avatar" id="headerUserAvatar">
+                        <img src="https://i.pinimg.com/736x/d7/95/c3/d795c373a0539e64c7ee69bb0af3c5c3.jpg" alt="User" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    </div>
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-container">
+        <div class="settings-container">
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">SETTINGS</div>
+                    <a href="/setting-acc.html" class="sidebar-item" title="Account Settings" aria-label="Manage account settings" data-i18n="settings.sidebar.accountSettings">Account</a>
+                    <button class="sidebar-item active" title="Language Settings" aria-label="Manage language settings" data-i18n="settings.sidebar.language">Language</button>
+                    <a href="/setting-subscription.html" class="sidebar-item" title="Subscription Settings" aria-label="Manage subscription settings" data-i18n="settings.sidebar.subscription">Subscription</a>
+                </div>
+
+                <button class="logout-btn" id="logoutBtn" title="Log Out" aria-label="Log out of your account" data-i18n="settings.sidebar.logout">
+                    🚪 Log Out
+                </button>
+            </aside>
+
+            <div class="content">
+                <div class="language-header">
+                    <h1 data-i18n="settings.language.title">Language Settings</h1>
+                    <p data-i18n="settings.language.subtitle">Choose your preferred language for the PigSoil+ interface. Your selection will be saved automatically.</p>
+                </div>
+
+                <div id="alertMessage" class="alert"></div>
+
+                <div class="language-options">
+                    <div class="language-card" data-lang="en" onclick="selectLanguage('en')">
+                        <div class="language-icon">EN</div>
+                        <div class="language-info">
+                            <div class="language-name" data-i18n="settings.language.options.english.name">English</div>
+                            <div class="language-native">English</div>
+                        </div>
+                        <div class="check-icon">✓</div>
+                    </div>
+
+                    <div class="language-card" data-lang="ceb" onclick="selectLanguage('ceb')">
+                        <div class="language-icon">CEB</div>
+                        <div class="language-info">
+                            <div class="language-name" data-i18n="settings.language.options.cebuano.name">Cebuano</div>
+                            <div class="language-native">Sinugbuanon</div>
+                        </div>
+                        <div class="check-icon">✓</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/i18n.js"></script>
+    <script type="module" src="/js/dashboard-auth-guard.js"></script>
+    <script type="module" src="/js/shared-user-manager.js"></script>
+    <script>
+        // Initialize i18next and set current language
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.i18nManager.initialize();
+            
+            // Set active language card
+            const currentLang = window.i18nManager.getCurrentLanguage();
+            updateActiveLanguage(currentLang);
+        });
+
+        function updateActiveLanguage(lang) {
+            // Remove active class from all cards
+            document.querySelectorAll('.language-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Add active class to current language
+            const activeCard = document.querySelector(`.language-card[data-lang="${lang}"]`);
+            if (activeCard) {
+                activeCard.classList.add('active');
+            }
+        }
+
+        function selectLanguage(lang) {
+            const currentLang = window.i18nManager.getCurrentLanguage();
+            
+            if (lang === currentLang) {
+                return; // Already selected
+            }
+
+            // Update UI immediately
+            updateActiveLanguage(lang);
+            
+            // Switch language (no success message)
+            window.i18nManager.switchLanguage();
+        }
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            const confirmLogout = confirm(i18next.t('settings.alerts.logoutConfirm') || 'Are you sure you want to log out?');
+            if (confirmLogout) {
+                try {
+                    const { getAuth, signOut } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
+                    const auth = getAuth();
+                    await signOut(auth);
+                    window.location.href = '/login.html';
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    alert('Failed to log out. Please try again.');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -138,7 +138,7 @@ function hidePageLoading() {
 function checkAuthState() {
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            showAlert('Please sign in to access your profile settings.', 'error');
+            showAlert(i18next.t('settings.alerts.saveFailed'), 'error');
             setTimeout(() => window.location.href = '/login.html', 2000);
             return;
         }
@@ -152,7 +152,7 @@ function checkAuthState() {
             hidePageLoading();
         } catch (error) {
             console.error('❌ Error loading profile data:', error);
-            showAlert('Error loading profile data', 'error');
+            showAlert(i18next.t('settings.alerts.saveFailed'), 'error');
             hidePageLoading();
         }
     });
@@ -336,18 +336,18 @@ async function handleProfilePictureUpload(e) {
     if (!file) return;
     
     if (!file.type.startsWith('image/')) {
-        showAlert('Please select a valid image file', 'error');
+        showAlert(i18next.t('settings.alerts.profilePictureFailed'), 'error');
         return;
     }
     
     if (file.size > 5 * 1024 * 1024) {
-        showAlert('Image size must be less than 5MB', 'error');
+        showAlert(i18next.t('settings.alerts.profilePictureFailed'), 'error');
         return;
     }
     
     try {
         setLoadingState(true);
-        showAlert('Uploading profile picture...', 'info');
+        showAlert(i18next.t('settings.alerts.profilePictureSuccess'), 'info');
         
         // Create preview
         const reader = new FileReader();
@@ -373,7 +373,7 @@ async function handleProfilePictureUpload(e) {
             },
             (error) => {
                 console.error('❌ Upload error:', error);
-                showAlert('Failed to upload: ' + error.message, 'error');
+                showAlert(i18next.t('settings.alerts.profilePictureFailed'), 'error');
                 setLoadingState(false);
             },
             async () => {
@@ -390,14 +390,14 @@ async function handleProfilePictureUpload(e) {
                 currentUserData.userProfilePictureUrl = downloadURL;
                 updateProfileDisplay();
                 
-                showAlert('Profile picture updated!', 'success');
+                showAlert(i18next.t('settings.alerts.profilePictureSuccess'), 'success');
                 setLoadingState(false);
             }
         );
         
     } catch (error) {
         console.error('❌ Error uploading:', error);
-        showAlert('Failed to upload: ' + error.message, 'error');
+        showAlert(i18next.t('settings.alerts.profilePictureFailed'), 'error');
         setLoadingState(false);
     }
 }
@@ -602,7 +602,7 @@ async function handleVerifySmsCode() {
         
         setTimeout(() => {
             closeSmsVerificationModal();
-            showAlert('Phone number updated successfully!', 'success');
+            showAlert(i18next.t('settings.alerts.phoneChangeSuccess'), 'success');
         }, 1500);
         
     } catch (error) {
@@ -734,7 +734,7 @@ async function handleAddEmailPassword() {
         setTimeout(() => {
             closeAddEmailModal();
             checkEmailAccountStatus();
-            showAlert('Email & password added successfully! You can now sign in with email.', 'success');
+            showAlert(i18next.t('settings.alerts.emailChangeSuccess'), 'success');
         }, 1500);
         
     } catch (error) {
@@ -848,7 +848,7 @@ async function handleChangeEmail() {
         
         setTimeout(() => {
             closeChangeEmailModal();
-            showAlert('Email changed successfully!', 'success');
+            showAlert(i18next.t('settings.alerts.emailChangeSuccess'), 'success');
         }, 1500);
         
     } catch (error) {
@@ -890,7 +890,7 @@ function setupPasswordChangeModal() {
 
 function openPasswordChangeModal() {
     if (!hasPasswordProvider) {
-        showAlert('Please add an email address first to enable password management', 'error');
+        showAlert(i18next.t('settings.alerts.passwordChangeFailed'), 'error');
         return;
     }
     
@@ -961,7 +961,7 @@ async function handlePasswordChange() {
         
         setTimeout(() => {
             closePasswordChangeModal();
-            showAlert('Password changed successfully!', 'success');
+            showAlert(i18next.t('settings.alerts.passwordChangeSuccess'), 'success');
         }, 1500);
         
     } catch (error) {
@@ -1006,7 +1006,7 @@ async function handleFormSubmission(e) {
         const emailChanged = newEmail !== (currentUserData.userEmail || '');
         
         if (!nameChanged && !typeChanged && !emailChanged) {
-            showAlert('No changes to save', 'info');
+            showAlert(i18next.t('settings.alerts.saveSuccess'), 'info');
             setLoadingState(false);
             return;
         }
@@ -1020,7 +1020,7 @@ async function handleFormSubmission(e) {
         
         if (typeChanged) {
             updateData.userType = newUserType;
-            showAlert('User type updated! The app will reload...', 'success');
+            showAlert(i18next.t('settings.alerts.saveSuccess'), 'success');
         }
         
         if (emailChanged && newEmail) {
@@ -1034,12 +1034,12 @@ async function handleFormSubmission(e) {
         if (typeChanged) {
             setTimeout(() => window.location.reload(), 1500);
         } else {
-            showAlert('Profile updated successfully!', 'success');
+            showAlert(i18next.t('settings.alerts.saveSuccess'), 'success');
         }
         
     } catch (error) {
         console.error('❌ Error updating profile:', error);
-        showAlert(error.message || 'Failed to update profile', 'error');
+        showAlert(i18next.t('settings.alerts.saveFailed'), 'error');
     } finally {
         if (userTypeSelect.value === currentUserData.userType) {
             setLoadingState(false);
@@ -1052,33 +1052,33 @@ async function handleFormSubmission(e) {
 // ============================================================
 
 async function handleLogout() {
-    if (!confirm('Are you sure you want to log out?')) return;
+    if (!confirm(i18next.t('settings.alerts.logoutConfirm'))) return;
     
     try {
         setLoadingState(true);
         await signOut(auth);
         localStorage.removeItem('pigsoil_user');
-        showAlert('Logged out successfully', 'success');
+        showAlert(i18next.t('settings.alerts.saveSuccess'), 'success');
         setTimeout(() => window.location.href = '/login.html', 1500);
     } catch (error) {
         console.error('❌ Logout error:', error);
-        showAlert('Error logging out', 'error');
+        showAlert(i18next.t('settings.alerts.saveFailed'), 'error');
         setLoadingState(false);
     }
 }
 
 async function handleDeleteAccount() {
-    if (!confirm('⚠️ PERMANENT DELETION\n\nDelete your account and all data?\n\nThis CANNOT be undone!')) return;
+    if (!confirm(i18next.t('settings.alerts.accountDeleteConfirm'))) return;
     
     const confirmText = prompt('Type "DELETE MY ACCOUNT" to confirm:');
     if (confirmText !== 'DELETE MY ACCOUNT') {
-        showAlert('Deletion cancelled', 'info');
+        showAlert(i18next.t('settings.alerts.saveFailed'), 'info');
         return;
     }
     
     try {
         setLoadingState(true);
-        showAlert('Deleting account...', 'info');
+        showAlert(i18next.t('settings.alerts.saveFailed'), 'info');
         
         const uid = currentUser.uid;
         const batch = writeBatch(db);
@@ -1109,15 +1109,15 @@ async function handleDeleteAccount() {
         await deleteUser(currentUser);
         localStorage.removeItem('pigsoil_user');
         
-        showAlert('Account deleted successfully', 'success');
+        showAlert(i18next.t('settings.alerts.accountDeleted'), 'success');
         setTimeout(() => window.location.href = '/login.html', 2000);
         
     } catch (error) {
         console.error('❌ Delete error:', error);
         
-        let errorMsg = 'Error deleting account';
+        let errorMsg = i18next.t('settings.alerts.accountDeleteFailed');
         if (error.code === 'auth/requires-recent-login') {
-            errorMsg = 'For security, please sign out and sign back in, then try again';
+            errorMsg = i18next.t('settings.alerts.accountDeleteFailed');
         }
         
         showAlert(errorMsg, 'error');
@@ -1536,7 +1536,7 @@ async function handleConfirmAddressChange() {
         
         setTimeout(() => {
             closeAddressChangeModal();
-            showAlert('Address updated successfully!', 'success');
+            showAlert(i18next.t('settings.alerts.addressChangeSuccess'), 'success');
         }, 1500);
         
     } catch (error) {

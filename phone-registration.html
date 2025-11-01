@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phone Registration - PigSoil+</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- i18next for internationalization -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -346,7 +351,7 @@
             </div>
             
             <nav class="nav-links">
-                <a href="/support.html">Support</a>
+                <a href="/support.html" data-i18n="nav.support">Support</a>
             </nav>
             
             <div class="header-actions">
@@ -378,7 +383,7 @@
                 </div>
 
                 <button type="submit" class="phone-btn" id="phoneButton">
-                    <span>📱</span>
+                    <span></span>
                     <span data-i18n="phoneRegistration.sendButton">Send Verification Code</span>
                 </button>
             </form>

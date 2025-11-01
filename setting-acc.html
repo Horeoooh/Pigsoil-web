@@ -6,6 +6,10 @@
         <title>Account Settings - PigSoil+</title>
         <link rel="stylesheet" href="/css/styles.css">
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        
+        <!-- i18next for internationalization -->
+        <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
         <style>
             * {
                 margin: 0;
@@ -497,14 +501,13 @@
                 </div>
                 
               <ul class="nav-menu">
-    <li><a href="/dashboard.html" data-nav="dashboard">Dashboard</a></li>
+    <li><a href="/dashboard.html" data-nav="dashboard" data-i18n="settings.nav.dashboard">Dashboard</a></li>
     <li style="display: none;"><a href="/transactions.html" data-nav="transactions">Transactions</a></li>
-    <li><a href="/farmermarket.html" data-nav="market">Market</a></li>
-    <li><a href="/guides.html" data-nav="guides">Guides</a></li>
+    <li><a href="/farmermarket.html" data-nav="market" data-i18n="settings.nav.market">Market</a></li>
+    <li><a href="/guides.html" data-nav="guides" data-i18n="settings.nav.guides">Guides</a></li>
 </ul>
                 
                 <div class="user-section">
-                    
                    <a href ="/notifications.html">
                     <button class="icon-btn" id="notificationBtn" aria-label="View notifications">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -530,12 +533,12 @@
                 <aside class="sidebar">
                     <div class="sidebar-section">
                         <div class="sidebar-section-title">SETTINGS</div>
-                        <button class="sidebar-item active" title="Account Settings" aria-label="Manage account settings">Account</button>
-                        <button class="sidebar-item" title="Language Settings" aria-label="Manage language settings">Language</button>
-                        <a href="/setting-subscription.html" class="sidebar-item" title="Subscription Settings" aria-label="Manage subscription settings">Subscription</a>
+                        <button class="sidebar-item active" title="Account Settings" aria-label="Manage account settings" data-i18n="settings.sidebar.accountSettings">Account</button>
+                        <a href="/setting-language.html" class="sidebar-item" title="Language Settings" aria-label="Manage language settings" data-i18n="settings.sidebar.language">Language</a>
+                        <a href="/setting-subscription.html" class="sidebar-item" title="Subscription Settings" aria-label="Manage subscription settings" data-i18n="settings.sidebar.subscription">Subscription</a>
                     </div>
 
-                    <button class="logout-btn" id="logoutBtn" title="Log Out" aria-label="Log out of your account">
+                    <button class="logout-btn" id="logoutBtn" title="Log Out" aria-label="Log out of your account" data-i18n="settings.sidebar.logout">
                         🚪 Log Out
                     </button>
                 </aside>
@@ -561,66 +564,66 @@
 
                     <form id="profileForm">
                         <div class="form-group">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" id="username" class="form-input" placeholder="Enter your name"
+                            <label for="username" class="form-label" data-i18n="settings.profile.username.label">Username</label>
+                            <input type="text" id="username" class="form-input" data-i18n="[placeholder]settings.profile.username.placeholder"
                                 title="Username" aria-label="Username">
                         </div>
 
                         <div class="form-group">
-                            <label for="email" class="form-label">Email</label>
+                            <label for="email" class="form-label" data-i18n="settings.profile.email.label">Email</label>
                             <input type="email" id="email" class="form-input" placeholder="Enter your email"
                                 title="Email Address" aria-label="Email address">
-                            <button type="button" class="btn-link" id="changeEmailBtn" style="display: none; margin-top: 8px; color: #4CAF50; font-size: 13px;">
+                            <button type="button" class="btn-link" id="changeEmailBtn" style="display: none; margin-top: 8px; color: #4CAF50; font-size: 13px;" data-i18n="settings.profile.email.changeButton">
                                 Change Email
                             </button>
                         </div>
 
                         <div class="form-group" id="passwordSection" style="display: none;">
-                            <label for="password" class="form-label">Password</label>
-                            <button type="button" class="btn-link" id="changePasswordBtn" style="color: #4CAF50; font-size: 13px;">
+                            <label for="password" class="form-label" data-i18n="settings.profile.password.label">Password</label>
+                            <button type="button" class="btn-link" id="changePasswordBtn" style="color: #4CAF50; font-size: 13px;" data-i18n="settings.profile.password.changeButton">
                                 Change Password
                             </button>
                         </div>
 
                         <div class="form-group">
-                            <label for="phone" class="form-label">Phone Number</label>
+                            <label for="phone" class="form-label" data-i18n="settings.profile.phone.label">Phone Number</label>
                             <input type="tel" id="phone" class="form-input" placeholder="Enter phone number"
                                 title="Phone Number" aria-label="Phone number" readonly>
-                            <button type="button" class="btn-link" id="changePhoneBtn" style="margin-top: 8px; color: #4CAF50; font-size: 13px;">
+                            <button type="button" class="btn-link" id="changePhoneBtn" style="margin-top: 8px; color: #4CAF50; font-size: 13px;" data-i18n="settings.profile.phone.changeButton">
                                 Change Phone Number
                             </button>
                         </div>
 
                         <div class="form-group">
-                            <label for="userType" class="form-label">User Type</label>
+                            <label for="userType" class="form-label" data-i18n="settings.profile.userType.label">User Type</label>
                             <select id="userType" class="form-input" title="User Type" aria-label="User type">
-                                <option value="swine_farmer">Swine Farmer</option>
-                                <option value="fertilizer_buyer">Fertilizer Buyer</option>
+                                <option value="swine_farmer" data-i18n="settings.profile.userType.farmer">Swine Farmer</option>
+                                <option value="fertilizer_buyer" data-i18n="settings.profile.userType.buyer">Fertilizer Buyer</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label for="address" class="form-label">Address</label>
+                            <label for="address" class="form-label" data-i18n="settings.profile.address.label">Address</label>
                             <input type="text" id="address" class="form-input" placeholder="No address set"
                                 title="Address" aria-label="Address" readonly>
-                            <button type="button" class="btn-link" id="changeAddressBtn" style="margin-top: 8px; color: #4CAF50; font-size: 13px;">
+                            <button type="button" class="btn-link" id="changeAddressBtn" style="margin-top: 8px; color: #4CAF50; font-size: 13px;" data-i18n="settings.profile.address.changeButton">
                                 Change Address
                             </button>
                         </div>
 
                         <div class="button-group">
                             <button type="submit" class="btn btn-success" id="saveBtn" 
-                                    title="Save Changes" aria-label="Save account changes">
+                                    title="Save Changes" aria-label="Save account changes" data-i18n="settings.profile.buttons.saveChanges">
                                 Save Changes
                             </button>
                         </div>
                     </form>
 
                     <div class="account-removal">
-                        <h3>Delete Account</h3>
-                        <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
+                        <h3 data-i18n="settings.profile.accountRemoval.title">Delete Account</h3>
+                        <p data-i18n="settings.profile.accountRemoval.description">Permanently delete your account and all associated data. This action cannot be undone.</p>
                         <div class="button-group">
-                            <button class="btn btn-outline" id="deleteBtn" title="Delete Account" aria-label="Permanently delete your account">Delete Account</button>
+                            <button class="btn btn-outline" id="deleteBtn" title="Delete Account" aria-label="Permanently delete your account" data-i18n="settings.profile.accountRemoval.button">Delete Account</button>
                         </div>
                     </div>
                 </div>
@@ -631,18 +634,18 @@
         <div id="phoneChangeModal" class="modal-overlay">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Change Phone Number</h3>
+                    <h3 data-i18n="settings.modals.phoneChange.title">Change Phone Number</h3>
                     <button class="modal-close" id="phoneModalClose">&times;</button>
                 </div>
                 <div class="modal-body">
                     <p style="margin-bottom: 16px;">Enter your new phone number. You'll receive an SMS verification code.</p>
-                    <input type="tel" id="newPhoneNumber" class="form-input" placeholder="+639XXXXXXXXX" style="width: 100%;">
+                    <input type="tel" id="newPhoneNumber" class="form-input" data-i18n="[placeholder]settings.modals.phoneChange.newPhonePlaceholder" style="width: 100%;">
                     <div id="phoneChangeAlert" class="alert" style="margin-top: 12px; display: none;"></div>
                     <div id="recaptcha-container-phone" style="margin-top: 12px;"></div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-outline" id="cancelPhoneChange">Cancel</button>
-                    <button class="btn btn-success" id="sendPhoneCode">Send Code</button>
+                    <button class="btn btn-outline" id="cancelPhoneChange" data-i18n="settings.modals.phoneChange.cancelButton">Cancel</button>
+                    <button class="btn btn-success" id="sendPhoneCode" data-i18n="settings.modals.phoneChange.sendCodeButton">Send Code</button>
                 </div>
             </div>
         </div>
@@ -651,11 +654,11 @@
         <div id="smsVerificationModal" class="modal-overlay">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Verify Phone Number</h3>
+                    <h3 data-i18n="settings.modals.smsVerification.title">Verify Phone Number</h3>
                     <button class="modal-close" id="smsModalClose">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <p style="margin-bottom: 16px;">Enter the 6-digit code sent to <strong id="verifyPhoneDisplay"></strong></p>
+                    <p style="margin-bottom: 16px;"><span data-i18n="settings.modals.smsVerification.sentTo">Sent to</span> <strong id="verifyPhoneDisplay"></strong></p>
                     <div class="code-inputs" style="display: flex; gap: 8px; justify-content: center; margin: 20px 0;">
                         <input type="text" maxlength="1" class="code-input" pattern="[0-9]" style="width: 45px; height: 50px; text-align: center; font-size: 20px; border: 2px solid #ddd; border-radius: 8px;">
                         <input type="text" maxlength="1" class="code-input" pattern="[0-9]" style="width: 45px; height: 50px; text-align: center; font-size: 20px; border: 2px solid #ddd; border-radius: 8px;">
@@ -667,8 +670,8 @@
                     <div id="smsVerificationAlert" class="alert" style="margin-top: 12px; display: none;"></div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-outline" id="cancelSmsVerification">Cancel</button>
-                    <button class="btn btn-success" id="verifySmsCode">Verify</button>
+                    <button class="btn btn-outline" id="cancelSmsVerification" data-i18n="settings.modals.smsVerification.cancelButton">Cancel</button>
+                    <button class="btn btn-success" id="verifySmsCode" data-i18n="settings.modals.smsVerification.verifyButton">Verify</button>
                 </div>
             </div>
         </div>
@@ -677,27 +680,27 @@
         <div id="passwordChangeModal" class="modal-overlay">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Change Password</h3>
+                    <h3 data-i18n="settings.modals.passwordChange.title">Change Password</h3>
                     <button class="modal-close" id="passwordModalClose">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group" style="margin-bottom: 16px;">
-                        <label class="form-label">Current Password</label>
-                        <input type="password" id="currentPassword" class="form-input" placeholder="Enter current password">
+                        <label class="form-label" data-i18n="settings.modals.passwordChange.currentPasswordLabel">Current Password</label>
+                        <input type="password" id="currentPassword" class="form-input" data-i18n="[placeholder]settings.modals.passwordChange.currentPasswordPlaceholder">
                     </div>
                     <div class="form-group" style="margin-bottom: 16px;">
-                        <label class="form-label">New Password</label>
-                        <input type="password" id="newPassword" class="form-input" placeholder="Enter new password">
+                        <label class="form-label" data-i18n="settings.modals.passwordChange.newPasswordLabel">New Password</label>
+                        <input type="password" id="newPassword" class="form-input" data-i18n="[placeholder]settings.modals.passwordChange.newPasswordPlaceholder">
                     </div>
                     <div class="form-group" style="margin-bottom: 16px;">
-                        <label class="form-label">Confirm New Password</label>
-                        <input type="password" id="confirmPassword" class="form-input" placeholder="Confirm new password">
+                        <label class="form-label" data-i18n="settings.modals.passwordChange.confirmPasswordLabel">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" class="form-input" data-i18n="[placeholder]settings.modals.passwordChange.confirmPasswordPlaceholder">
                     </div>
                     <div id="passwordChangeAlert" class="alert" style="margin-top: 12px; display: none;"></div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-outline" id="cancelPasswordChange">Cancel</button>
-                    <button class="btn btn-success" id="saveNewPassword">Change Password</button>
+                    <button class="btn btn-outline" id="cancelPasswordChange" data-i18n="settings.modals.passwordChange.cancelButton">Cancel</button>
+                    <button class="btn btn-success" id="saveNewPassword" data-i18n="settings.modals.passwordChange.changeButton">Change Password</button>
                 </div>
             </div>
         </div>
@@ -706,30 +709,30 @@
         <div id="addEmailModal" class="modal-overlay">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Add Email & Password</h3>
+                    <h3 data-i18n="settings.modals.addEmail.title">Add Email & Password</h3>
                     <button class="modal-close" id="addEmailModalClose">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <p style="margin-bottom: 16px; color: #666; font-size: 14px;">
+                    <p style="margin-bottom: 16px; color: #666; font-size: 14px;" data-i18n="settings.modals.addEmail.subtitle">
                         Link an email and password to your account. You'll be able to sign in with either phone or email.
                     </p>
                     <div class="form-group" style="margin-bottom: 16px;">
-                        <label class="form-label">Email Address</label>
-                        <input type="email" id="addEmail" class="form-input" placeholder="Enter your email" style="width: 100%;">
+                        <label class="form-label" data-i18n="settings.modals.addEmail.emailLabel">Email Address</label>
+                        <input type="email" id="addEmail" class="form-input" data-i18n="[placeholder]settings.modals.addEmail.emailPlaceholder" style="width: 100%;">
                     </div>
                     <div class="form-group" style="margin-bottom: 16px;">
-                        <label class="form-label">Password</label>
-                        <input type="password" id="addPassword" class="form-input" placeholder="Enter password (min 6 characters)" style="width: 100%;">
+                        <label class="form-label" data-i18n="settings.modals.addEmail.passwordLabel">Password</label>
+                        <input type="password" id="addPassword" class="form-input" data-i18n="[placeholder]settings.modals.addEmail.passwordPlaceholder" style="width: 100%;">
                     </div>
                     <div class="form-group" style="margin-bottom: 16px;">
-                        <label class="form-label">Confirm Password</label>
-                        <input type="password" id="addConfirmPassword" class="form-input" placeholder="Confirm password" style="width: 100%;">
+                        <label class="form-label" data-i18n="settings.modals.addEmail.confirmPasswordLabel">Confirm Password</label>
+                        <input type="password" id="addConfirmPassword" class="form-input" data-i18n="[placeholder]settings.modals.addEmail.confirmPasswordPlaceholder" style="width: 100%;">
                     </div>
                     <div id="addEmailAlert" class="alert" style="margin-top: 12px; display: none;"></div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-outline" id="cancelAddEmail">Cancel</button>
-                    <button class="btn btn-success" id="addEmailPasswordBtn">Add Email & Password</button>
+                    <button class="btn btn-outline" id="cancelAddEmail" data-i18n="settings.modals.addEmail.cancelButton">Cancel</button>
+                    <button class="btn btn-success" id="addEmailPasswordBtn" data-i18n="settings.modals.addEmail.addButton">Add Email & Password</button>
                 </div>
             </div>
         </div>
@@ -738,7 +741,7 @@
         <div id="changeEmailModal" class="modal-overlay">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Change Email Address</h3>
+                    <h3 data-i18n="settings.modals.changeEmail.title">Change Email Address</h3>
                     <button class="modal-close" id="changeEmailModalClose">&times;</button>
                 </div>
                 <div class="modal-body">
@@ -746,18 +749,18 @@
                         For security, enter your current password to change your email address.
                     </p>
                     <div class="form-group" style="margin-bottom: 16px;">
-                        <label class="form-label">Current Password</label>
-                        <input type="password" id="currentPasswordEmail" class="form-input" placeholder="Enter current password" style="width: 100%;">
+                        <label class="form-label" data-i18n="settings.modals.changeEmail.currentPasswordLabel">Current Password</label>
+                        <input type="password" id="currentPasswordEmail" class="form-input" data-i18n="[placeholder]settings.modals.changeEmail.currentPasswordPlaceholder" style="width: 100%;">
                     </div>
                     <div class="form-group" style="margin-bottom: 16px;">
-                        <label class="form-label">New Email Address</label>
-                        <input type="email" id="newEmail" class="form-input" placeholder="Enter new email" style="width: 100%;">
+                        <label class="form-label" data-i18n="settings.modals.changeEmail.newEmailLabel">New Email Address</label>
+                        <input type="email" id="newEmail" class="form-input" data-i18n="[placeholder]settings.modals.changeEmail.newEmailPlaceholder" style="width: 100%;">
                     </div>
                     <div id="changeEmailAlert" class="alert" style="margin-top: 12px; display: none;"></div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-outline" id="cancelChangeEmail">Cancel</button>
-                    <button class="btn btn-success" id="changeEmailBtn2">Change Email</button>
+                    <button class="btn btn-outline" id="cancelChangeEmail" data-i18n="settings.modals.changeEmail.cancelButton">Cancel</button>
+                    <button class="btn btn-success" id="changeEmailBtn2" data-i18n="settings.modals.changeEmail.changeButton">Change Email</button>
                 </div>
             </div>
         </div>
@@ -766,10 +769,10 @@
         <div id="addressChangeModal" class="modal-overlay">
             <div class="modal">
                 <div class="modal-header">
-                    <h2 class="modal-title">📍 Select Address</h2>
+                    <h2 class="modal-title" data-i18n="settings.modals.addressChange.title">📍 Select Address</h2>
                     <button class="modal-close" id="addressModalClose">&times;</button>
                 </div>
-                <input type="text" id="addressSearch" class="location-search" placeholder="Search for your address...">
+                <input type="text" id="addressSearch" class="location-search" data-i18n="[placeholder]settings.modals.addressChange.searchPlaceholder">
                 <div id="addressMapContainer" class="map-container"></div>
                 
                 <!-- Address Preview -->
@@ -777,15 +780,15 @@
                     <div style="display: flex; align-items: start; gap: 12px;">
                         <span style="font-size: 24px;">📍</span>
                         <div style="flex: 1;">
-                            <div style="font-weight: 600; font-size: 16px; color: #333; margin-bottom: 4px;" id="previewAddressName">Select an address</div>
+                            <div style="font-weight: 600; font-size: 16px; color: #333; margin-bottom: 4px;" id="previewAddressName" data-i18n="settings.modals.addressChange.selectedLocation">Select an address</div>
                             <div style="font-size: 14px; color: #666; line-height: 1.5;" id="previewAddressDetails">Click on the map or search to select your address</div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="modal-buttons">
-                    <button class="btn-secondary" id="cancelAddressChange">Cancel</button>
-                    <button class="btn-primary" id="confirmAddressChange">Save Address</button>
+                    <button class="btn-secondary" id="cancelAddressChange" data-i18n="settings.modals.addressChange.cancelButton">Cancel</button>
+                    <button class="btn-primary" id="confirmAddressChange" data-i18n="settings.modals.addressChange.confirmButton">Save Address</button>
                 </div>
             </div>
         </div>
@@ -940,8 +943,15 @@
             src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDxldiepJaqTaCW9kxCr-3cYgSlVD0fQYg&libraries=places,marker&loading=async&callback=initMap">
         </script>
 
+        <script src="/js/i18n.js"></script>
         <script type="module" src="/js/dashboard-auth-guard.js"></script>
         <script type="module" src="/js/profile-settings.js"></script>
         <script type="module" src="/js/shared-user-manager.js"></script>
+        <script>
+            // Initialize i18next when DOM is ready
+            document.addEventListener('DOMContentLoaded', async () => {
+                await window.i18nManager.initialize();
+            });
+        </script>
     </body>
     </html>

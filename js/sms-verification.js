@@ -79,13 +79,13 @@ function checkIfAlreadyLoggedIn() {
                     // Redirect based on user type
                     if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
                         console.log('🐷 Redirecting swine farmer to dashboard');
-                        showSuccess('Already logged in! Redirecting to dashboard...');
+                        showSuccess(i18next.t('login.success.loginSuccessful'));
                         setTimeout(() => {
                             window.location.href = '/dashboard.html';
                         }, 1500);
                     } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
                         console.log('🌿 Redirecting fertilizer buyer to buyer dashboard');
-                        showSuccess('Already logged in! Redirecting to buyer dashboard...');
+                        showSuccess(i18next.t('login.success.loginSuccessful'));
                         setTimeout(() => {
                             window.location.href = '/buyer-dashboard.html';
                         }, 1500);
@@ -148,7 +148,7 @@ function initializeRecaptcha() {
             },
             'expired-callback': () => {
                 console.log('reCAPTCHA expired');
-                showError('reCAPTCHA expired. Please try again.');
+                showError(i18next.t('signup.errors.signupFailed'));
             }
         });
     }
@@ -164,7 +164,7 @@ async function startPhoneVerification(phoneNumber) {
         confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, recaptcha);
         
         console.log('SMS sent successfully');
-        showSuccess('SMS code sent successfully!');
+        showSuccess(i18next.t('smsVerification.success.smsSent'));
         
     } catch (error) {
         console.error('SMS sending failed:', error);
@@ -180,7 +180,7 @@ async function verifySMSCode(code) {
         showLoading(true);
         
         if (!confirmationResult) {
-            throw new Error('No verification in progress. Please resend code.');
+            throw new Error(i18next.t('signup.errors.signupFailed'));
         }
 
         // Confirm the SMS code - this creates/signs in the Firebase Auth user
@@ -198,7 +198,7 @@ async function verifySMSCode(code) {
             localStorage.setItem('pigsoil_user', JSON.stringify(userData));
             localStorage.removeItem('pendingPhoneVerification');
             
-            showSuccess('Welcome back! Redirecting...');
+            showSuccess(i18next.t('smsVerification.success.welcomeBack'));
             
             setTimeout(() => {
                if (userData.userType === 'swine_farmer') {
@@ -209,7 +209,7 @@ async function verifySMSCode(code) {
             }, 2000);
         } else {
             // New user - show complete profile form
-            showSuccess('Phone verified! Please complete your profile.');
+            showSuccess(i18next.t('smsVerification.success.phoneVerified'));
             setTimeout(() => {
                 verificationContainer.style.display = 'none';
                 completeProfileContainer.style.display = 'block';
@@ -231,21 +231,21 @@ async function completeUserProfile(profileData) {
         
         // Validate inputs
         if (!profileData.username || profileData.username.length < 3) {
-            throw new Error('Username must be at least 3 characters long.');
+            throw new Error(i18next.t('signup.errors.usernameShort'));
         }
         
         if (profileData.username.length > 30) {
-            throw new Error('Username cannot exceed 30 characters.');
+            throw new Error(i18next.t('signup.errors.usernameLong'));
         }
         
         if (!profileData.userType) {
-            throw new Error('Please select your user type.');
+            throw new Error(i18next.t('signup.errors.fillAllFields'));
         }
         
         // Check if username exists
         const usernameExists = await checkUsernameExists(profileData.username);
         if (usernameExists) {
-            throw new Error('Username is already taken. Please choose another.');
+            throw new Error(i18next.t('signup.errors.usernameTaken'));
         }
         
         const userType = profileData.userType; // Keep as 'swine_farmer' or 'fertilizer_buyer'
@@ -284,7 +284,7 @@ async function completeUserProfile(profileData) {
         }));
         localStorage.removeItem('pendingPhoneVerification');
         
-        showProfileSuccess('Registration complete! Redirecting...');
+        showProfileSuccess(i18next.t('signup.success.accountCreated'));
         
         // Redirect based on user type
         setTimeout(() => {
@@ -317,17 +317,17 @@ async function checkUsernameExists(username) {
 
 // Handle SMS sending errors
 function handleSMSError(error) {
-    let errorMessage = 'Failed to send SMS code. Please try again.';
+    let errorMessage = i18next.t('signup.errors.signupFailed');
     
     switch (error.code) {
         case 'auth/invalid-phone-number':
-            errorMessage = 'Invalid phone number format.';
+            errorMessage = i18next.t('login.errors.invalidEmail');
             break;
         case 'auth/too-many-requests':
-            errorMessage = 'Too many requests. Please try again later.';
+            errorMessage = i18next.t('login.errors.tooManyAttempts');
             break;
         case 'auth/quota-exceeded':
-            errorMessage = 'SMS quota exceeded. Please try again later.';
+            errorMessage = i18next.t('login.errors.tooManyAttempts');
             break;
     }
     
@@ -336,17 +336,17 @@ function handleSMSError(error) {
 
 // Handle verification errors
 function handleVerificationError(error) {
-    let errorMessage = 'Invalid verification code. Please try again.';
+    let errorMessage = i18next.t('login.errors.invalidCredentials');
     
     switch (error.code) {
         case 'auth/invalid-verification-code':
-            errorMessage = 'Invalid verification code. Please check and try again.';
+            errorMessage = i18next.t('login.errors.invalidCredentials');
             break;
         case 'auth/code-expired':
-            errorMessage = 'Verification code has expired. Please request a new one.';
+            errorMessage = i18next.t('login.errors.tooManyAttempts');
             break;
         case 'auth/session-expired':
-            errorMessage = 'Session expired. Please request a new verification code.';
+            errorMessage = i18next.t('login.errors.tooManyAttempts');
             break;
     }
     
@@ -356,7 +356,7 @@ function handleVerificationError(error) {
 
 // Handle profile completion errors
 function handleProfileError(error) {
-    let errorMessage = 'Failed to complete profile. Please try again.';
+    let errorMessage = i18next.t('signup.errors.signupFailed');
     
     if (error.message.includes('already taken') || error.message.includes('at least') || error.message.includes('exceed')) {
         errorMessage = error.message;
@@ -446,7 +446,7 @@ function setupEventListeners() {
             const code = getEnteredCode();
             
             if (code.length !== 6) {
-                showError('Please enter the complete 6-digit code.');
+                showError(i18next.t('login.errors.fillAllFields'));
                 return;
             }
             
@@ -490,11 +490,11 @@ function setupEventListeners() {
 function showLoading(isLoading) {
     if (verifyBtn) {
         if (isLoading) {
-            verifyBtn.textContent = 'Verifying...';
+            verifyBtn.textContent = i18next.t('login.signingIn');
             verifyBtn.style.opacity = '0.7';
             verifyBtn.disabled = true;
         } else {
-            verifyBtn.textContent = 'Verify';
+            verifyBtn.textContent = i18next.t('smsVerification.verifyButton');
             verifyBtn.style.opacity = '1';
             verifyBtn.disabled = false;
         }
@@ -510,11 +510,11 @@ function setProfileLoading(isLoading) {
     const completeProfileBtn = document.getElementById('completeProfileBtn');
     if (completeProfileBtn) {
         if (isLoading) {
-            completeProfileBtn.textContent = 'Completing...';
+            completeProfileBtn.textContent = i18next.t('signup.creatingAccount');
             completeProfileBtn.style.opacity = '0.7';
             completeProfileBtn.disabled = true;
         } else {
-            completeProfileBtn.textContent = 'Complete Registration';
+            completeProfileBtn.textContent = i18next.t('smsVerification.completeProfile.completeButton');
             completeProfileBtn.style.opacity = '1';
             completeProfileBtn.disabled = false;
         }

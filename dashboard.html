@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - PigSoil+</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- i18next for internationalization -->
+  <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -559,13 +563,11 @@
         <img src="/images/pigsoil.png" alt="PigSoil+" class="logo-text">
       </div>
       
-      <ul class="nav-menu">
-        <li><a href="/dashboard.html" data-nav="dashboard" class="active">Dashboard</a></li>
-        <li><a href="/farmermarket.html" data-nav="market">Market</a></li>
-        <li><a href="/guides.html" data-nav="guides">Guides</a></li>
-      </ul>
-      
-      <div class="user-section">
+            <ul class="nav-menu">
+    <li><a href="/dashboard.html" data-nav="dashboard" class="active" data-i18n="dashboard.nav.dashboard">Dashboard</a></li>
+    <li><a href="/farmermarket.html" data-nav="market" data-i18n="dashboard.nav.market">Market</a></li>
+    <li><a href="/guides.html" data-nav="guides" data-i18n="dashboard.nav.guides">Guides</a></li>
+</ul>      <div class="user-section">
         <a href ="/notifications.html">
           <button class="icon-btn" id="notificationBtn" aria-label="View notifications">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -589,31 +591,31 @@
   <main class="main-content">
     <!-- Transform Section -->
     <section class="transform-section">
-      <h3 class="transform-title">Transform your farm today!</h3>
+      <h3 class="transform-title" data-i18n="dashboard.transform.title">Transform Swine Waste Into Organic Gold</h3>
       <div class="process-flow">
         <div class="process-step">
           <div class="step-icon pig">
             <img src="/images/Pig png.png" alt="Swine Waste Icon" class="step-icon-img">
           </div>
-          <div class="step-title">Swine Waste</div>
-          <div class="step-description">Raw manure from your farm</div>
+          <div class="step-title" data-i18n="dashboard.transform.pig.title">Swine Waste</div>
+          <div class="step-description" data-i18n="dashboard.transform.pig.description">Raw manure from your farm</div>
         </div>
         <div class="arrow">⇨</div>
         <div class="process-step">
           <div class="step-icon composting">🌱</div>
-          <div class="step-title">Smart Composting</div>
-          <div class="step-description">Traditional composting methods</div>
+          <div class="step-title" data-i18n="dashboard.transform.composting.title">Composting</div>
+          <div class="step-description" data-i18n="dashboard.transform.composting.description">Natural decomposition process</div>
         </div>
         <div class="arrow">⇨</div>
         <div class="process-step">
           <div class="step-icon gold">
             <img src="/images/Money Bag.png" alt="Money Icon" class="step-icon-img">
           </div>
-          <div class="step-title">Organic Gold</div>
-          <div class="step-description">Premium fertilizer sales</div>
+          <div class="step-title" data-i18n="dashboard.transform.gold.title">Organic Gold</div>
+          <div class="step-description" data-i18n="dashboard.transform.gold.description">Premium quality fertilizer</div>
         </div>
       </div>
-      <p class="transform-note">"From Disposal Cost to Profit Center"</p>
+      <p class="transform-note" data-i18n="dashboard.transform.note">Your waste is worth more than you think!</p>
     </section>
 
     <!-- Bot & Quick Actions -->
@@ -624,23 +626,23 @@
             <img src="/images/Farmer.png" alt="Farmer Bot" />
           </div>
           <div class="bot-info">
-            <h4>Manong Bot</h4>
-            <small>AI Farming Assistant</small>
+            <h4 data-i18n="dashboard.bot.title">Manong Bot</h4>
+            <small data-i18n="dashboard.bot.online">Online 24/7</small>
           </div>
         </div>
-        <div class="bot-message">
-          Get personalized composting guidance and smart recommendations! Download our mobile app to access Manong Bot - your AI farming assistant available 24/7.
+        <div class="bot-message" data-i18n="dashboard.bot.message">
+          Hello! I'm here to help you with your composting journey. Want to learn about composting techniques or need advice on your current batch?
         </div>
         <div class="bot-buttons">
-          <button class="primary" onclick="alert('Mobile app coming soon! Stay tuned for iOS and Android releases.')">Download App</button>
-          <button class="secondary" onclick="alert('Visit our mobile app to chat with Manong Bot!')">Learn More</button>
+          <button class="primary" data-i18n="dashboard.bot.learnButton" onclick="window.location.href='guides.html'">Learn Composting</button>
+          <button class="secondary" data-i18n="dashboard.bot.adviceButton" onclick="alert('Visit our mobile app to chat with Manong Bot!')">Get Advice</button>
         </div>
       </div>
 
       <div class="quick-actions-container">
         <div class="quick-actions-header">
           <span>🚀</span>
-          <h4>Quick Actions</h4>
+          <h4 data-i18n="dashboard.quickActions.title">Quick Actions</h4>
         </div>
         <div class="quick-actions">
           <div class="action-card" onclick="window.location.href='CreateListing.html'">
@@ -651,7 +653,7 @@
                   <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM17 13H13V17H11V13H7V11H11V7H13V11H17V13Z"/>
                 </svg>
               </div>
-              <strong>Create Listing</strong>
+              <strong data-i18n="dashboard.quickActions.newListing">Create New Listing</strong>
             </div>
           </div>
           <div class="action-card" onclick="window.location.href='guides.html'">
@@ -662,7 +664,7 @@
                   <path d="M12 3L1 9L5 11.18V17.18L12 21L19 17.18V11.18L21 10.09V17H23V9L12 3Z"/>
                 </svg>
               </div>
-              <strong>Composting Guides</strong>
+              <strong data-i18n="dashboard.quickActions.readGuides">Read Guides</strong>
             </div>
           </div>
         </div>
@@ -670,6 +672,7 @@
     </section>
   </main>
 
+  <script src="/js/i18n.js"></script>
   <script type="module" src="/js/dashboard-auth-guard.js"></script>
   <script type="module" src="/js/dashboard.js"></script>
   <script type="module" src="/js/shared-user-manager.js"></script>

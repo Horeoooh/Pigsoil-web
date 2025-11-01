@@ -71,8 +71,8 @@
   },
   "signup": {
     "title": "Join PigSoil+",
-    "fullNameLabel": "Full Name",
-    "fullNamePlaceholder": "Enter your full name",
+    "fullNameLabel": "Username",
+    "fullNamePlaceholder": "Enter your username",
     "emailLabel": "Email Address",
     "emailPlaceholder": "Enter your email address",
     "passwordLabel": "Password",
@@ -183,13 +183,21 @@
     "phonePlaceholder": "+63 9XX XXX XXXX",
     "sendButton": "📱 Send Verification Code",
     "sending": "Sending...",
-    "backToSignup": "← Back to sign up"
+    "backToSignup": "← Back to sign up",
+    "success": {
+      "smsSent": "SMS code sent successfully!"
+    }
   },
   "smsVerification": {
     "title": "Enter SMS Code Sent to",
     "resend": "Resend",
     "verifyButton": "Verify",
     "back": "← Back",
+    "success": {
+      "smsSent": "SMS code sent successfully!",
+      "phoneVerified": "Phone verified! Please complete your profile.",
+      "welcomeBack": "Welcome back! Redirecting..."
+    },
     "completeProfile": {
       "title": "Complete Your Profile",
       "subtitle": "Just a few more details to get started",
@@ -199,6 +207,446 @@
       "farmer": "Swine Farmer",
       "buyer": "Organic Fertilizer Buyer",
       "completeButton": "Complete Registration"
+    }
+  },
+  "dashboard": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "market": "Market",
+      "guides": "Guides"
+    },
+    "transform": {
+      "title": "Transform Swine Waste Into Organic Gold",
+      "pig": {
+        "title": "Swine Waste",
+        "description": "Raw manure from your farm"
+      },
+      "composting": {
+        "title": "Composting",
+        "description": "Natural decomposition process"
+      },
+      "gold": {
+        "title": "Organic Gold",
+        "description": "Premium quality fertilizer"
+      },
+      "note": "Your waste is worth more than you think!"
+    },
+    "bot": {
+      "title": "Manong Bot",
+      "online": "Online 24/7",
+      "message": "Hello! I'm here to help you with your composting journey. Want to learn about composting techniques or need advice on your current batch?",
+      "learnButton": "Learn Composting",
+      "adviceButton": "Get Advice"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "newListing": "Create New Listing",
+      "viewBatches": "View My Batches",
+      "browseMarket": "Browse Marketplace",
+      "readGuides": "Read Guides"
+    }
+  },
+  "farmermarket": {
+    "hero": {
+      "title": "My Marketplace",
+      "subtitle": "Manage your compost listings and connect with buyers",
+      "createButton": "Create New Listing",
+      "nearbyButton": "Nearby Buyers",
+      "messagesButton": "Messages"
+    },
+    "filters": {
+      "myListings": "My Listings",
+      "available": "Available",
+      "soldOut": "Sold Out",
+      "searchPlaceholder": "Search listings..."
+    },
+    "listingCard": {
+      "available": "Available",
+      "soldOut": "Sold Out",
+      "perKg": "per kg",
+      "quantityLeft": "Quantity Left",
+      "originalQuantity": "Original",
+      "sold": "Sold",
+      "created": "Created",
+      "updated": "Updated",
+      "viewButton": "View Details"
+    },
+    "empty": {
+      "noListings": "No listings found",
+      "createFirst": "Create your first listing to start selling!",
+      "noResults": "No listings match your search"
+    },
+    "nearbyBuyers": {
+      "title": "Nearby Buyers",
+      "loading": "Loading map...",
+      "buyersFound": "buyers found within 50km",
+      "closeButton": "Close",
+      "buyerInfo": {
+        "distance": "km away",
+        "viewProfile": "View Profile"
+      }
+    }
+  },
+  "createListing": {
+    "header": {
+      "title": "Create New Listing",
+      "subtitle": "List your quality compost for sale in the marketplace"
+    },
+    "form": {
+      "productTitle": {
+        "label": "Compost Title *",
+        "placeholder": "e.g., Premium Organic Swine Compost - Ready to Use"
+      },
+      "photos": {
+        "label": "Compost Photos *",
+        "hint": "Upload at least one photo of your swine compost • The first photo will be the main display image",
+        "uploadText": "Drag & drop or click to upload",
+        "processing": "Processing...",
+        "uploading": "Uploading..."
+      },
+      "technique": {
+        "label": "Composting Technique Used",
+        "basic": {
+          "title": "Basic Swine Manure",
+          "description": "Traditional composting method, 60-90 days"
+        },
+        "hot": {
+          "title": "Hot Composting",
+          "description": "Accelerated method with heat, 30-45 days"
+        }
+      },
+      "quantity": {
+        "label": "Quantity (kg) *",
+        "placeholder": "e.g., 100"
+      },
+      "price": {
+        "label": "Price per kg (₱) *",
+        "placeholder": "e.g., 15.00"
+      },
+      "description": {
+        "label": "Compost Description",
+        "placeholder": "Describe your swine compost quality, composting method used, and any special features...",
+        "counter": "characters"
+      },
+      "location": {
+        "label": "Pickup/Meetup Location",
+        "defaultName": "Select farm location",
+        "defaultAddress": "Click \"Change\" to choose pickup location",
+        "mapPlaceholder": "🗺️ Click \"Change\" to set your meetup location",
+        "changeButton": "Change"
+      },
+      "paymentNote": {
+        "title": "Direct Communication & Payment",
+        "description": "PigSoil+ connects swine farmers with organic fertilizer buyers through direct messaging. Payment arrangements (cash, installments, barter) are handled privately between you and the buyer during face-to-face meetings. This approach respects traditional Filipino agricultural community practices."
+      }
+    },
+    "validation": {
+      "titleRequired": "Product title is required",
+      "titleTooShort": "Title must be at least 3 characters",
+      "titleTooLong": "Title cannot exceed 100 characters",
+      "quantityRequired": "Quantity is required",
+      "quantityInvalid": "Please enter a valid quantity",
+      "quantityTooLow": "Minimum quantity is 1 kg",
+      "quantityTooHigh": "Maximum quantity is 10,000 kg",
+      "priceRequired": "Price is required",
+      "priceInvalid": "Please enter a valid price",
+      "priceTooLow": "Minimum price is ₱1 per kg",
+      "priceTooHigh": "Maximum price is ₱5,000 per kg",
+      "descriptionTooLong": "Description cannot exceed 500 characters",
+      "photosRequired": "Please upload at least 1 product photo",
+      "photosTooMany": "Maximum 5 photos allowed",
+      "photoInvalidType": "Please select a valid image file (JPG, PNG, GIF, WebP)",
+      "photoTooLarge": "Image size must be less than 5MB",
+      "locationRequired": "Please select a pickup location for your swine compost",
+      "fixErrors": "Please fix all errors before submitting"
+    },
+    "buttons": {
+      "submit": "Post Swine Compost Listing",
+      "submitting": "Creating Listing...",
+      "cancel": "Cancel"
+    },
+    "modal": {
+      "title": "Select Pickup Location",
+      "search": "Search for your farm location...",
+      "preview": {
+        "title": "Selected Location",
+        "name": "Location name will appear here",
+        "address": "Full address will appear here",
+        "loading": "Searching for location..."
+      },
+      "instructions": "Search for your farm location or drag the marker to the exact spot",
+      "confirmButton": "Confirm Location",
+      "cancelButton": "Cancel"
+    },
+    "progress": {
+      "preparing": "Preparing your swine compost listing...",
+      "uploadingPhotos": "Uploading compost photos...",
+      "savingLocation": "Saving location...",
+      "creating": "Creating swine compost listing...",
+      "saving": "Saving to database...",
+      "success": "Listing created successfully!"
+    },
+    "notifications": {
+      "photoRemoved": "Photo removed",
+      "photoReady": "Photo ready for upload!",
+      "photoProcessFailed": "Failed to process image. Please try again.",
+      "errorReading": "Error reading image file",
+      "locationUpdated": "Farm location updated successfully!",
+      "listingCreated": "Swine compost listing posted successfully!",
+      "redirecting": "Redirecting to marketplace...",
+      "errorCreating": "Error creating listing",
+      "signInRequired": "Please sign in to create a listing",
+      "farmerOnly": "Only swine farmers can create listings",
+      "profileLoadError": "Error loading user profile. Please try again.",
+      "firebaseConnected": "Firebase connected to your collections!",
+      "firebaseFailed": "Firebase connection failed"
+    }
+  },
+  "settings": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "market": "Market",
+      "guides": "Guides",
+      "accountSettings": "Account Settings",
+      "subscription": "Subscription",
+      "support": "Support"
+    },
+    "sidebar": {
+      "accountSettings": "Account",
+      "language": "Language",
+      "subscription": "Subscription",
+      "logout": "Logout"
+    },
+    "language": {
+      "title": "Language Settings",
+      "subtitle": "Choose your preferred language for the PigSoil+ interface. Your selection will be saved automatically.",
+      "options": {
+        "english": {
+          "name": "English"
+        },
+        "cebuano": {
+          "name": "Cebuano"
+        }
+      },
+      "alerts": {
+        "changed": "✅ Language changed successfully!"
+      }
+    },
+    "profile": {
+      "title": "Account Settings",
+      "subtitle": "Manage your personal information and security",
+      "username": {
+        "label": "Username",
+        "placeholder": "Enter your username"
+      },
+      "email": {
+        "label": "Email Address",
+        "changeButton": "Change Email"
+      },
+      "phone": {
+        "label": "Phone Number",
+        "changeButton": "Change Phone"
+      },
+      "password": {
+        "label": "Password",
+        "changeButton": "Change Password",
+        "addButton": "Add Email & Password"
+      },
+      "userType": {
+        "label": "Account Type",
+        "farmer": "Swine Farmer",
+        "buyer": "Organic Fertilizer Buyer",
+        "disabled": "Contact support to change account type"
+      },
+      "address": {
+        "label": "Farm/Business Address",
+        "changeButton": "Change Address"
+      },
+      "profilePicture": {
+        "label": "Profile Picture",
+        "uploadHint": "Click to upload"
+      },
+      "accountRemoval": {
+        "title": "Account Removal",
+        "description": "Permanently delete your account and all associated data. This action cannot be undone.",
+        "button": "Delete My Account"
+      },
+      "buttons": {
+        "saveChanges": "Save Changes",
+        "saving": "Saving...",
+        "cancel": "Cancel"
+      }
+    },
+    "modals": {
+      "phoneChange": {
+        "title": "Change Phone Number",
+        "newPhoneLabel": "New Phone Number",
+        "newPhonePlaceholder": "+63 9XX XXX XXXX",
+        "sendCodeButton": "Send Verification Code",
+        "cancelButton": "Cancel"
+      },
+      "smsVerification": {
+        "title": "Enter SMS Code",
+        "sentTo": "Sent to",
+        "codeLabel": "6-Digit Code",
+        "verifyButton": "Verify Code",
+        "cancelButton": "Cancel"
+      },
+      "passwordChange": {
+        "title": "Change Password",
+        "currentPasswordLabel": "Current Password",
+        "currentPasswordPlaceholder": "Enter current password",
+        "newPasswordLabel": "New Password",
+        "newPasswordPlaceholder": "Enter new password (min 6 characters)",
+        "confirmPasswordLabel": "Confirm New Password",
+        "confirmPasswordPlaceholder": "Re-enter new password",
+        "changeButton": "Change Password",
+        "cancelButton": "Cancel"
+      },
+      "addEmail": {
+        "title": "Add Email & Password",
+        "subtitle": "Link your phone account with email and password for additional security",
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "Enter your email address",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Create a password (min 6 characters)",
+        "confirmPasswordLabel": "Confirm Password",
+        "confirmPasswordPlaceholder": "Re-enter your password",
+        "addButton": "Add Email & Password",
+        "cancelButton": "Cancel"
+      },
+      "changeEmail": {
+        "title": "Change Email Address",
+        "currentPasswordLabel": "Current Password",
+        "currentPasswordPlaceholder": "Enter password to confirm",
+        "newEmailLabel": "New Email Address",
+        "newEmailPlaceholder": "Enter new email address",
+        "changeButton": "Change Email",
+        "cancelButton": "Cancel"
+      },
+      "addressChange": {
+        "title": "Change Address",
+        "searchPlaceholder": "Search for your location...",
+        "selectedLocation": "Selected Location",
+        "confirmButton": "Confirm Location",
+        "cancelButton": "Cancel"
+      }
+    },
+    "alerts": {
+      "saveSuccess": "Changes saved successfully!",
+      "saveFailed": "Failed to save changes. Please try again.",
+      "phoneChangeSuccess": "Phone number updated successfully!",
+      "phoneChangeFailed": "Failed to update phone number. Please try again.",
+      "emailChangeSuccess": "Email updated successfully! Please verify your new email.",
+      "emailChangeFailed": "Failed to update email. Please try again.",
+      "passwordChangeSuccess": "Password updated successfully!",
+      "passwordChangeFailed": "Failed to update password. Please try again.",
+      "addressChangeSuccess": "Address updated successfully!",
+      "addressChangeFailed": "Failed to update address. Please try again.",
+      "profilePictureSuccess": "Profile picture updated successfully!",
+      "profilePictureFailed": "Failed to upload profile picture. Please try again.",
+      "accountDeleteConfirm": "Are you sure you want to delete your account? This action cannot be undone.",
+      "accountDeleted": "Account deleted successfully. Redirecting...",
+      "accountDeleteFailed": "Failed to delete account. Please try again.",
+      "logoutConfirm": "Are you sure you want to log out?"
+    },
+    "subscription": {
+      "title": "Subscription Settings",
+      "subtitle": "Manage your subscription plan and features",
+      "currentPlan": "Current Plan",
+      "free": "Free Plan",
+      "essential": "Essential Plan",
+      "premium": "Premium Plan",
+      "plans": {
+        "free": {
+          "name": "Free",
+          "price": "Free",
+          "features": [
+            "Marketplace Access",
+            "Composting Guides",
+            "Camera AI (5/week)",
+            "Manong Bot (10/week)"
+          ]
+        },
+        "essential": {
+          "name": "Essential",
+          "price": "₱149/mo",
+          "badge": "Best Value",
+          "features": [
+            "Everything in Free",
+            "Unlimited Manong Bot (Mobile only)"
+          ]
+        },
+        "premium": {
+          "name": "Premium",
+          "price": "₱299/mo",
+          "badge": "Most Popular",
+          "features": [
+            "Everything in Essential",
+            "Unlimited Camera AI (Mobile only)"
+          ]
+        }
+      },
+      "usage": {
+        "title": "Your Usage This Week",
+        "manongBot": "Manong Bot Uses",
+        "cameraAi": "Camera AI Scans",
+        "unlimited": "Unlimited",
+        "weeklyReset": "Resets every Monday at 12:00 AM",
+        "mobileOnlyNotice": "Manong Bot and Camera AI are available exclusively on the PigSoil mobile app. Download the app to access these AI-powered features!"
+      },
+      "limits": {
+        "manongBotTitle": "⚠️ Weekly Manong Bot Limit Reached",
+        "manongBotDescription": "You've used all 10 free Manong Bot conversations this week. Upgrade to Essential or Premium for unlimited access, or wait until Monday for your limit to reset.",
+        "cameraAiTitle": "⚠️ Weekly Camera AI Limit Reached",
+        "cameraAiDescription": "You've used all 5 free Camera AI scans this week. Upgrade to Premium for unlimited access, or wait until Monday for your limit to reset."
+      },
+      "buttons": {
+        "upgrade": "Upgrade Plan",
+        "downgrade": "Switch to",
+        "manage": "Cancel Subscription",
+        "contactSupport": "Contact Support",
+        "subscribe": "Subscribe Now",
+        "subscribing": "Processing..."
+      },
+      "modal": {
+        "upgrade": {
+          "title": "Upgrade Subscription",
+          "icon": "🚀",
+          "confirmButton": "Confirm Upgrade",
+          "cancelButton": "Cancel"
+        },
+        "downgrade": {
+          "title": "Change Plan",
+          "icon": "⚠️",
+          "confirmButton": "Confirm Change",
+          "cancelButton": "Cancel"
+        },
+        "cancel": {
+          "title": "Cancel Subscription",
+          "icon": "⚠️",
+          "message": "Are you sure you want to cancel your subscription? You will lose access to premium features.",
+          "confirmButton": "Yes, Cancel",
+          "cancelButton": "Keep Subscription"
+        },
+        "details": {
+          "plan": "Plan",
+          "price": "Price",
+          "billingCycle": "Billing Cycle",
+          "monthly": "Monthly",
+          "features": "Features"
+        }
+      },
+      "alerts": {
+        "upgradeSuccess": "Subscription upgraded successfully!",
+        "upgradeFailed": "Failed to upgrade subscription. Please try again.",
+        "cancelSuccess": "Subscription cancelled successfully.",
+        "cancelFailed": "Failed to cancel subscription. Please try again.",
+        "paymentSuccess": "Payment successful! Your subscription is being activated...",
+        "paymentFailed": "Payment was cancelled or failed. Please try again.",
+        "activationSuccess": "Welcome! Your subscription is now active. Enjoy your unlimited features!",
+        "activationPending": "Your payment is being processed. Your subscription will be activated shortly."
+      }
     }
   }
 }

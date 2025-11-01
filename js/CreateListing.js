@@ -64,6 +64,14 @@ let selectedTechnique = 'basic_swine_manure';
 let currentUser = null;
 let currentUserData = null;
 
+// Helper function to get translation
+function t(key, fallback = '') {
+    if (typeof i18next !== 'undefined' && i18next.t) {
+        return i18next.t(key);
+    }
+    return fallback || key;
+}
+
 // Google Maps variables
 let map;
 let marker;
@@ -89,6 +97,13 @@ window.initMap = function() {
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🐷 PigSoil+ CreateListing.js loaded with Google Maps integration');
+    
+    // Initialize i18n first
+    if (window.i18nManager) {
+        window.i18nManager.initialize().then(() => {
+            console.log('✅ i18n initialized for CreateListing');
+        });
+    }
     
     // Load cached profile immediately
     loadUserProfileFromCache();
@@ -211,12 +226,12 @@ async function testFirebaseConnection() {
         const testSnapshot = await getDocs(testQuery);
         
         console.log('✅ Firebase connection successful! Found', testSnapshot.size, 'product listings');
-        showNotification('Firebase connected to your collections!', 'success');
+        showNotification(t('createListing.notifications.firebaseConnected', 'Firebase connected to your collections!'), 'success');
         
         return true;
     } catch (error) {
         console.error('❌ Firebase connection test failed:', error);
-        showNotification('Firebase connection failed: ' + error.message, 'error');
+        showNotification(t('createListing.notifications.firebaseFailed', 'Firebase connection failed') + ': ' + error.message, 'error');
         throw error;
     }
 }
@@ -226,7 +241,7 @@ function checkAuthState() {
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
             console.log('No user authenticated, redirecting to login');
-            showNotification('Please sign in to create a listing', 'error');
+            showNotification(t('createListing.notifications.signInRequired', 'Please sign in to create a listing'), 'error');
             
             const submitBtn = document.getElementById('submitBtn');
             if (submitBtn) {
@@ -250,7 +265,7 @@ function checkAuthState() {
             console.log('User data loaded:', currentUserData);
             
             if (currentUserData.userType !== 'swine_farmer' && currentUserData.userType !== 'Swine Farmer') {
-                showNotification('Only swine farmers can create listings', 'error');
+                showNotification(t('createListing.notifications.farmerOnly', 'Only swine farmers can create listings'), 'error');
                 setTimeout(() => {
                     window.location.href = '/marketplace.html';
                 }, 2000);
@@ -259,7 +274,7 @@ function checkAuthState() {
             
         } catch (error) {
             console.error('Error loading user data:', error);
-            showNotification('Error loading user profile. Please try again.', 'error');
+            showNotification(t('createListing.notifications.profileLoadError', 'Error loading user profile. Please try again.'), 'error');
             
             currentUserData = {
                 userType: 'swine_farmer',
@@ -549,7 +564,7 @@ function confirmLocationSelection() {
     // Close modal
     closeLocationPicker();
     
-    showNotification('Farm location updated successfully!', 'success');
+    showNotification(t('createListing.notifications.locationUpdated', 'Farm location updated successfully!'), 'success');
 }
 
 function updateLocationDisplay() {
@@ -642,7 +657,7 @@ function handleEnhancedPhotoSelection(file, upload, index, input) {
     upload.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
             <div style="font-size: 24px; animation: spin 1s linear infinite;">⏳</div>
-            <div style="font-size: 12px; margin-top: 8px; color: #666;">Processing...</div>
+            <div style="font-size: 12px; margin-top: 8px; color: #666;">${t('createListing.form.photos.processing', 'Processing...')}</div>
         </div>
     `;
     
@@ -652,18 +667,18 @@ function handleEnhancedPhotoSelection(file, upload, index, input) {
         try {
             createFirebasePhotoPreview(e.target.result, upload, index, file);
             uploadedPhotos[index] = file;
-            showNotification('Photo ready for upload!', 'success');
+            showNotification(t('createListing.notifications.photoReady', 'Photo ready for upload!'), 'success');
             validatePhotos();
         } catch (error) {
             console.error('Error creating photo preview:', error);
-            showNotification('Failed to process image. Please try again.', 'error');
+            showNotification(t('createListing.notifications.photoProcessFailed', 'Failed to process image. Please try again.'), 'error');
             resetPhotoUpload(upload, index);
         }
     };
     
     reader.onerror = () => {
         console.error('Error reading file');
-        showNotification('Error reading image file', 'error');
+        showNotification(t('createListing.notifications.errorReading', 'Error reading image file'), 'error');
         resetPhotoUpload(upload, index);
     };
     
@@ -675,14 +690,14 @@ function validatePhotoFile(file) {
     if (!file.type.startsWith('image/')) {
         return {
             isValid: false,
-            message: 'Please select a valid image file (JPG, PNG, GIF, WebP)'
+            message: t('createListing.validation.photoInvalidType', 'Please select a valid image file (JPG, PNG, GIF, WebP)')
         };
     }
     
     if (file.size > 5 * 1024 * 1024) {
         return {
             isValid: false,
-            message: 'Image size must be less than 5MB'
+            message: t('createListing.validation.photoTooLarge', 'Image size must be less than 5MB')
         };
     }
     
@@ -748,7 +763,7 @@ function removeEnhancedPhoto(upload, index) {
     uploadedPhotos[index] = null;
     resetPhotoUpload(upload, index);
     validatePhotos();
-    showNotification('Photo removed', 'info');
+    showNotification(t('createListing.notifications.photoRemoved', 'Photo removed'), 'info');
 }
 
 // Reset photo upload area
@@ -827,7 +842,7 @@ function handleFirebaseFormSubmission(e) {
     const isValidLocation = validateLocation();
     
     if (!isValidTitle || !isValidQuantity || !isValidPrice || !isValidPhotos || !isValidLocation) {
-        showNotification('Please fix all errors before submitting', 'error');
+        showNotification(t('createListing.validation.fixErrors', 'Please fix all errors before submitting'), 'error');
         
         const firstError = document.querySelector('.form-input.error, .photo-upload-grid.error');
         if (firstError) {
@@ -837,7 +852,7 @@ function handleFirebaseFormSubmission(e) {
     }
     
     isFormSubmitting = true;
-    showLoadingOverlay('Preparing your swine compost listing...');
+    showLoadingOverlay(t('createListing.progress.preparing', 'Preparing your swine compost listing...'));
     
     const formData = collectFirebaseFormData();
     submitListingToFirebase(formData);
@@ -846,7 +861,7 @@ function handleFirebaseFormSubmission(e) {
 // Validate location
 function validateLocation() {
     if (!selectedLocation.lat || !selectedLocation.lng) {
-        showNotification('Please select a pickup location for your swine compost', 'error');
+        showNotification(t('createListing.validation.locationRequired', 'Please select a pickup location for your swine compost'), 'error');
         return false;
     }
     return true;
@@ -893,14 +908,14 @@ async function submitListingToFirebase(formData) {
     
     try {
         // Step 1: Upload photos
-        updateProgress(loadingText, progressBar, progressIndicator, 'Uploading compost photos...', 25);
+        updateProgress(loadingText, progressBar, progressIndicator, t('createListing.progress.uploadingPhotos', 'Uploading compost photos...'), 25);
         
         console.log('📤 Starting photo upload...');
         const photoUrls = await uploadPhotosToFirebase(formData.photos);
         console.log('✅ Photos uploaded successfully:', photoUrls);
         
         // Step 2: Create listing data using YOUR EXACT schema
-        updateProgress(loadingText, progressBar, progressIndicator, 'Creating swine compost listing...', 50);
+        updateProgress(loadingText, progressBar, progressIndicator, t('createListing.progress.creating', 'Creating swine compost listing...'), 50);
         
         // Using your exact product_listings schema from Firebase
         const listingData = {
@@ -929,25 +944,25 @@ async function submitListingToFirebase(formData) {
         };
         
         // Step 3: Save to YOUR product_listings collection
-        updateProgress(loadingText, progressBar, progressIndicator, 'Saving to your database...', 75);
+        updateProgress(loadingText, progressBar, progressIndicator, t('createListing.progress.saving', 'Saving to database...'), 75);
         
         console.log('💾 Saving listing to YOUR product_listings collection:', listingData);
         const docRef = await addDoc(collection(db, COLLECTIONS.PRODUCT_LISTINGS), listingData);
         
         // Step 4: Complete
-        updateProgress(loadingText, progressBar, progressIndicator, 'Listing created successfully!', 100);
+        updateProgress(loadingText, progressBar, progressIndicator, t('createListing.progress.success', 'Listing created successfully!'), 100);
         
         console.log('✅ Swine compost listing created with ID:', docRef.id);
         
         // Hide loading and show success
         setTimeout(() => {
             hideLoadingOverlay();
-            showNotification('Swine compost listing posted successfully!', 'success');
+            showNotification(t('createListing.notifications.listingCreated', 'Swine compost listing posted successfully!'), 'success');
             isFormSubmitting = false;
             
             // Redirect after successful creation
             setTimeout(() => {
-                showNotification('Redirecting to marketplace...', 'info');
+                showNotification(t('createListing.notifications.redirecting', 'Redirecting to marketplace...'), 'info');
                 window.location.href = '/farmermarket.html';
             }, 2000);
         }, 1000);
@@ -956,12 +971,12 @@ async function submitListingToFirebase(formData) {
         console.error('❌ Error creating listing:', error);
         
         hideLoadingOverlay();
-        showNotification('Error creating listing: ' + error.message, 'error');
+        showNotification(t('createListing.notifications.errorCreating', 'Error creating listing') + ': ' + error.message, 'error');
         isFormSubmitting = false;
         
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Post Swine Compost Listing';
+            submitBtn.textContent = t('createListing.buttons.submit', 'Post Swine Compost Listing');
         }
     }
 }
@@ -1012,17 +1027,17 @@ function validateProductTitle() {
     const value = field.value.trim();
     
     if (value.length === 0) {
-        setFieldError(field, 'Product title is required');
+        setFieldError(field, t('createListing.validation.titleRequired', 'Product title is required'));
         return false;
     }
     
     if (value.length < 3) {
-        setFieldError(field, 'Product title must be at least 3 characters');
+        setFieldError(field, t('createListing.validation.titleTooShort', 'Title must be at least 3 characters'));
         return false;
     }
     
     if (value.length > 100) {
-        setFieldError(field, 'Product title must be less than 100 characters');
+        setFieldError(field, t('createListing.validation.titleTooLong', 'Title cannot exceed 100 characters'));
         return false;
     }
     
@@ -1153,19 +1168,22 @@ function clearFieldError(field) {
 // Character counters
 function setupCharacterCounters() {
     const description = document.getElementById('description');
-    const counter = document.getElementById('descriptionCounter');
+    const charCount = document.getElementById('charCount');
     
-    if (description && counter) {
+    if (description && charCount) {
         description.addEventListener('input', () => {
             const length = description.value.length;
-            counter.textContent = `${length}/500 characters`;
+            charCount.textContent = length;
             
-            if (length > 450) {
-                counter.style.color = '#e74c3c';
-            } else if (length > 400) {
-                counter.style.color = '#ff9800';
-            } else {
-                counter.style.color = '#666';
+            const counter = document.getElementById('descriptionCounter');
+            if (counter) {
+                if (length > 450) {
+                    counter.style.color = '#e74c3c';
+                } else if (length > 400) {
+                    counter.style.color = '#ff9800';
+                } else {
+                    counter.style.color = '#666';
+                }
             }
         });
     }

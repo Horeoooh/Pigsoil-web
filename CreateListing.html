@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Listing - PigSoil+</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- i18next for internationalization -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -808,10 +812,10 @@
 <div id="locationModal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
-            <h2 class="modal-title">Select Pickup Location</h2>
+            <h2 class="modal-title" data-i18n="createListing.modal.title">Select Pickup Location</h2>
             <button class="modal-close" id="modalClose">&times;</button>
         </div>
-        <input type="text" id="locationSearch" class="location-search" placeholder="Search for your farm location...">
+        <input type="text" id="locationSearch" class="location-search" data-i18n="[placeholder]createListing.modal.search" placeholder="Search for your farm location...">
         <div id="mapContainer" class="map-container"></div>
         
         <!-- Location Preview -->
@@ -819,15 +823,15 @@
             <div style="display: flex; align-items: start; gap: 12px;">
                 <span style="font-size: 24px;">📍</span>
                 <div style="flex: 1;">
-                    <div style="font-weight: 600; font-size: 16px; color: #333; margin-bottom: 4px;" id="previewLocationName">Select a location</div>
-                    <div style="font-size: 14px; color: #666; line-height: 1.5;" id="previewLocationAddress">Click on the map or search to select your farm location</div>
+                    <div style="font-weight: 600; font-size: 16px; color: #333; margin-bottom: 4px;" id="previewLocationName" data-i18n="createListing.modal.preview.name">Location name will appear here</div>
+                    <div style="font-size: 14px; color: #666; line-height: 1.5;" id="previewLocationAddress" data-i18n="createListing.modal.preview.address">Full address will appear here</div>
                 </div>
             </div>
         </div>
         
         <div class="modal-buttons">
-            <button class="btn-secondary" id="cancelLocation">Cancel</button>
-            <button class="btn-primary" id="confirmLocation">Confirm Location</button>
+            <button class="btn-secondary" id="cancelLocation" data-i18n="createListing.modal.cancelButton">Cancel</button>
+            <button class="btn-primary" id="confirmLocation" data-i18n="createListing.modal.confirmButton">Confirm Location</button>
         </div>
     </div>
 </div>
@@ -841,9 +845,9 @@
             </div>
             
             <ul class="nav-menu">
-                <li><a href="/dashboard.html" data-nav="dashboard">Dashboard</a></li>
-                <li><a href="/farmermarket.html" data-nav="market">Market</a></li>
-                <li><a href="/guides.html" data-nav="guides">Guides</a></li>
+                <li><a href="/dashboard.html" data-nav="dashboard" data-i18n="dashboard.nav.dashboard">Dashboard</a></li>
+                <li><a href="/farmermarket.html" data-nav="market" data-i18n="dashboard.nav.market">Market</a></li>
+                <li><a href="/guides.html" data-nav="guides" data-i18n="dashboard.nav.guides">Guides</a></li>
             </ul>
             
             <div class="user-section">
@@ -869,8 +873,8 @@
     <main class="main-content">
         <!-- Page Header -->
         <section class="page-header">
-            <h1 class="page-title">Create Swine Compost Listing</h1>
-            <p class="page-subtitle">Add your premium swine compost to the marketplace and connect with organic fertilizer buyers</p>
+            <h1 class="page-title" data-i18n="createListing.header.title">Create New Listing</h1>
+            <p class="page-subtitle" data-i18n="createListing.header.subtitle">List your quality compost for sale in the marketplace</p>
         </section>
 
         <!-- Create Listing Form -->
@@ -878,7 +882,7 @@
             <form id="createListingForm" novalidate>
                 <!-- Product Photos -->
                 <div class="form-group">
-                    <label class="form-label">Compost Photos *</label>
+                    <label class="form-label" data-i18n="createListing.form.photos.label">Compost Photos *</label>
                     <div class="photo-upload-grid" id="photoUploadGrid">
                         <div class="photo-upload" data-index="0">
                             <span class="photo-upload-icon">+</span>
@@ -901,17 +905,18 @@
                             <button type="button" class="photo-remove">&times;</button>
                         </div>
                     </div>
-                    <p class="photo-hint">Upload at least one photo of your swine compost • The first photo will be the main display image</p>
+                    <p class="photo-hint" data-i18n="createListing.form.photos.hint">Upload at least one photo of your swine compost • The first photo will be the main display image</p>
                     <div id="photoError" class="photo-error" style="display: none;"></div>
                 </div>
 
                 <!-- Product Title -->
                 <div class="form-group">
-                    <label class="form-label" for="productTitle">Compost Title *</label>
+                    <label class="form-label" for="productTitle" data-i18n="createListing.form.productTitle.label">Compost Title *</label>
                     <input 
                         type="text" 
                         id="productTitle" 
                         class="form-input" 
+                        data-i18n="[placeholder]createListing.form.productTitle.placeholder"
                         placeholder="e.g., Premium Organic Swine Compost - Ready to Use" 
                         required 
                         maxlength="100"
@@ -922,11 +927,12 @@
                 <!-- Quantity and Price Row -->
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" for="quantity">Quantity (kg) *</label>
+                        <label class="form-label" for="quantity" data-i18n="createListing.form.quantity.label">Quantity (kg) *</label>
                         <input 
                             type="number" 
                             id="quantity" 
                             class="form-input" 
+                            data-i18n="[placeholder]createListing.form.quantity.placeholder"
                             placeholder="e.g., 100" 
                             min="1" 
                             max="10000" 
@@ -935,11 +941,12 @@
                         >
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="price">Price per kg (₱) *</label>
+                        <label class="form-label" for="price" data-i18n="createListing.form.price.label">Price per kg (₱) *</label>
                         <input 
                             type="number" 
                             id="price" 
                             class="form-input" 
+                            data-i18n="[placeholder]createListing.form.price.placeholder"
                             placeholder="e.g., 15.00" 
                             min="1" 
                             max="5000" 
@@ -954,12 +961,12 @@
 
                 <!-- *** UPDATED LOCATION SECTION *** -->
                 <div class="form-group">
-                    <label class="form-label">Pickup/Meetup Location</label>
+                    <label class="form-label" data-i18n="createListing.form.location.label">Pickup/Meetup Location</label>
                     <div class="location-container" id="locationContainer">
                         <div class="location-map" id="locationMapPreview">
                             <div id="staticMap" style="width: 100%; height: 100%; border-radius: 8px; overflow: hidden;">
                                 <div style="display: flex; align-items: center; justify-content: center; height: 100%; text-align: center; color: #999;">
-                                    🗺️ Click "Change" to set your meetup location<br>
+                                    <span data-i18n="createListing.form.location.mapPlaceholder">🗺️ Click "Change" to set your meetup location</span><br>
                                     <small></small>
                                 </div>
                             </div>
@@ -967,24 +974,25 @@
                         <div class="location-info">
                             <span class="location-pin">📍</span>
                             <div class="location-details">
-                                <div class="location-name" id="selectedLocationName">Select farm location</div>
-                                <div class="location-address" id="selectedLocationAddress">Click "Change" to choose pickup location</div>
+                                <div class="location-name" id="selectedLocationName" data-i18n="createListing.form.location.defaultName">Select farm location</div>
+                                <div class="location-address" id="selectedLocationAddress" data-i18n="createListing.form.location.defaultAddress">Click "Change" to choose pickup location</div>
                             </div>
-                            <span class="change-location" id="changeLocationBtn">Change</span>
+                            <span class="change-location" id="changeLocationBtn" data-i18n="createListing.form.location.changeButton">Change</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Description -->
                 <div class="form-group">
-                    <label class="form-label" for="description">Compost Description</label>
+                    <label class="form-label" for="description" data-i18n="createListing.form.description.label">Compost Description</label>
                     <textarea 
                         id="description" 
                         class="form-input form-textarea" 
-                        placeholder="Describe your swine compost"
+                        data-i18n="[placeholder]createListing.form.description.placeholder"
+                        placeholder="Describe your swine compost quality, composting method used, and any special features..."
                         maxlength="500"
                     ></textarea>
-                    <div id="descriptionCounter" style="font-size: 12px; color: #666; text-align: right; margin-top: 4px;">0/500 characters</div>
+                    <div id="descriptionCounter" style="font-size: 12px; color: #666; text-align: right; margin-top: 4px;"><span id="charCount">0</span>/500 <span data-i18n="createListing.form.description.counter">characters</span></div>
                 </div>
 
                 <!-- Payment Note -->
@@ -992,8 +1000,8 @@
                     <div style="display: flex; align-items: start; gap: 12px;">
                         <span style="font-size: 20px;">💡</span>
                         <div>
-                            <div style="font-weight: 600; color: #2e7d32; margin-bottom: 8px;">Direct Communication & Payment</div>
-                            <p style="font-size: 14px; color: #2e7d32; line-height: 1.5; margin: 0;">
+                            <div style="font-weight: 600; color: #2e7d32; margin-bottom: 8px;" data-i18n="createListing.form.paymentNote.title">Direct Communication & Payment</div>
+                            <p style="font-size: 14px; color: #2e7d32; line-height: 1.5; margin: 0;" data-i18n="createListing.form.paymentNote.description">
                                 PigSoil+ connects swine farmers with organic fertilizer buyers through direct messaging. Payment arrangements (cash, installments, barter) are handled privately between you and the buyer during face-to-face meetings. This approach respects traditional Filipino agricultural community practices.
                             </p>
                         </div>
@@ -1001,7 +1009,7 @@
                 </div>
 
                 <!-- Submit Button -->
-                <button type="submit" class="submit-btn" id="submitBtn">
+                <button type="submit" class="submit-btn" id="submitBtn" data-i18n="createListing.buttons.submit">
                     Post Swine Compost Listing
                 </button>
             </form>
@@ -2192,7 +2200,38 @@
             }, 300);
         }, 4000);
     }
+    
+    // Initialize i18n for CreateListing page
+    document.addEventListener('DOMContentLoaded', async function() {
+        if (window.i18nManager) {
+            await window.i18nManager.initialize();
+            
+            // Add i18n attributes dynamically to form elements
+            const i18nMappings = {
+                'label[for="productTitle"]': 'createListing.form.productTitle.label',
+                '#productTitle': '[placeholder]createListing.form.productTitle.placeholder',
+                'label[for="quantity"]': 'createListing.form.quantity.label',
+                '#quantity': '[placeholder]createListing.form.quantity.placeholder',
+                'label[for="price"]': 'createListing.form.price.label',
+                '#price': '[placeholder]createListing.form.price.placeholder',
+                'label[for="description"]': 'createListing.form.description.label',
+                '#description': '[placeholder]createListing.form.description.placeholder',
+                'button[type="submit"]': 'createListing.buttons.submit'
+            };
+            
+            Object.entries(i18nMappings).forEach(([selector, key]) => {
+                const element = document.querySelector(selector);
+                if (element) {
+                    element.setAttribute('data-i18n', key);
+                }
+            });
+            
+            // Trigger content update after adding attributes
+            window.i18nManager.updateContent();
+        }
+    });
 </script>
+<script src="/js/i18n.js"></script>
 <script type="module" src="/js/dashboard-auth-guard.js"></script>
 <script type="module" src="/js/shared-user-manager.js"></script>
 </body>

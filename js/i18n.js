@@ -64,6 +64,13 @@ function updateContent() {
         }
     });
     
+    // Update elements with data-i18n-placeholder attribute
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+        const key = element.getAttribute('data-i18n-placeholder');
+        const translation = i18next.t(key);
+        element.placeholder = translation;
+    });
+    
     // Update elements with data-i18n-html (for HTML content with emojis)
     document.querySelectorAll('[data-i18n-html]').forEach(element => {
         const key = element.getAttribute('data-i18n-html');

@@ -152,7 +152,7 @@ function loadUserProfile() {
 function checkAuthState() {
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            showAlert('Please sign in to access subscription settings.', 'error');
+            showAlert(i18next.t('settings.alerts.saveFailed'), 'error');
             setTimeout(() => {
                 window.location.href = '/login.html';
             }, 2000);
@@ -168,7 +168,7 @@ function checkAuthState() {
 
 async function loadUserSubscriptionData() {
     if (!currentUser) {
-        showAlert('Not authenticated', 'error');
+        showAlert(i18next.t('settings.alerts.saveFailed'), 'error');
         return;
     }
     
@@ -197,11 +197,11 @@ async function loadUserSubscriptionData() {
                 hideLimitMessage();
             }
         } else {
-            showAlert('User data not found', 'error');
+            showAlert(i18next.t('settings.alerts.saveFailed'), 'error');
         }
     } catch (error) {
         console.error('Error loading subscription data:', error);
-        showAlert('Failed to load subscription data: ' + error.message, 'error');
+        showAlert(i18next.t('settings.alerts.saveFailed'), 'error');
     } finally {
         showLoading(false);
     }
@@ -265,7 +265,7 @@ function handleUrlParameters() {
 }
 
 async function handlePaymentSuccess() {
-    showAlert('Payment successful! Your subscription is being activated...', 'success');
+    showAlert(i18next.t('settings.subscription.alerts.paymentSuccess'), 'success');
     
     // Wait a bit for webhooks to process
     await new Promise(resolve => setTimeout(resolve, 3000));
@@ -275,7 +275,7 @@ async function handlePaymentSuccess() {
 }
 
 function handlePaymentFailure() {
-    showAlert('Payment was cancelled or failed. Please try again.', 'error');
+    showAlert(i18next.t('settings.subscription.alerts.paymentFailed'), 'error');
     
     // Clear URL parameters
     if (window.history.replaceState) {
@@ -322,11 +322,11 @@ function showActivationSuccess() {
     hideLimitMessage();
     
     const planName = getPlanName();
-    showAlert(`🎉 Welcome to ${planName}! Your subscription is now active. Enjoy your unlimited features!`, 'success');
+    showAlert(i18next.t('settings.subscription.alerts.activationSuccess'), 'success');
 }
 
 function showDelayedActivation() {
-    showAlert('⏳ Your payment is being processed. Your subscription will be activated shortly. You will receive a notification once it\'s ready.', 'warning');
+    showAlert(i18next.t('settings.subscription.alerts.activationPending'), 'warning');
 }
 
 function updateUI() {
@@ -337,7 +337,7 @@ function updateUI() {
     const planEmoji = getPlanEmoji();
     currentPlanBadge.innerHTML = `
         <span>${planEmoji}</span>
-        <span>Current Plan: ${planName}</span>
+        <span>${i18next.t('settings.subscription.currentPlan')}: ${planName}</span>
     `;
     
     // Update header
@@ -374,9 +374,9 @@ function updateHeaderDisplay() {
 function getPlanName() {
     const tier = currentUserData.subscriptionTier || TIER_FREE;
     switch (tier) {
-        case TIER_PREMIUM: return 'Premium';
-        case TIER_ESSENTIAL: return 'Essential';
-        default: return 'Free';
+        case TIER_PREMIUM: return i18next.t('settings.subscription.plans.premium.name');
+        case TIER_ESSENTIAL: return i18next.t('settings.subscription.plans.essential.name');
+        default: return i18next.t('settings.subscription.plans.free.name');
     }
 }
 
@@ -421,53 +421,48 @@ function buildPlansList() {
     
     // FREE Tier
     let freeFeatures = [
-        'Marketplace Access',
-        'Composting Guides'
+        i18next.t('settings.subscription.plans.free.features.0'),
+        i18next.t('settings.subscription.plans.free.features.1')
     ];
     
     // Only add Camera AI for non-fertilizer buyers
     if (!isFertilizerBuyerOnly) {
-        freeFeatures.push(`${FREE_WEEKLY_CAMERA_AI_LIMIT} Camera AI scans/week (Mobile only)`);
+        freeFeatures.push(i18next.t('settings.subscription.plans.free.features.2'));
     }
     
     if (showPremium) {
         freeFeatures = [
-            `${FREE_WEEKLY_MANONG_BOT_LIMIT} Manong Bot questions/week (Mobile only)`,
-            `${FREE_WEEKLY_CAMERA_AI_LIMIT} Camera AI scans/week (Mobile only)`,
-            'Marketplace Access',
-            'Composting Guides'
+            i18next.t('settings.subscription.plans.free.features.3'),
+            i18next.t('settings.subscription.plans.free.features.2'),
+            i18next.t('settings.subscription.plans.free.features.0'),
+            i18next.t('settings.subscription.plans.free.features.1')
         ];
     }
     
     plans.push({
         tier: TIER_FREE,
-        name: 'Free',
+        name: i18next.t('settings.subscription.plans.free.name'),
         price: 0,
-        priceText: 'Free',
+        priceText: i18next.t('settings.subscription.plans.free.price'),
         features: freeFeatures,
         icon: '🌱',
         isCurrentPlan: isFree()
     });
     
     // ESSENTIAL Tier
-    const essentialFeatures = isFertilizerBuyerOnly 
-        ? [
-            'Everything in Free',
-            'Unlimited Manong Bot (Mobile only)'
-        ]
-        : [
-            'Everything in Free',
-            'Unlimited Manong Bot (Mobile only)'
-        ];
+    const essentialFeatures = [
+        i18next.t('settings.subscription.plans.essential.features.0'),
+        i18next.t('settings.subscription.plans.essential.features.1')
+    ];
     
     plans.push({
         tier: TIER_ESSENTIAL,
-        name: 'Essential',
+        name: i18next.t('settings.subscription.plans.essential.name'),
         price: ESSENTIAL_PRICE,
-        priceText: `₱${ESSENTIAL_PRICE}/mo`,
+        priceText: i18next.t('settings.subscription.plans.essential.price'),
         features: essentialFeatures,
         icon: '🌿',
-        badge: showPremium ? 'Best Value' : 'Recommended',
+        badge: showPremium ? i18next.t('settings.subscription.plans.essential.badge') : i18next.t('settings.subscription.plans.essential.badge'),
         badgeColor: '#4CAF50',
         isCurrentPlan: isEssential(),
         isUpgradeAvailable: isFree()
@@ -477,15 +472,15 @@ function buildPlansList() {
     if (showPremium) {
         plans.push({
             tier: TIER_PREMIUM,
-            name: 'Premium',
+            name: i18next.t('settings.subscription.plans.premium.name'),
             price: PREMIUM_PRICE,
-            priceText: `₱${PREMIUM_PRICE}/mo`,
+            priceText: i18next.t('settings.subscription.plans.premium.price'),
             features: [
-                'Everything in Essential',
-                'Unlimited Camera AI (Mobile only)'
+                i18next.t('settings.subscription.plans.premium.features.0'),
+                i18next.t('settings.subscription.plans.premium.features.1')
             ],
             icon: '⭐',
-            badge: 'Most Popular',
+            badge: i18next.t('settings.subscription.plans.premium.badge'),
             badgeColor: '#FF9800',
             isCurrentPlan: isPremium(),
             isUpgradeAvailable: !isPremium()
@@ -644,7 +639,7 @@ function updateUsageSection() {
     // Update Manong Bot usage
     if (isEssential() || isPremium()) {
         // Unlimited for Essential and Premium
-        manongBotUsage.textContent = 'Unlimited';
+        manongBotUsage.textContent = i18next.t('settings.subscription.usage.unlimited');
         manongBotUsage.classList.add('unlimited');
         manongBotProgress.style.width = '100%';
     } else {
@@ -659,7 +654,7 @@ function updateUsageSection() {
     if (!isFertilizerBuyerOnly) {
         if (isPremium()) {
             // Unlimited for Premium only
-            cameraAiUsage.textContent = 'Unlimited';
+            cameraAiUsage.textContent = i18next.t('settings.subscription.usage.unlimited');
             cameraAiUsage.classList.add('unlimited');
             cameraAiProgress.style.width = '100%';
         } else {
@@ -739,15 +734,15 @@ function showLimitMessage(limitType) {
     if (limitType === 'manong_bot') {
         limitTitle.innerHTML = `
             <span>⚠️</span>
-            <span>Manong Bot Weekly Limit Reached</span>
+            <span>${i18next.t('settings.subscription.limits.manongBotTitle')}</span>
         `;
-        limitDescription.textContent = `You've used all ${FREE_WEEKLY_MANONG_BOT_LIMIT} Manong Bot questions for this week. Upgrade to Essential or Premium for unlimited access.`;
+        limitDescription.textContent = i18next.t('settings.subscription.limits.manongBotDescription');
     } else if (limitType === 'camera_ai') {
         limitTitle.innerHTML = `
             <span>⚠️</span>
-            <span>Camera AI Weekly Limit Reached</span>
+            <span>${i18next.t('settings.subscription.limits.cameraAiTitle')}</span>
         `;
-        limitDescription.textContent = `You've used all ${FREE_WEEKLY_CAMERA_AI_LIMIT} Camera AI scans for this week. Upgrade to Premium for unlimited access.`;
+        limitDescription.textContent = i18next.t('settings.subscription.limits.cameraAiDescription');
     }
     limitMessage.classList.add('show');
     
@@ -799,7 +794,7 @@ async function handleLogout() {
                         window.location.href = '/login.html';
                     } catch (error) {
                         console.error('Error logging out:', error);
-                        showAlert('Error logging out: ' + error.message, 'error');
+                        showAlert(i18next.t('settings.alerts.saveFailed'), 'error');
                     }
                 }
             }
@@ -869,7 +864,7 @@ async function handleSubscribe() {
 
 async function startXenditPaymentFlow(targetTier) {
     if (!currentUser || !currentUserData) {
-        showAlert('User data not available', 'error');
+        showAlert(i18next.t('settings.alerts.saveFailed'), 'error');
         return;
     }
     
@@ -917,7 +912,7 @@ async function startXenditPaymentFlow(targetTier) {
         );
         
         // Step 5: Redirect to Xendit payment page
-        showAlert('Redirecting to payment page...', 'success');
+        showAlert(i18next.t('settings.subscription.alerts.paymentSuccess'), 'success');
         
         setTimeout(() => {
             window.location.href = paymentUrl;
@@ -925,32 +920,14 @@ async function startXenditPaymentFlow(targetTier) {
         
     } catch (error) {
         console.error('[Subscription] Payment flow error:', error);
-        showAlert('Failed to start payment: ' + error.message, 'error');
+        showAlert(i18next.t('settings.alerts.saveFailed'), 'error');
         showLoading(false);
     }
 }
 
 function handleManageSubscription() {
-    const currentPlan = getPlanName();
-    const endDate = currentUserData.subscriptionEndDate 
-        ? new Date(currentUserData.subscriptionEndDate).toLocaleDateString()
-        : 'N/A';
-    
     const modalContent = `
         <p style="color: #666; margin-bottom: 16px;">Are you sure you want to cancel your subscription?</p>
-        <div class="modal-details">
-            <div class="modal-detail-row">
-                <span class="modal-detail-label">Current Plan</span>
-                <span class="modal-detail-value">${currentPlan}</span>
-            </div>
-            <div class="modal-detail-row">
-                <span class="modal-detail-label">Expires</span>
-                <span class="modal-detail-value">${endDate}</span>
-            </div>
-        </div>
-        <p style="color: #856404; background: #fff3cd; padding: 12px; border-radius: 8px; font-size: 14px; margin-top: 16px; line-height: 1.6;">
-            ⚠️ Your subscription will remain active until ${endDate}, after which you will be downgraded to the Free plan.
-        </p>
     `;
     
     showConfirmationModal(
@@ -959,12 +936,12 @@ function handleManageSubscription() {
         modalContent,
         [
             {
-                text: 'Keep Subscription',
+                text: 'No',
                 className: 'modal-btn modal-btn-secondary',
                 onClick: () => hideConfirmationModal()
             },
             {
-                text: 'Yes, Cancel',
+                text: 'Yes',
                 className: 'modal-btn modal-btn-danger',
                 onClick: () => {
                     hideConfirmationModal();
@@ -993,13 +970,13 @@ async function performCancellation() {
             userUpdatedAt: Date.now()
         });
         
-        showAlert('Subscription cancelled successfully. You have been downgraded to the Free plan.', 'success');
+        showAlert(i18next.t('settings.subscription.alerts.cancelSuccess'), 'success');
         
         // Reload data
         await loadUserSubscriptionData();
     } catch (error) {
         console.error('Error cancelling subscription:', error);
-        showAlert('Failed to cancel subscription: ' + error.message, 'error');
+        showAlert(i18next.t('settings.subscription.alerts.cancelFailed'), 'error');
     } finally {
         showLoading(false);
     }
