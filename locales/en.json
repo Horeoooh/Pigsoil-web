@@ -246,6 +246,105 @@
       "readGuides": "Read Guides"
     }
   },
+  "buyerDashboard": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "transactions": "Transactions",
+      "market": "Market",
+      "guides": "Guides"
+    },
+    "userRole": "Organic Fertilizer Buyer",
+    "welcome": {
+      "title": "Welcome back",
+      "subtitle": "Ready to find quality organic fertilizer?"
+    },
+    "quickActions": {
+      "browse": {
+        "icon": "🏪",
+        "title": "Browse Marketplace",
+        "description": "Find quality organic fertilizer"
+      },
+      "transactions": {
+        "icon": "🧾",
+        "title": "Transactions",
+        "description": "View your purchase history"
+      }
+    },
+    "bot": {
+      "title": "Manong Bot",
+      "subtitle": "AI Farming Assistant",
+      "message": "Get personalized farming tips and composting guidance! Download our mobile app to access Manong Bot - your AI farming assistant available 24/7.",
+      "downloadButton": "Download App",
+      "learnButton": "Learn More",
+      "downloadAlert": "Mobile app coming soon! Stay tuned for iOS and Android releases.",
+      "learnAlert": "Visit our mobile app to chat with Manong Bot!"
+    },
+    "recentTransactions": {
+      "title": "Recent Transactions",
+      "seeAll": "See All →",
+      "from": "From:",
+      "status": {
+        "completed": "✓ Completed",
+        "pending": "⏳ Pending",
+        "inProgress": "🚚 In Progress"
+      }
+    }
+  },
+  "notificationsPage": {
+    "pageTitle": "Notifications - PigSoil+",
+    "header": {
+      "title": "Recent Notifications",
+      "markAllRead": "Mark All as Read",
+      "clearAll": "Clear All"
+    },
+    "filter": {
+      "title": "Filter Notifications",
+      "all": "All",
+      "unread": "Unread",
+      "read": "Read",
+      "showingAll": "Showing: All Notifications",
+      "showingUnread": "Showing: Unread Notifications",
+      "showingRead": "Showing: Read Notifications"
+    },
+    "types": {
+      "chat": "Chat",
+      "subscription": "Subscription",
+      "system": "System"
+    },
+    "actions": {
+      "markRead": "✓ Mark as Read",
+      "delete": "🗑️ Delete",
+      "viewMessage": "💬 View Message"
+    },
+    "empty": {
+      "all": {
+        "icon": "🔔",
+        "title": "No notifications yet",
+        "text": "You're all caught up!"
+      },
+      "unread": {
+        "icon": "✅",
+        "title": "All caught up!",
+        "text": "No unread notifications"
+      },
+      "read": {
+        "icon": "📋",
+        "title": "No read notifications",
+        "text": "Mark notifications as read to see them here"
+      }
+    },
+    "loading": {
+      "text": "Loading notifications..."
+    },
+    "toast": {
+      "markedRead": "Marked {{count}} notifications as read",
+      "allRead": "All notifications already read",
+      "cleared": "Cleared {{count}} notifications",
+      "markedSingleRead": "Marked as read",
+      "deleted": "Notification deleted",
+      "confirmClear": "Delete all notifications? This cannot be undone."
+    }
+  },
   "farmermarket": {
     "hero": {
       "title": "My Marketplace",
@@ -308,11 +407,11 @@
         "label": "Composting Technique Used",
         "basic": {
           "title": "Basic Swine Manure",
-          "description": "Traditional composting method, 60-90 days"
+          "description": "Traditional composting method, 21 days"
         },
         "hot": {
           "title": "Hot Composting",
-          "description": "Accelerated method with heat, 30-45 days"
+          "description": "Accelerated method with heat, 18 days"
         }
       },
       "quantity": {
@@ -405,6 +504,7 @@
   "settings": {
     "nav": {
       "dashboard": "Dashboard",
+      "transactions": "Transactions",
       "market": "Market",
       "guides": "Guides",
       "accountSettings": "Account Settings",
@@ -548,7 +648,68 @@
       "accountDeleteConfirm": "Are you sure you want to delete your account? This action cannot be undone.",
       "accountDeleted": "Account deleted successfully. Redirecting...",
       "accountDeleteFailed": "Failed to delete account. Please try again.",
-      "logoutConfirm": "Are you sure you want to log out?"
+      "logoutConfirm": "Are you sure you want to log out?",
+      "phoneRequired": "Please enter a phone number",
+      "phoneInvalid": "Please enter a valid Philippine phone number (+63XXXXXXXXXX)",
+      "phoneCurrentSame": "This is your current phone number",
+      "phoneSending": "Sending verification code...",
+      "phoneAlreadyExists": "This phone number is already registered",
+      "phoneCodeSent": "Verification code sent!",
+      "phoneTooManyRequests": "Too many requests. Please try again later",
+      "phoneInvalidFormat": "Invalid phone number format",
+      "phoneQuotaExceeded": "SMS quota exceeded. Please try again later",
+      "phoneSendFailed": "Failed to send verification code",
+      "smsCodeIncomplete": "Please enter the complete 6-digit code",
+      "smsVerifying": "Verifying code...",
+      "smsCodeUpdated": "Phone number updated!",
+      "smsCodeInvalid": "Invalid code. Please try again",
+      "smsCodeExpired": "Code expired. Please request a new one",
+      "smsCodeMissing": "Please enter the verification code",
+      "smsCredentialInUse": "This phone number is already in use",
+      "smsRecentLoginRequired": "For security, please sign out and sign back in, then try again",
+      "emailRequired": "Please enter an email address",
+      "emailInvalidFormat": "Please enter a valid email address",
+      "passwordRequired": "Please enter a password",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "passwordMismatch": "Passwords do not match",
+      "emailAdding": "Adding email & password...",
+      "emailAlreadyExists": "This email is already registered",
+      "emailPasswordAdded": "Email & password added!",
+      "emailAlreadyInUse": "This email is already in use",
+      "passwordWeak": "Password is too weak",
+      "providerAlreadyLinked": "Email provider already linked",
+      "credentialAlreadyInUse": "This credential is already in use",
+      "addEmailPasswordFailed": "Failed to add email & password",
+      "currentPasswordRequired": "Please enter your current password",
+      "newEmailRequired": "Please enter a new email",
+      "newEmailInvalid": "Please enter a valid email address",
+      "emailCurrentSame": "This is your current email",
+      "emailChanging": "Changing email...",
+      "emailChanged": "Email changed!",
+      "passwordWrong": "Current password is incorrect",
+      "recentLoginRequired": "Please sign out and sign back in, then try again",
+      "changeEmailFailed": "Failed to change email",
+      "newPasswordRequired": "Please enter a new password",
+      "newPasswordTooShort": "Password must be at least 6 characters",
+      "passwordSame": "New password must be different from current password",
+      "passwordChanging": "Changing password...",
+      "passwordChanged": "Password changed!",
+      "passwordUpdateFailed": "Failed to change password",
+      "usernameMinLength": "Username must be at least 3 characters",
+      "noChangesDetected": "No changes detected",
+      "userTypeChanged": "Account type changed! Page will reload...",
+      "uploadingProfilePicture": "Uploading profile picture...",
+      "profilePictureUploaded": "Profile picture uploaded successfully!",
+      "profilePictureInvalidType": "Please select a valid image file",
+      "profilePictureTooLarge": "Image size must be less than 5MB",
+      "deletingAccount": "Deleting account and data...",
+      "deleteConfirmText": "DELETE MY ACCOUNT",
+      "deleteCancelled": "Account deletion cancelled",
+      "recentLoginRequiredDelete": "For security, please sign out and sign back in before deleting your account",
+      "addressInvalid": "Please select a valid address",
+      "addressSaving": "Saving address...",
+      "addressSaved": "Address saved successfully!",
+      "addressSaveFailed": "Error saving address"
     },
     "subscription": {
       "title": "Subscription Settings",
@@ -647,6 +808,734 @@
         "activationSuccess": "Welcome! Your subscription is now active. Enjoy your unlimited features!",
         "activationPending": "Your payment is being processed. Your subscription will be activated shortly."
       }
+    }
+  },
+  "guides": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "transactions": "Transactions",
+      "market": "Market",
+      "guides": "Guides"
+    },
+    "header": {
+      "title": "Complete Composting Guides",
+      "subtitle": "Choose your composting method for detailed day-by-day instructions"
+    },
+    "methods": {
+      "basic": {
+        "title": "Basic Swine Manure",
+        "subtitle": "(21 Days - Beginner)"
+      },
+      "hot": {
+        "title": "Hot Composting Method",
+        "subtitle": "(18 Days - Advanced)"
+      }
+    },
+    "progress": {
+      "basic": "Day 1-21 Guide",
+      "hot": "Hot Method<br>Day 1-18 Guide"
+    },
+    "basicMethod": {
+      "title": "Basic Swine Manure Composting",
+      "subtitle": "Complete 21-Day Step-by-Step Guide for Beginners",
+      "aboutTitle": "About This Method",
+      "aboutText": "Traditional aerobic composting using swine waste and plant matter. Perfect for beginners with minimal equipment needed. Creates low-cost organic fertilizer in 21 days.",
+      "materialsTitle": "Materials Needed",
+      "materials": {
+        "manure": "Fresh swine manure",
+        "plant": "Dry plant matter",
+        "hulls": "Rice hulls/sawdust",
+        "shovel": "Shovel or fork",
+        "water": "Water source",
+        "cover": "Tarpaulin cover"
+      },
+      "days": {
+        "day1": {
+          "title": "Initial Setup",
+          "task": "Layer swine manure with carbon materials",
+          "phase": "Setup Phase",
+          "description": "Create alternating layers of swine manure and dry materials:",
+          "step1": "1. Start with a 6-inch layer of coarse plant material (corn stalks, rice straw)",
+          "step2": "2. Add 4 inches of fresh swine manure",
+          "step3": "3. Sprinkle 2 inches of dry materials (rice hulls, sawdust)",
+          "step4": "4. Repeat layering 3-4 times until pile reaches 1.2-1.5 meters high",
+          "step5": "5. Water each layer lightly as you build",
+          "tipLabel": "Setup Phase:",
+          "tipText": "Create alternating layers of swine manure and dry materials. Maintain a 3:1 ratio of brown materials (carbon-rich) to green materials (nitrogen-rich manure)."
+        },
+        "day7": {
+          "title": "First Turning",
+          "task": "Mix all layers thoroughly for proper aeration",
+          "phase": "Active Decomposition",
+          "description": "Turn pile for oxygen and check moisture levels:",
+          "step1": "1. Using a pitchfork or shovel, turn the entire pile",
+          "step2": "2. Move outside materials to the center and center materials to the outside",
+          "step3": "3. Break up any large clumps",
+          "step4": "4. Check moisture levels throughout the pile",
+          "step5": "5. Add water if needed to maintain proper moisture",
+          "step6": "6. Rebuild pile in same location",
+          "tipLabel": "Active Decomposition:",
+          "tipText": "Turn pile for oxygen and check moisture levels. After turning, the pile temperature will drop temporarily but should rise again within 24-48 hours."
+        },
+        "day14": {
+          "title": "Mid-Point Check",
+          "task": "Turn pile and monitor decomposition progress",
+          "phase": "Maturation Phase",
+          "description": "Monitor texture changes and earthy smell development:",
+          "step1": "1. Turn the pile completely as done on day 7",
+          "step2": "2. Add additional dry carbon materials if needed (rice hulls, dried leaves, sawdust)",
+          "step3": "3. Mix thoroughly to ensure even distribution",
+          "step4": "4. Adjust moisture if necessary",
+          "step5": "5. Check for proper brown-to-green ratio",
+          "step6": "6. Rebuild pile",
+          "tipLabel": "Maturation Phase:",
+          "tipText": "Monitor texture changes and earthy smell development. This is a good time to adjust the carbon-nitrogen ratio if the pile has been too wet or smelly."
+        },
+        "day17": {
+          "title": "Final Turning",
+          "task": "Check texture uniformity and adjust moisture",
+          "phase": "Pre-Harvest",
+          "description": "Final quality checks and preparation for harvest:",
+          "step1": "1. Perform thorough turning of the pile",
+          "step2": "2. Check texture uniformity throughout",
+          "step3": "3. Adjust moisture levels if needed",
+          "step4": "4. Ensure materials are well-decomposed",
+          "step5": "5. Check for earthy smell",
+          "step6": "6. Rebuild pile for final curing",
+          "tipLabel": "Pre-Harvest:",
+          "tipText": "Final quality checks and preparation for harvest. Materials should be darker, less fibrous, and have a pleasant earthy smell."
+        },
+        "day21": {
+          "title": "Harvest Ready",
+          "task": "Compost is ready for use or sale",
+          "phase": "✓ Completion",
+          "description": "Dark, crumbly compost ready for application or marketplace:",
+          "step1": "1. Perform final turning of the pile",
+          "step2": "2. Screen compost through 1/2 inch mesh to remove large particles",
+          "step3": "3. Return large particles to a new compost pile",
+          "step4": "4. Test pH (should be 6.5-7.5 for optimal use)",
+          "step5": "5. Check for proper moisture and crumbly texture",
+          "step6": "6. Package or store finished compost",
+          "step7": "7. Store in dry, ventilated area",
+          "tipLabel": "✓ Completion:",
+          "tipText": "Dark, crumbly compost ready for application or marketplace. Good compost should be dark brown, crumbly, have an earthy smell, and feel cool to the touch."
+        }
+      }
+    },
+    "hotMethod": {
+      "title": "Hot Composting Method",
+      "subtitle": "18-day pathogen-free composting method",
+      "heatIndicator": "THERMOPHILIC PROCESS (55-70°C)",
+      "aboutTitle": "About This Method",
+      "aboutText": "Pathogen-free compost from swine manure through high-heat decomposition. This advanced method uses controlled high temperatures to rapidly decompose materials while eliminating harmful pathogens.",
+      "materialsTitle": "Materials Needed",
+      "materials": {
+        "manure": "Fresh swine manure",
+        "carbon": "High-carbon materials",
+        "thermometer": "Compost thermometer",
+        "tools": "Turning tools",
+        "water": "Water source",
+        "insulation": "Insulation materials"
+      },
+      "days": {
+        "day1": {
+          "title": "High-Carbon Setup",
+          "task": "Build pile with proper C:N ratio",
+          "phase": "Initial Phase",
+          "description": "Create optimal conditions for thermophilic decomposition:",
+          "step1": "1. Choose a sheltered location with good drainage",
+          "step2": "2. Create a base layer of coarse materials (3 inches)",
+          "step3": "3. Mix fresh swine manure with high-carbon materials (2:1 ratio)",
+          "step4": "4. Build pile rapidly to minimum 1.5m x 1.5m x 1.5m (critical mass)",
+          "step5": "5. Ensure moisture content is 55-65% throughout",
+          "step6": "6. Insert thermometer into center of pile",
+          "step7": "7. Cover with insulating material",
+          "tempLabel": "Initial Phase:",
+          "tempText": "Create optimal conditions for thermophilic decomposition. Expect pile to reach 40-50°C within 24-48 hours."
+        },
+        "day3": {
+          "title": "Temperature Monitor",
+          "task": "Check internal heat reaches 60-70°C",
+          "phase": "Heating Phase",
+          "description": "Monitor temperature rise and maintain optimal conditions:",
+          "step1": "1. Record temperature using thermometer",
+          "step2": "2. Check multiple points in the pile",
+          "step3": "3. Ensure center reaches 60-70°C",
+          "step4": "4. Verify insulation is properly covering pile",
+          "step5": "5. Check moisture levels - should feel warm and moist",
+          "step6": "6. Document temperature readings",
+          "step7": "7. Adjust covering if heat is escaping",
+          "tempLabel": "Heating Phase:",
+          "tempText": "Monitor temperature rise and maintain optimal conditions. Target: 60-70°C for pathogen elimination and rapid decomposition."
+        },
+        "day8": {
+          "title": "Heat Maintenance",
+          "task": "Turn pile to maintain thermophilic phase",
+          "phase": "Thermophilic Phase",
+          "description": "Sustain high temperatures for rapid decomposition:",
+          "step1": "1. Record temperature before turning",
+          "step2": "2. Turn entire pile, moving outer materials to center",
+          "step3": "3. Ensure all materials reach thermophilic zone",
+          "step4": "4. Check moisture throughout and adjust as needed",
+          "step5": "5. Rebuild pile maintaining same dimensions",
+          "step6": "6. Re-insert thermometer in new center",
+          "step7": "7. Cover immediately to retain heat",
+          "tempLabel": "Thermophilic Phase:",
+          "tempText": "Sustain high temperatures for rapid decomposition. Temperature will drop temporarily but should recover within 24 hours."
+        },
+        "day12": {
+          "title": "Pathogen Elimination",
+          "task": "Continue high-temperature for safety",
+          "phase": "Sanitization Phase",
+          "description": "Ensure complete pathogen elimination through heat:",
+          "step1": "1. Document temperature before turning",
+          "step2": "2. Perform complete turn of all materials",
+          "step3": "3. Assess decomposition progress - materials should be darker",
+          "step4": "4. Check for proper texture (less fibrous, more uniform)",
+          "step5": "5. Test pH levels (should be approaching 6.5-7.5)",
+          "step6": "6. Adjust moisture if needed",
+          "step7": "7. Rebuild pile maintaining heat-retention structure",
+          "warningLabel": "Sanitization Phase:",
+          "warningText": "Ensure complete pathogen elimination through heat. Maintain temperatures above 55°C for thorough sanitization."
+        },
+        "day18": {
+          "title": "Curing Complete",
+          "task": "Temperature stabilized, ready for harvest",
+          "phase": "✓ Completion",
+          "description": "Pathogen-free compost ready for use or marketplace:",
+          "step1": "1. Screen compost through 1/2 inch mesh",
+          "step2": "2. Remove any remaining large particles",
+          "step3": "3. Test final pH and moisture content",
+          "step4": "4. Package finished compost for storage or use",
+          "step5": "5. Return oversized materials to new compost batch",
+          "step6": "6. Document final yield and quality",
+          "step7": "7. Store in dry, ventilated area",
+          "tipLabel": "✓ Completion:",
+          "tipText": "Pathogen-free compost ready for use or marketplace. Perfect hot compost is dark brown, crumbly, smells earthy, feels cool, and has uniform texture."
+        }
+      }
+    }
+  },
+  "farmerListingView": {
+    "back": "← Back to Market",
+    "loading": "Loading listing...",
+    "badges": {
+      "available": "Available",
+      "soldOut": "Sold Out",
+      "basic": "Basic",
+      "hot": "Hot Method"
+    },
+    "price": {
+      "perKg": "per kg"
+    },
+    "info": {
+      "quantityLeft": "Quantity Left",
+      "totalProduced": "Total Produced",
+      "soldAmount": "Sold Amount",
+      "location": "Location",
+      "technique": "Composting Technique",
+      "created": "Listed",
+      "updated": "Last Updated"
+    },
+    "buttons": {
+      "editMode": "Edit Mode",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "toggleAvailability": "Toggle Availability",
+      "deleteListing": "Delete Listing",
+      "addImage": "Add Image",
+      "deleteImage": "Delete Image",
+      "changeLocation": "Change"
+    },
+    "description": {
+      "title": "Description"
+    },
+    "location": {
+      "title": "Pickup Location"
+    },
+    "stats": {
+      "title": "Sales Statistics"
+    },
+    "images": {
+      "counter": "of"
+    },
+    "modal": {
+      "location": {
+        "title": "Edit Pickup Location",
+        "search": "Search for location...",
+        "instructions": "Search for your location or drag the marker",
+        "preview": "Location Preview",
+        "confirm": "Confirm Location",
+        "cancel": "Cancel"
+      }
+    },
+    "notifications": {
+      "saved": "Changes saved successfully!",
+      "saveFailed": "Failed to save changes",
+      "availabilityChanged": "Availability updated",
+      "deleteConfirm": "Are you sure you want to delete this listing?",
+      "deleted": "Listing deleted successfully",
+      "deleteFailed": "Failed to delete listing",
+      "imageDeleted": "Image deleted successfully",
+      "imageDeleteFailed": "Failed to delete image",
+      "imageAdded": "Image added successfully",
+      "locationUpdated": "Location updated successfully"
+    }
+  },
+  "messages": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "transactions": "Transactions",
+      "market": "Market",
+      "guides": "Guides"
+    },
+    "pageTitle": "Messages",
+    "searchPlaceholder": "Search conversations...",
+    "emptyState": {
+      "icon": "💬",
+      "title": "Select a conversation",
+      "description": "Choose a conversation from the list to start messaging"
+    },
+    "loading": "Loading conversations...",
+    "noConversations": "No conversations yet",
+    "userRole": {
+      "activeUser": "Active User",
+      "swineFarmer": "Swine Farmer",
+      "fertilizerBuyer": "Organic Fertilizer Buyer"
+    },
+    "userBadge": {
+      "farmer": "Swine Farmer",
+      "buyer": "Fertilizer Buyer"
+    },
+    "conversationPreview": {
+      "photo": "📸 Photo",
+      "video": "🎥 Video",
+      "startConversation": "Start a conversation"
+    },
+    "chatInput": {
+      "placeholder": "Type your message...",
+      "attachTooltip": "Attach image or video",
+      "sendButton": "Send"
+    },
+    "upload": {
+      "progress": "Uploading...",
+      "progressPercent": "Uploading... {{percent}}%"
+    },
+    "dealProposal": {
+      "buttonText": "📋 Propose Deal",
+      "modalTitle": "Propose a Deal",
+      "quantityLabel": "Quantity (kg)",
+      "quantityPlaceholder": "Enter quantity in kilograms",
+      "priceLabel": "Price per kg (₱)",
+      "pricePlaceholder": "Enter price per kilogram",
+      "totalLabel": "Total Amount",
+      "deliveryLabel": "Delivery Location",
+      "deliveryPlaceholder": "Search for a location or click on map",
+      "clearLocation": "Clear Location",
+      "selectLocation": "📍 Select location on map",
+      "notesLabel": "Additional Notes (Optional)",
+      "notesPlaceholder": "Add any special instructions or requirements...",
+      "cancelButton": "Cancel",
+      "sendButton": "Send Proposal",
+      "priceOffer": "Sent a price offer",
+      "proposalSent": "Sent a deal proposal",
+      "errors": {
+        "fillFields": "Please fill in quantity, price, and delivery location",
+        "invalidQuantity": "Please enter a valid quantity",
+        "invalidPrice": "Please enter a valid price",
+        "noLocation": "Please select a delivery location",
+        "sendFailed": "Failed to send proposal"
+      },
+      "success": {
+        "sent": "Deal proposal sent successfully!"
+      }
+    },
+    "dealProposalMessage": {
+      "title": "Deal Proposal",
+      "quantity": "Quantity",
+      "pricePerKg": "Price per kg",
+      "totalAmount": "Total Amount",
+      "deliveryLocation": "Delivery Location",
+      "additionalNotes": "Additional Notes",
+      "status": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "declined": "Declined",
+        "cancelled": "Cancelled",
+        "completed": "Completed"
+      },
+      "actions": {
+        "accept": "Accept",
+        "decline": "Decline",
+        "cancel": "Cancel Proposal",
+        "viewTransaction": "View Transaction"
+      },
+      "messages": {
+        "waitingResponse": "Waiting for response...",
+        "youAccepted": "You accepted this proposal",
+        "accepted": "Proposal accepted",
+        "youDeclined": "You declined this proposal",
+        "declined": "Proposal declined",
+        "youCancelled": "You cancelled this proposal",
+        "cancelled": "Proposal cancelled",
+        "completed": "Transaction completed",
+        "sentReceived": {
+          "sent": "Sent",
+          "received": "Received"
+        },
+        "sending": "Sending...",
+        "dealProposalProgress": "Deal proposal in progress",
+        "dealProposalDeclined": "Deal proposal declined",
+        "transactionCompleted": "Transaction completed! ✓"
+      }
+    },
+    "transaction": {
+      "bannerTitle": "Active Transaction",
+      "bannerMessage": "You have an ongoing transaction for this conversation.",
+      "viewButton": "View Transaction",
+      "modalTitle": "Transaction Details",
+      "transactionId": "Transaction ID",
+      "status": "Status",
+      "quantity": "Quantity",
+      "pricePerKg": "Price per kg",
+      "totalAmount": "Total Amount",
+      "deliveryLocation": "Delivery Location",
+      "additionalNotes": "Additional Notes",
+      "openMaps": "Open in Google Maps",
+      "confirmationTitle": "Confirmation Status",
+      "buyerConfirmed": "Buyer Confirmed",
+      "sellerConfirmed": "Seller Confirmed",
+      "bothConfirm": "Both parties must confirm to complete the transaction",
+      "confirmButton": "Confirm Transaction",
+      "confirming": "Confirming...",
+      "requestCancellation": "Request Cancellation",
+      "closeButton": "Close",
+      "confirmReceipt": "Confirm Receipt",
+      "confirmDelivery": "Confirm Delivery",
+      "statusTypes": {
+        "pending": "Pending Confirmation",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "statusMessages": {
+        "completed": "✓ Transaction Completed",
+        "bothConfirmed": "✓ Both Confirmed - Completing...",
+        "waitingForOther": "⏳ Waiting for {{party}} confirmation",
+        "otherConfirmed": "⚠️ {{party}} has confirmed. Please confirm to complete!",
+        "waitingBoth": "⏳ Waiting for confirmations from both parties"
+      },
+      "parties": {
+        "seller": "seller",
+        "buyer": "buyer"
+      },
+      "success": {
+        "confirmed": "Transaction confirmed successfully!",
+        "completed": "Transaction completed successfully!"
+      },
+      "errors": {
+        "confirmFailed": "Failed to confirm transaction",
+        "notFound": "Transaction not found",
+        "loadFailed": "Failed to load transaction details"
+      }
+    },
+   
+    "cancellation": {
+      "modalTitle": "Request Cancellation",
+      "reasonLabel": "Reason for Cancellation",
+      "reasonPlaceholder": "Please provide a reason for cancelling this transaction...",
+      "cancelButton": "Cancel",
+      "submitButton": "Submit Request",
+      "requestTitle": "Cancellation Request",
+      "requestedMessage": "Transaction cancellation requested",
+      "reason": "Reason",
+      "status": {
+        "pending": "Pending Approval",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "actions": {
+        "approve": "Approve Cancellation",
+        "approveAction": "Approve",
+        "reject": "Reject"
+      },
+      "messages": {
+        "waitingApproval": "Waiting for other party's approval...",
+        "waitingApprovalShort": "Waiting for approval",
+        "pendingResponse": "Pending your response",
+        "youRequested": "You requested cancellation",
+        "approved": "Cancellation approved",
+        "rejected": "Cancellation rejected"
+      },
+      "success": {
+        "requested": "Cancellation request sent",
+        "approved": "Cancellation approved"
+      },
+      "errors": {
+        "noReason": "Please provide a reason for cancellation",
+        "requestFailed": "Failed to send cancellation request",
+        "approveFailed": "Failed to approve cancellation"
+      }
+    },
+    "toast": {
+      "success": "✓",
+      "error": "✗",
+      "info": "ℹ",
+      "locationCleared": "Location cleared",
+      "messageSendFailed": "Failed to send message. Please try again.",
+      "proposalAccepted": "Deal proposal accepted!",
+      "proposalDeclined": "Deal proposal declined",
+      "proposalCancelled": "Deal proposal cancelled",
+      "proposalNotFound": "Proposal not found",
+      "listingNotFound": "Listing not found",
+      "proposalDeclineFailed": "Failed to decline proposal. Please try again.",
+      "proposalCancelFailed": "Failed to cancel proposal. Please try again.",
+      "conversationNotFound": "Conversation not found"
+    },
+    "confirmDialog": {
+      "icon": "⚠️",
+      "cancelButton": "Cancel",
+      "confirmButton": "Confirm",
+      "acceptProposal": "Accept this deal proposal?",
+      "declineProposal": "Decline this deal proposal?",
+      "cancelProposal": "Cancel this deal proposal?"
+    },
+    "location": {
+      "selectedLocation": "Selected Location"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{{minutes}}m ago",
+      "hoursAgo": "{{hours}}h ago",
+      "daysAgo": "{{days}}d ago"
+    }
+  },
+  "buyerMarketplace": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "transactions": "Transactions",
+      "market": "Market",
+      "guides": "Guides"
+    },
+    "hero": {
+      "title": "Organic Fertilizer Marketplace",
+      "subtitle": "Discover quality compost from local swine farmers",
+      "messagesButton": "Messages"
+    },
+    "filter": {
+      "filterButton": "Filter & Sort",
+      "searchPlaceholder": "Search for swine compost..."
+    },
+    "filterDialog": {
+      "title": "Filter Listings",
+      "all": "All Listings",
+      "available": "Available Only",
+      "soldOut": "Sold Out",
+      "basic": "Basic Compost",
+      "hot": "Hot Compost"
+    },
+    "products": {
+      "title": "Available Listings from Swine Farmers",
+      "available": "kg available",
+      "soldOut": "Sold out",
+      "perKg": "/kg",
+      "viewDetails": "View Details"
+    },
+    "empty": {
+      "noListings": "No products found",
+      "tryAgain": "Try adjusting your filters or search terms",
+      "checkBack": "Check back later for new listings",
+      "loading": "Loading swine compost listings..."
+    },
+    "userRole": {
+      "organicFertilizerBuyer": "Organic Fertilizer Buyer"
+    }
+  },
+  "listingDetails": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "transactions": "Transactions",
+      "market": "Market",
+      "guides": "Guides"
+    },
+    "back": "← Back to Marketplace",
+    "loading": "Loading listing details...",
+    "loadingSubtext": "Please wait while we fetch the product information",
+    "badge": {
+      "basic": "Basic Compost",
+      "hot": "Hot Compost"
+    },
+    "price": {
+      "perKg": "/kg",
+      "note": "Payment terms arranged directly with swine farmer through messaging"
+    },
+    "info": {
+      "totalProduced": "Total Produced",
+      "availableQuantity": "Available Quantity",
+      "location": "Location",
+      "listedOn": "Listed On",
+      "soldOut": "SOLD OUT"
+    },
+    "contact": {
+      "title": "💬 Message Swine Farmer",
+      "inputPlaceholder": "Hi! I'm interested in this compost",
+      "sendButton": "Send",
+      "sending": "Sending...",
+      "note": "💡 Start a conversation with the swine farmer about this listing"
+    },
+    "seller": {
+      "title": "Seller Information",
+      "rating": "Rating",
+      "review": "review",
+      "reviews": "reviews",
+      "noReviews": "No reviews yet",
+      "viewAllReviews": "View All Reviews →",
+      "verifiedFarmer": "Verified swine farmer offering quality compost"
+    },
+    "description": {
+      "title": "About This Swine Compost",
+      "default": "High-quality organic fertilizer from swine farming. Contact the swine farmer for more details."
+    },
+    "location": {
+      "title": "Pickup Location",
+      "viewMap": "View on Map",
+      "clickMap": "Click map to view in interactive mode",
+      "openInteractive": "🗺️ Open Interactive Map",
+      "notAvailable": "Location coordinates not available",
+      "mapsNotAvailable": "Google Maps is not available. Please check your internet connection."
+    },
+    "reviews": {
+      "modalTitle": "Seller Reviews",
+      "rating": "Rating",
+      "basedOn": "reviews",
+      "stars": "stars",
+      "star": "star",
+      "noReviews": "No reviews yet",
+      "noComments": "No comments provided",
+      "close": "Close",
+      "buyer": "Organic Fertilizer Buyer",
+      "recently": "Recently"
+    },
+    "map": {
+      "modalTitle": "Pickup Location Map",
+      "pickupLocation": "Swine Compost Pickup Location",
+      "close": "Close"
+    },
+    "productDefaults": {
+      "name": "Premium Swine Compost",
+      "description": "High-quality organic fertilizer from swine farming.",
+      "seller": "Swine Farmer",
+      "location": "Location not specified",
+      "defaultLocation": "Cebu, Philippines",
+      "defaultFullAddress": "Cebu City, Philippines",
+      "recentlyListed": "Recently listed"
+    },
+    "note": {
+      "title": "💡 Note:",
+      "message": "PigSoil+ connects organic fertilizer buyers and swine farmers. Payment and delivery terms are arranged directly between you and the farmer through our messaging system."
+    },
+    "error": {
+      "title": "Failed to load listing details",
+      "message": "Please try again or go back to the marketplace",
+      "listingNotFound": "Listing not found",
+      "noListingId": "No listing ID provided",
+      "backButton": "← Back to Marketplace",
+      "retryButton": "Retry",
+      "contactSeller": "Unable to contact seller. Please try again.",
+      "missingData": "Missing required data for messaging",
+      "userNotFound": "Current user data not found",
+      "sendFailed": "Failed to send message. Please try again."
+    },
+    "messaging": {
+      "initiating": "Initiating conversation with swine farmer...",
+      "foundExisting": "Found existing conversation",
+      "createdNew": "Created new conversation",
+      "sentInitial": "Sent initial message",
+      "checkingExisting": "Checking for existing conversation with swine farmer...",
+      "noExisting": "No existing conversation found, creating new one...",
+      "sentFirst": "Sent first message"
+    },
+    "userRole": {
+      "activeUser": "Active User",
+      "swineFarmer": "Swine Farmer",
+      "fertilizerBuyer": "Organic Fertilizer Buyer"
+    }
+  },
+  "transactions": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "transactions": "Transactions",
+      "market": "Market",
+      "guides": "Guides"
+    },
+    "header": {
+      "title": "My Transactions",
+      "subtitle": "View your conversations and transaction history with sellers"
+    },
+    "userRole": {
+      "organicFertilizerBuyer": "Organic Fertilizer Buyer"
+    },
+    "loading": "Loading transactions...",
+    "empty": {
+      "icon": "📦",
+      "title": "No Transactions Yet",
+      "message": "Start shopping for organic fertilizer to see your transactions here!",
+      "button": "Browse Marketplace"
+    },
+    "seller": {
+      "type": "Swine Farmer",
+      "messageSeller": "Message Seller",
+      "viewHistory": "View History"
+    },
+    "product": {
+      "noTransactions": "Product listed - No transactions yet",
+      "noProduct": "No transactions with this seller yet"
+    },
+    "transaction": {
+      "totalAmount": "Total Amount",
+      "quantity": "Quantity",
+      "kg": "kg"
+    },
+    "status": {
+      "agreed": "✓ Agreed",
+      "confirmed": "✓ Confirmed",
+      "completed": "✓ Completed",
+      "cancelled": "✗ Cancelled",
+      "cancellationRequested": "⏳ Cancellation Pending",
+      "contacted": "💬 Negotiating"
+    }
+  },
+  "transactionHistory": {
+    "header": {
+      "title": "Transaction History with",
+      "transactions": "transactions",
+      "messageSeller": "Message Seller"
+    },
+    "loading": "Loading transaction history...",
+    "empty": {
+      "icon": "📋",
+      "title": "No Transaction History",
+      "message": "You haven't completed any transactions with this seller yet."
+    },
+    "section": {
+      "title": "All Transactions"
+    },
+    "product": {
+      "default": "Organic Compost"
+    },
+    "details": {
+      "quantity": "Quantity",
+      "unitPrice": "Unit Price",
+      "totalAmount": "Total Amount",
+      "kg": "kg",
+      "perKg": "/kg"
+    },
+    "status": {
+      "negotiating": "Negotiating",
+      "agreed": "Agreed",
+      "confirmed": "Confirmed",
+      "completed": "✓ Completed",
+      "cancelled": "✗ Cancelled",
+      "cancellationPending": "Cancellation Pending"
     }
   }
 }

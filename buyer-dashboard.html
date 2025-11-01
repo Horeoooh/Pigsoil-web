@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - PigSoil+</title>
+    <title data-i18n="notificationsPage.pageTitle">Dashboard - PigSoil+</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- i18next for internationalization -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -466,10 +471,10 @@
             </div>
             
             <ul class="nav-menu">
-                <li><a href="/buyer-dashboard.html" data-nav="dashboard" class="active">Dashboard</a></li>
-                                <li><a href="/transactions.html" data-nav="transactions">Transactions</a></li>
-                <li><a href="/buyer-marketplace.html" data-nav="market">Market</a></li>
-                <li><a href="/guides.html" data-nav="guides">Guides</a></li>
+                <li><a href="/buyer-dashboard.html" data-nav="dashboard" class="active" data-i18n="buyerDashboard.nav.dashboard">Dashboard</a></li>
+                <li><a href="/transactions.html" data-nav="transactions" data-i18n="buyerDashboard.nav.transactions">Transactions</a></li>
+                <li><a href="/buyer-marketplace.html" data-nav="market" data-i18n="buyerDashboard.nav.market">Market</a></li>
+                <li><a href="/guides.html" data-nav="guides" data-i18n="buyerDashboard.nav.guides">Guides</a></li>
             </ul>
             
             <div class="user-section">
@@ -484,7 +489,7 @@
                 <a href="/setting-acc.html" class="user-profile" aria-label="View Profile">
                     <div class="user-info">
                         <span class="user-name" id="buyerName">Loading...</span>
-                        <span class="user-role">Organic Fertilizer Buyer</span>
+                        <span class="user-role" data-i18n="buyerDashboard.userRole">Organic Fertilizer Buyer</span>
                     </div>
                     <div class="user-avatar" id="buyerAvatar" style="background-size: cover; background-position: center;">
                         <img src="" alt="" style="display: none;" id="buyerAvatarImg">
@@ -497,25 +502,25 @@
     <main class="main-content">
         <!-- Welcome Section -->
         <section class="welcome-section">
-            <h2>Welcome back, <span id="welcomeName">Buyer</span>! 👋</h2>
-            <p class="welcome-subtitle">Ready to find quality organic fertilizer?</p>
+            <h2><span data-i18n="buyerDashboard.welcome.title">Welcome back</span>, <span id="welcomeName">Buyer</span>! 👋</h2>
+            <p class="welcome-subtitle" data-i18n="buyerDashboard.welcome.subtitle">Ready to find quality organic fertilizer?</p>
         </section>
 
         <!-- Quick Actions -->
         <section class="quick-actions-section">
             <a href="buyer-marketplace.html" class="action-card">
-                <div class="action-icon">🏪</div>
+                <div class="action-icon" data-i18n-html="buyerDashboard.quickActions.browse.icon">🏪</div>
                 <div class="action-content">
-                    <h3>Browse Marketplace</h3>
-                    <p>Find quality organic fertilizer</p>
+                    <h3 data-i18n="buyerDashboard.quickActions.browse.title">Browse Marketplace</h3>
+                    <p data-i18n="buyerDashboard.quickActions.browse.description">Find quality organic fertilizer</p>
                 </div>
             </a>
 
             <a href="transactions.html" class="action-card">
-                <div class="action-icon">🧾</div>
+                <div class="action-icon" data-i18n-html="buyerDashboard.quickActions.transactions.icon">🧾</div>
                 <div class="action-content">
-                    <h3>Transactions</h3>
-                    <p>View your purchase history</p>
+                    <h3 data-i18n="buyerDashboard.quickActions.transactions.title">Transactions</h3>
+                    <p data-i18n="buyerDashboard.quickActions.transactions.description">View your purchase history</p>
                 </div>
             </a>
         </section>
@@ -529,24 +534,24 @@
                         <img src="/images/Farmer.png" alt="Farmer Bot" />
                     </div>
                     <div class="bot-info">
-                        <h4>Manong Bot</h4>
-                        <small>AI Farming Assistant</small>
+                        <h4 data-i18n="buyerDashboard.bot.title">Manong Bot</h4>
+                        <small data-i18n="buyerDashboard.bot.subtitle">AI Farming Assistant</small>
                     </div>
                 </div>
-                <div class="bot-message">
+                <div class="bot-message" data-i18n="buyerDashboard.bot.message">
                     Get personalized farming tips and composting guidance! Download our mobile app to access Manong Bot - your AI farming assistant available 24/7.
                 </div>
                 <div class="bot-buttons">
-                    <button class="primary" onclick="alert('Mobile app coming soon! Stay tuned for iOS and Android releases.')">Download App</button>
-                    <button class="secondary" onclick="alert('Visit our mobile app to chat with Manong Bot!')">Learn More</button>
+                    <button class="primary" data-i18n="buyerDashboard.bot.downloadButton" onclick="handleDownloadApp()">Download App</button>
+                    <button class="secondary" data-i18n="buyerDashboard.bot.learnButton" onclick="handleLearnMore()">Learn More</button>
                 </div>
             </div>
 
             <!-- Recent Transactions -->
             <div class="transactions-section">
                 <div class="section-header">
-                    <h3>Recent Transactions</h3>
-                    <a href="transactions.html" class="see-all">See All →</a>
+                    <h3 data-i18n="buyerDashboard.recentTransactions.title">Recent Transactions</h3>
+                    <a href="transactions.html" class="see-all" data-i18n="buyerDashboard.recentTransactions.seeAll">See All →</a>
                 </div>
 
                 <div class="transactions-list" id="transactionsList">
@@ -556,12 +561,12 @@
                     </div>
                     <div class="transaction-details">
                         <h4>Premium Basic Compost</h4>
-                        <span class="seller-name">From: Juan Santos</span>
+                        <span class="seller-name"><span data-i18n="buyerDashboard.recentTransactions.from">From:</span> Juan Santos</span>
                         <div class="transaction-meta">
                             <span class="price">₱750.00</span>
                             <span class="quantity">25kg sack</span>
                         </div>
-                        <span class="status-badge completed">✓ Completed</span>
+                        <span class="status-badge completed" data-i18n="buyerDashboard.recentTransactions.status.completed">✓ Completed</span>
                     </div>
                 </div>
 
@@ -571,12 +576,12 @@
                     </div>
                     <div class="transaction-details">
                         <h4>Hot Compost Organic</h4>
-                        <span class="seller-name">From: Maria Cruz</span>
+                        <span class="seller-name"><span data-i18n="buyerDashboard.recentTransactions.from">From:</span> Maria Cruz</span>
                         <div class="transaction-meta">
                             <span class="price">₱650.00</span>
                             <span class="quantity">20kg sack</span>
                         </div>
-                        <span class="status-badge pending">⏳ Pending</span>
+                        <span class="status-badge pending" data-i18n="buyerDashboard.recentTransactions.status.pending">⏳ Pending</span>
                     </div>
                 </div>
 
@@ -586,12 +591,12 @@
                     </div>
                     <div class="transaction-details">
                         <h4>Basic Swine Compost</h4>
-                        <span class="seller-name">From: Pedro Reyes</span>
+                        <span class="seller-name"><span data-i18n="buyerDashboard.recentTransactions.from">From:</span> Pedro Reyes</span>
                         <div class="transaction-meta">
                             <span class="price">₱500.00</span>
                             <span class="quantity">15kg sack</span>
                         </div>
-                        <span class="status-badge in-progress">🚚 In Progress</span>
+                        <span class="status-badge in-progress" data-i18n="buyerDashboard.recentTransactions.status.inProgress">🚚 In Progress</span>
                     </div>
                 </div>
             </div>
@@ -599,7 +604,25 @@
         </section>
     </main>
 
+    <script src="/js/i18n.js"></script>
     <script type="module" src="/js/dashboard-auth-guard.js"></script>
     <script type="module" src="/js/buyer-dashboard.js"></script>
+    <script>
+        // Initialize i18next when DOM is ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.i18nManager.initialize();
+        });
+
+        // Bot button handlers with i18n
+        function handleDownloadApp() {
+            const message = window.i18n?.t('buyerDashboard.bot.downloadAlert') || 'Mobile app coming soon! Stay tuned for iOS and Android releases.';
+            alert(message);
+        }
+
+        function handleLearnMore() {
+            const message = window.i18n?.t('buyerDashboard.bot.learnAlert') || 'Visit our mobile app to chat with Manong Bot!';
+            alert(message);
+        }
+    </script>
 </body>
 </html>

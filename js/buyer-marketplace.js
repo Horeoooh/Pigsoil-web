@@ -20,6 +20,14 @@ import {
     onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 
+// Get i18next instance for translations
+const t = (key, options = {}) => {
+    if (window.i18next && window.i18next.t) {
+        return window.i18next.t(key, options);
+    }
+    return key; // Fallback to key if i18next not loaded
+};
+
 // ===== USER TYPE CHECK - REDIRECT SWINE FARMERS =====
 function checkUserTypeAndRedirect() {
     try {
@@ -141,7 +149,9 @@ function loadUserProfile() {
     
     // Determine user role display
     let roleDisplay = 'Active Buyer';
-    if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+    if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
+        roleDisplay = 'Swine Farmer';
+    } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
         roleDisplay = 'Organic Fertilizer Buyer';
     }
     
@@ -384,12 +394,12 @@ function createProductCard(listing) {
                 </div>
                 <div class="detail-item">
                     <span>📦</span>
-                    <span>${isAvailable ? `${quantity}kg available` : 'Sold out'}</span>
+                    <span>${isAvailable ? `${quantity}kg ${t('buyerMarketplace.products.available')}` : t('buyerMarketplace.products.soldOut')}</span>
                 </div>
             </div>
             <div class="product-footer">
-                <span class="price">₱${pricePerKg.toFixed(2)}/kg</span>
-                <button class="btn-view" onclick="viewListing('${listing.id}')">View Details</button>
+                <span class="price">₱${pricePerKg.toFixed(2)}${t('buyerMarketplace.products.perKg')}</span>
+                <button class="btn-view" onclick="viewListing('${listing.id}')">${t('buyerMarketplace.products.viewDetails')}</button>
             </div>
         </div>
     `;
@@ -469,28 +479,28 @@ function showFilterDialog() {
     dialog.innerHTML = `
         <div class="filter-dialog">
             <div class="filter-dialog-header">
-                <h3>Filter & Sort Listings</h3>
+                <h3>${t('buyerMarketplace.filterDialog.title')}</h3>
                 <button class="close-dialog" onclick="closeFilterDialog()">✕</button>
             </div>
             <div class="filter-dialog-body">
-                <div class="filter-option" data-filter="0">
-                    <span>All Available Listings</span>
+                <div class="filter-option" data-filter="all">
+                    <span>${t('buyerMarketplace.filterDialog.all')}</span>
                     <span class="check-icon">✓</span>
                 </div>
-                <div class="filter-option" data-filter="1">
-                    <span>Available Only</span>
+                <div class="filter-option" data-filter="available">
+                    <span>${t('buyerMarketplace.filterDialog.available')}</span>
                     <span class="check-icon">✓</span>
                 </div>
-                <div class="filter-option" data-filter="2">
-                    <span>Price: Low to High</span>
+                <div class="filter-option" data-filter="soldOut">
+                    <span>${t('buyerMarketplace.filterDialog.soldOut')}</span>
                     <span class="check-icon">✓</span>
                 </div>
-                <div class="filter-option" data-filter="3">
-                    <span>Price: High to Low</span>
+                <div class="filter-option" data-filter="basic">
+                    <span>${t('buyerMarketplace.filterDialog.basic')}</span>
                     <span class="check-icon">✓</span>
                 </div>
-                <div class="filter-option" data-filter="4">
-                    <span>Newest First</span>
+                <div class="filter-option" data-filter="hot">
+                    <span>${t('buyerMarketplace.filterDialog.hot')}</span>
                     <span class="check-icon">✓</span>
                 </div>
             </div>
@@ -503,8 +513,8 @@ function showFilterDialog() {
     const filterOptions = dialog.querySelectorAll('.filter-option');
     filterOptions.forEach(option => {
         option.addEventListener('click', function() {
-            const filterIndex = parseInt(this.dataset.filter);
-            applyFilter(filterIndex);
+            const filterType = this.dataset.filter;
+            applyFilter(filterType);
             closeFilterDialog();
         });
     });

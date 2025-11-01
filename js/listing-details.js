@@ -23,6 +23,14 @@ import {
     orderBy
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 
+// Get i18next instance for translations
+const t = (key, options = {}) => {
+    if (window.i18next && window.i18next.t) {
+        return window.i18next.t(key, options);
+    }
+    return key; // Fallback to key if i18next not loaded
+};
+
 // ===== USER TYPE CHECK - REDIRECT SWINE FARMERS =====
 function checkUserTypeAndRedirect() {
     try {
@@ -127,11 +135,11 @@ function loadUserProfile() {
     }
     
     // Determine user role display
-    let roleDisplay = 'Active User';
+    let roleDisplay = t('listingDetails.userRole.activeUser');
     if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
-        roleDisplay = 'Swine Farmer';
+        roleDisplay = t('listingDetails.userRole.swineFarmer');
     } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
-        roleDisplay = 'Organic Fertilizer Buyer';
+        roleDisplay = t('listingDetails.userRole.fertilizerBuyer');
     }
     
     // Generate initials
@@ -189,7 +197,7 @@ async function loadListingDetails(listingId) {
         const listingDoc = await getDoc(listingRef);
         
         if (!listingDoc.exists()) {
-            throw new Error('Listing not found');
+            throw new Error(t('listingDetails.error.listingNotFound'));
         }
         
         currentListing = {
@@ -222,7 +230,7 @@ async function loadListingDetails(listingId) {
             await loadSellerReviews(currentListing.listingSellerID);
         } else {
             sellerData = {
-                userName: 'Swine Farmer',
+                userName: t('listingDetails.productDefaults.seller'),
                 userEmail: '',
                 userPhone: ''
             };
@@ -244,7 +252,7 @@ async function loadListingDetails(listingId) {
         
     } catch (error) {
         console.error('❌ Error loading listing:', error);
-        showError('Failed to load listing details: ' + error.message);
+        showError(t('listingDetails.error.title') + ': ' + error.message);
     }
 }
 
@@ -394,12 +402,12 @@ function renderListingDetails() {
     const container = document.getElementById('listingContainer');
     if (!container) return;
     
-    const productName = currentListing.listingProductName || 'Premium Swine Compost';
-    const description = currentListing.listingDescription || 'High-quality organic fertilizer from swine farming.';
+    const productName = currentListing.listingProductName || t('listingDetails.productDefaults.name');
+    const description = currentListing.listingDescription || t('listingDetails.productDefaults.description');
     const pricePerKg = parseFloat(currentListing.listingPricePerKG || 0);
     const quantity = parseFloat(currentListing.listingQuantityLeftKG || currentListing.listingQuantityKG || 0);
     
-    const sellerName = sellerData?.userName || 'Swine Farmer';
+    const sellerName = sellerData?.userName || t('listingDetails.productDefaults.seller');
     const ratingInfo = calculateSellerRating();
     
     // Location extraction - use addressData if available
@@ -412,7 +420,7 @@ function renderListingDetails() {
     // Created date
     const createdDate = currentListing.listingCreatedAt 
         ? formatDate(currentListing.listingCreatedAt) 
-        : 'Recently listed';
+        : t('listingDetails.productDefaults.recentlyListed');
     
     // Static map URL
     let staticMapUrl = '';
@@ -458,15 +466,15 @@ function renderListingDetails() {
                 <h1>${productName}</h1>
                 
                 <div class="price-section">
-                    <div class="price">₱${pricePerKg.toFixed(2)}<span style="font-size: 18px; font-weight: 400; color: #666;">/kg</span></div>
-                    <p class="price-note">Payment terms arranged directly with swine farmer through messaging</p>
+                    <div class="price">₱${pricePerKg.toFixed(2)}<span style="font-size: 18px; font-weight: 400; color: #666;">${t('listingDetails.price.perKg')}</span></div>
+                    <p class="price-note">${t('listingDetails.price.note')}</p>
                 </div>
                 
                <div class="info-grid">
                     <div class="info-item">
                         <span class="info-icon">🏭</span>
                         <div class="info-content">
-                            <div class="info-label">Total Produced</div>
+                            <div class="info-label">${t('listingDetails.info.totalProduced')}</div>
                             <div class="info-value">${parseFloat(currentListing.listingQuantityKG || 0)} kg</div>
                         </div>
                     </div>
@@ -474,14 +482,14 @@ function renderListingDetails() {
                     <div class="info-item">
                         <span class="info-icon">📦</span>
                         <div class="info-content">
-                            <div class="info-label">Available Quantity</div>
+                            <div class="info-label">${t('listingDetails.info.availableQuantity')}</div>
                             <div class="info-value">${quantity} kg</div>
                         </div>
                     </div>
                     <div class="info-item">
                         <span class="info-icon">📍</span>
                         <div class="info-content">
-                            <div class="info-label">Location</div>
+                            <div class="info-label">${t('listingDetails.info.location')}</div>
                             <div class="info-value">${location}</div>
                         </div>
                     </div>
@@ -489,29 +497,29 @@ function renderListingDetails() {
                     <div class="info-item">
                         <span class="info-icon">📅</span>
                         <div class="info-content">
-                            <div class="info-label">Listed On</div>
+                            <div class="info-label">${t('listingDetails.info.listedOn')}</div>
                             <div class="info-value">${createdDate}</div>
                         </div>
                     </div>
                 </div>
               <!-- Action Buttons - UPDATED WITH MESSAGE INPUT -->
 <div class="contact-section">
-    <h3 class="contact-title">💬 Message Swine Farmer</h3>
+    <h3 class="contact-title">${t('listingDetails.contact.title')}</h3>
     <div class="message-input-group">
         <input type="text" 
                class="message-input-field" 
                id="firstMessageInput" 
-               placeholder="Hi! I'm interested in this compost"
+               placeholder="${t('listingDetails.contact.inputPlaceholder')}"
                maxlength="500">
         <button class="btn-send-message" id="sendFirstMessageBtn" onclick="sendFirstMessage()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="22" y1="2" x2="11" y2="13"></line>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
             </svg>
-            Send
+            ${t('listingDetails.contact.sendButton')}
         </button>
     </div>
-    <p class="contact-note">💡 Start a conversation with the swine farmer about this listing</p>
+    <p class="contact-note">${t('listingDetails.contact.note')}</p>
 </div>
                 
                 <!-- Seller Info Card with Reviews -->
@@ -522,20 +530,20 @@ function renderListingDetails() {
                             <div class="seller-name">${sellerName}</div>
                             <div class="seller-rating">
                                 ${ratingInfo.count > 0 ? 
-                                    `⭐ ${ratingInfo.average.toFixed(1)} (${ratingInfo.count} ${ratingInfo.count === 1 ? 'review' : 'reviews'})` :
-                                    '⭐ No reviews yet'
+                                    `⭐ ${ratingInfo.average.toFixed(1)} (${ratingInfo.count} ${ratingInfo.count === 1 ? t('listingDetails.seller.review') : t('listingDetails.seller.reviews')})` :
+                                    `⭐ ${t('listingDetails.seller.noReviews')}`
                                 }
                             </div>
                         </div>
                     </div>
                     <p style="font-size: 14px; color: #666; margin-top: 12px;">
-                        Verified swine farmer offering quality compost
+                        ${t('listingDetails.seller.verifiedFarmer')}
                     </p>
                     
                     ${ratingInfo.count > 0 ? `
                         <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e0e0e0;">
                             <button class="view-reviews-btn" onclick="showReviewsModal()">
-                                View All Reviews →
+                                ${t('listingDetails.seller.viewAllReviews')}
                             </button>
                         </div>
                     ` : ''}
@@ -543,7 +551,7 @@ function renderListingDetails() {
                 
                 <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 12px; padding: 16px; margin-top: 16px;">
                     <p style="font-size: 13px; color: #856404; margin: 0; line-height: 1.6;">
-                        <strong>💡 Note:</strong> PigSoil+ connects organic fertilizer buyers and swine farmers. Payment and delivery terms are arranged directly between you and the farmer through our messaging system.
+                        <strong>${t('listingDetails.note.title')}</strong> ${t('listingDetails.note.message')}
                     </p>
                 </div>
             </div>
@@ -551,13 +559,13 @@ function renderListingDetails() {
         
         <!-- Description Section -->
         <div class="description-section">
-            <h2 class="section-title">About This Swine Compost</h2>
+            <h2 class="section-title">${t('listingDetails.description.title')}</h2>
             <div class="description-text">${formatDescription(description)}</div>
         </div>
         
         <!-- Location Section with Static Map -->
         <div class="location-section">
-            <h2 class="section-title">Pickup Location</h2>
+            <h2 class="section-title">${t('listingDetails.location.title')}</h2>
             <div class="location-info">
                 <p style="font-size: 15px; color: #333; margin: 0 0 16px 0;">
                     <strong>📍 ${fullAddress}</strong>
@@ -571,7 +579,7 @@ function renderListingDetails() {
                             onerror="this.parentElement.style.display='none'">
                     </div>
                     <p style="font-size: 13px; color: #666; margin: 0 0 12px 0; font-style: italic;">
-                        Click map to view in interactive mode
+                        ${t('listingDetails.location.clickMap')}
                     </p>
                 ` : ''}
                 
@@ -580,7 +588,7 @@ function renderListingDetails() {
                 
                 ${addressData && addressData.addressLatitude && addressData.addressLongitude ? `
                     <button class="location-map-btn" onclick="showMapModal()">
-                        🗺️ Open Interactive Map
+                        ${t('listingDetails.location.openInteractive')}
                     </button>
                 ` : ''}
             </div>
@@ -651,7 +659,7 @@ window.showReviewsModal = function() {
             <div class="rating-summary">
                 <div class="rating-number">${ratingInfo.average.toFixed(1)}</div>
                 <div class="rating-stars">★★★★★</div>
-                <div class="rating-count">${totalReviews} ${totalReviews === 1 ? 'review' : 'reviews'}</div>
+                <div class="rating-count">${totalReviews} ${t('listingDetails.reviews.basedOn')}</div>
             </div>
             
             <div class="rating-breakdown">
@@ -660,7 +668,7 @@ window.showReviewsModal = function() {
                     const percentage = totalReviews > 0 ? (count / totalReviews * 100).toFixed(0) : 0;
                     return `
                         <div class="rating-row">
-                            <span class="rating-label">${star} star${star !== 1 ? 's' : ''}</span>
+                            <span class="rating-label">${star} ${star !== 1 ? t('listingDetails.reviews.stars') : t('listingDetails.reviews.star')}</span>
                             <div class="rating-bar">
                                 <div class="rating-bar-fill" style="width: ${percentage}%"></div>
                             </div>
@@ -675,7 +683,7 @@ window.showReviewsModal = function() {
         <div>
             ${sellerReviews.length > 0 ? 
                 sellerReviews.map(review => renderReviewItem(review)).join('') :
-                '<div class="no-reviews"><p>No reviews yet</p></div>'
+                `<div class="no-reviews"><p>${t('listingDetails.reviews.noReviews')}</p></div>`
             }
         </div>
     `;
@@ -691,15 +699,15 @@ window.closeReviewsModal = function() {
 };
 
 function renderReviewItem(review) {
-    const date = review.reviewCreatedAt ? formatDate(review.reviewCreatedAt) : 'Recently';
+    const date = review.reviewCreatedAt ? formatDate(review.reviewCreatedAt) : t('listingDetails.reviews.recently');
     const stars = '★'.repeat(review.reviewRating) + '☆'.repeat(5 - review.reviewRating);
     
     return `
         <div class="review-item">
             <div class="review-header">
-                <div class="reviewer-avatar">${getInitials('Buyer')}</div>
+                <div class="reviewer-avatar">${getInitials(t('listingDetails.reviews.buyer'))}</div>
                 <div class="review-info">
-                    <div class="reviewer-name">Organic Fertilizer Buyer</div>
+                    <div class="reviewer-name">${t('listingDetails.reviews.buyer')}</div>
                     <div class="review-rating">${stars}</div>
                     <div class="review-date">${date}</div>
                 </div>
@@ -707,7 +715,7 @@ function renderReviewItem(review) {
             ${review.reviewText ? `
                 <p class="review-text">${review.reviewText}</p>
             ` : `
-                <p class="review-text" style="font-style: italic; color: #999;">No comments provided</p>
+                <p class="review-text" style="font-style: italic; color: #999;">${t('listingDetails.reviews.noComments')}</p>
             `}
         </div>
     `;
@@ -716,7 +724,7 @@ function renderReviewItem(review) {
 // ========== MAP MODAL FUNCTIONS ==========
 window.showMapModal = function() {
     if (!addressData || !addressData.addressLatitude || !addressData.addressLongitude) {
-        alert('Location coordinates not available');
+        alert(t('listingDetails.location.notAvailable'));
         return;
     }
     
@@ -725,7 +733,7 @@ window.showMapModal = function() {
     
     if (!modal) return;
     
-    modalTitle.textContent = addressData.addressName || 'Pickup Location';
+    modalTitle.textContent = addressData.addressName || t('listingDetails.location.title');
     modal.classList.add('active');
     
     // Initialize map after modal is visible
@@ -744,7 +752,7 @@ window.closeMapModal = function() {
 function initializeMap() {
     if (!window.google) {
         console.error('❌ Google Maps API not loaded');
-        alert('Google Maps is not available. Please check your internet connection.');
+        alert(t('listingDetails.location.mapsNotAvailable'));
         return;
     }
     
@@ -753,7 +761,7 @@ function initializeMap() {
     
     const lat = addressData.addressLatitude;
     const lng = addressData.addressLongitude;
-    const locationName = addressData.addressName || 'Pickup Location';
+    const locationName = addressData.addressName || t('listingDetails.location.title');
     
     console.log('🗺️ Initializing map at:', lat, lng);
     
@@ -782,7 +790,7 @@ function initializeMap() {
         content: `
             <div style="padding: 8px;">
                 <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">${locationName}</h3>
-                <p style="margin: 0; font-size: 14px; color: #666;">Swine Compost Pickup Location</p>
+                <p style="margin: 0; font-size: 14px; color: #666;">${t('listingDetails.map.pickupLocation')}</p>
             </div>
         `
     });
@@ -804,7 +812,7 @@ function getLocationDisplay() {
     
     // Fallback to listing location
     if (!currentListing.listingLocation) {
-        return 'Cebu, Philippines';
+        return t('listingDetails.productDefaults.defaultLocation');
     }
     
     const loc = currentListing.listingLocation;
@@ -826,7 +834,7 @@ function getLocationDisplay() {
         return parts[0];
     }
     
-    return 'Cebu, Philippines';
+    return t('listingDetails.productDefaults.defaultLocation');
 }
 
 function getFullAddress() {
@@ -837,7 +845,7 @@ function getFullAddress() {
     
     // Fallback to listing location
     if (!currentListing.listingLocation) {
-        return 'Cebu City, Philippines';
+        return t('listingDetails.productDefaults.defaultFullAddress');
     }
     
     const loc = currentListing.listingLocation;
@@ -850,7 +858,7 @@ function getFullAddress() {
         return loc.address;
     }
     
-    return 'Cebu City, Philippines';
+    return t('listingDetails.productDefaults.defaultFullAddress');
 }
 
 // ========== HELPER FUNCTIONS ==========
@@ -860,7 +868,7 @@ function getInitials(name) {
 }
 
 function formatDate(timestamp) {
-    if (!timestamp) return 'Recently';
+    if (!timestamp) return t('listingDetails.reviews.recently');
     
     let date;
     if (timestamp.toDate) {
@@ -877,7 +885,7 @@ function formatDate(timestamp) {
 
 function formatDescription(description) {
     if (!description) {
-        return '<p>High-quality organic fertilizer from swine farming. Contact the swine farmer for more details.</p>';
+        return `<p>${t('listingDetails.description.default')}</p>`;
     }
     
     return description.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
@@ -887,19 +895,19 @@ function formatDescription(description) {
 window.contactSeller = async function() {
     if (!currentUser || !currentListing || !sellerData) {
         console.error('❌ Missing required data for messaging');
-        alert('Unable to contact seller. Please try again.');
+        alert(t('listingDetails.error.contactSeller'));
         return;
     }
     
     try {
-        console.log('💬 Initiating conversation with swine farmer...');
+        console.log(t('listingDetails.messaging.initiating'));
         
         // Fetch current user data
         const currentUserRef = doc(db, COLLECTIONS.USERS, currentUser.uid);
         const currentUserDoc = await getDoc(currentUserRef);
         
         if (!currentUserDoc.exists()) {
-            throw new Error('Current user data not found');
+            throw new Error(t('listingDetails.error.userNotFound'));
         }
         
         const currentUserData = currentUserDoc.data();
@@ -924,7 +932,7 @@ window.contactSeller = async function() {
         });
         
         if (existingConversation) {
-            console.log('✅ Found existing conversation:', existingConversation.id);
+            console.log(t('listingDetails.messaging.foundExisting'), existingConversation.id);
             window.location.href = `/messages.html?conversation=${existingConversation.id}`;
             return;
         }
@@ -960,7 +968,7 @@ window.contactSeller = async function() {
         };
         
         const conversationRef = await addDoc(conversationsRef, newConversation);
-        console.log('✅ Created new conversation:', conversationRef.id);
+        console.log(t('listingDetails.messaging.createdNew'), conversationRef.id);
         
         // Send initial message to the conversation
         const messagesRef = collection(db, COLLECTIONS.CONVERSATIONS);
@@ -980,14 +988,14 @@ window.contactSeller = async function() {
         };
         
         await addDoc(conversationMessagesRef, initialMessage);
-        console.log('✅ Sent initial message');
+        console.log(t('listingDetails.messaging.sentInitial'));
         
         // Navigate to the new conversation
         window.location.href = `/messages.html?conversation=${conversationRef.id}`;
         
     } catch (error) {
         console.error('❌ Error contacting seller:', error);
-        alert('Failed to contact swine farmer. Please try again.');
+        alert(t('listingDetails.error.sendFailed'));
     }
 };// ========== MESSAGING FUNCTION WITH CUSTOM FIRST MESSAGE ==========
 window.sendFirstMessage = async function() {
@@ -995,8 +1003,8 @@ window.sendFirstMessage = async function() {
     const sendBtn = document.getElementById('sendFirstMessageBtn');
     
     if (!currentUser || !currentListing || !sellerData) {
-        console.error('❌ Missing required data for messaging');
-        alert('Unable to contact seller. Please try again.');
+        console.error(t('listingDetails.error.missingData'));
+        alert(t('listingDetails.error.contactSeller'));
         return;
     }
     
@@ -1019,11 +1027,11 @@ window.sendFirstMessage = async function() {
             <line x1="22" y1="2" x2="11" y2="13"></line>
             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
         </svg>
-        Sending...
+        ${t('listingDetails.contact.sending')}
     `;
     
     try {
-        console.log('💬 Checking for existing conversation with swine farmer...');
+        console.log(t('listingDetails.messaging.checkingExisting'));
         
         // Check for existing conversation between buyer and seller
         const conversationsRef = collection(db, COLLECTIONS.CONVERSATIONS);
@@ -1045,7 +1053,7 @@ window.sendFirstMessage = async function() {
         });
         
         if (existingConversation) {
-            console.log('✅ Found existing conversation:', existingConversation.id);
+            console.log(t('listingDetails.messaging.foundExisting'), existingConversation.id);
             console.log('   Sending message to existing conversation...');
             
             // Send message to existing conversation
@@ -1086,14 +1094,14 @@ window.sendFirstMessage = async function() {
         }
         
         // No existing conversation found - create new one
-        console.log('📝 No existing conversation found, creating new one...');
+        console.log(t('listingDetails.messaging.noExisting'));
         
         // Fetch current user data
         const currentUserRef = doc(db, COLLECTIONS.USERS, currentUser.uid);
         const currentUserDoc = await getDoc(currentUserRef);
         
         if (!currentUserDoc.exists()) {
-            throw new Error('Current user data not found');
+            throw new Error(t('listingDetails.error.userNotFound'));
         }
         
         const currentUserData = currentUserDoc.data();
@@ -1131,7 +1139,7 @@ window.sendFirstMessage = async function() {
         };
         
         const conversationRef = await addDoc(conversationsRef, newConversation);
-        console.log('✅ Created new conversation:', conversationRef.id);
+        console.log(t('listingDetails.messaging.createdNew'), conversationRef.id);
         
         // Send first message to the conversation
         const messagesRef = collection(db, COLLECTIONS.CONVERSATIONS);
@@ -1151,14 +1159,14 @@ window.sendFirstMessage = async function() {
         };
         
         await addDoc(conversationMessagesRef, initialMessage);
-        console.log('✅ Sent first message');
+        console.log(t('listingDetails.messaging.sentFirst'));
         
         // Navigate to the new conversation
         window.location.href = `/messages.html?conversation=${conversationRef.id}`;
         
     } catch (error) {
         console.error('❌ Error sending message:', error);
-        alert('Failed to send message. Please try again.');
+        alert(t('listingDetails.error.sendFailed'));
         
         // Reset button
         sendBtn.disabled = false;
@@ -1168,7 +1176,7 @@ window.sendFirstMessage = async function() {
                 <line x1="22" y1="2" x2="11" y2="13"></line>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
             </svg>
-            Send
+            ${t('listingDetails.contact.sendButton')}
         `;
     }
 };
@@ -1198,12 +1206,12 @@ function showError(message) {
             <div style="text-align: center; padding: 60px 20px;">
                 <div style="font-size: 60px; margin-bottom: 16px;">⚠️</div>
                 <h3 style="font-size: 20px; margin-bottom: 8px; color: #333;">${message}</h3>
-                <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Please try again or go back to the marketplace</p>
+                <p style="color: #666; font-size: 14px; margin-bottom: 20px;">${t('listingDetails.error.message')}</p>
                 <button onclick="window.location.href='/buyer-marketplace.html'" style="background: #4CAF50; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; margin-right: 12px;">
-                    ← Back to Marketplace
+                    ${t('listingDetails.error.backButton')}
                 </button>
                 <button onclick="location.reload()" style="background: white; color: #4CAF50; border: 2px solid #4CAF50; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
-                    Retry
+                    ${t('listingDetails.error.retryButton')}
                 </button>
             </div>
         `;

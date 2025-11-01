@@ -213,7 +213,7 @@
     "nav": {
       "dashboard": "Dashboard",
       "market": "Merkado",
-      "guides": "Mga Giya"
+      "guides": "Giya"
     },
     "transform": {
       "title": "Bag-oha ang Hugaw sa Baboy ngadto sa Organikong Bulawan",
@@ -244,6 +244,105 @@
       "viewBatches": "Tan-awa ang Akong mga Batch",
       "browseMarket": "Suroy sa Marketplace",
       "readGuides": "Basaha ang mga Giya"
+    }
+  },
+  "buyerDashboard": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "transactions": "Transaksyon",
+      "market": "Merkado",
+      "guides": "Giya"
+    },
+    "userRole": "Mopalit og Organikong Pataba",
+    "welcome": {
+      "title": "Maayong pagbalik",
+      "subtitle": "Andam na ba nga mangita og kalidad nga organikong pataba?"
+    },
+    "quickActions": {
+      "browse": {
+        "icon": "🏪",
+        "title": "Suroy sa Marketplace",
+        "description": "Pangitag kalidad nga organikong pataba"
+      },
+      "transactions": {
+        "icon": "🧾",
+        "title": "Transaksyon",
+        "description": "Tan-awa ang imong kasaysayan sa pagpalit"
+      }
+    },
+    "bot": {
+      "title": "Manong Bot",
+      "subtitle": "AI Farming Assistant",
+      "message": "Pagkuha og personal nga mga tip sa pag-uma ug giya sa pag-compost! I-download ang among mobile app aron ma-access si Manong Bot - ang imong AI farming assistant nga anaa 24/7.",
+      "downloadButton": "I-download ang App",
+      "learnButton": "Kat-ona pa",
+      "downloadAlert": "Ang mobile app moabot na! Maghulat lang para sa iOS ug Android releases.",
+      "learnAlert": "Bisitaha ang among mobile app aron makig-chat ni Manong Bot!"
+    },
+    "recentTransactions": {
+      "title": "Bag-ohay nga mga Transaksyon",
+      "seeAll": "Tan-awa Tanan →",
+      "from": "Gikan sa:",
+      "status": {
+        "completed": "✓ Nahuman",
+        "pending": "⏳ Naghulat",
+        "inProgress": "🚚 Nagpadayon"
+      }
+    }
+  },
+  "notificationsPage": {
+    "pageTitle": "Mga Pahibalo - PigSoil+",
+    "header": {
+      "title": "Bag-ohay nga mga Pahibalo",
+      "markAllRead": "Markahi Tanan nga Nabasa",
+      "clearAll": "Wagtanga Tanan"
+    },
+    "filter": {
+      "title": "I-filter ang mga Pahibalo",
+      "all": "Tanan",
+      "unread": "Wala pa Mabasa",
+      "read": "Nabasa na",
+      "showingAll": "Nagpakita: Tanan nga mga Pahibalo",
+      "showingUnread": "Nagpakita: Wala pa Mabasa nga mga Pahibalo",
+      "showingRead": "Nagpakita: Nabasa na nga mga Pahibalo"
+    },
+    "types": {
+      "chat": "Chat",
+      "subscription": "Subscription",
+      "system": "Sistema"
+    },
+    "actions": {
+      "markRead": "✓ Markahi nga Nabasa",
+      "delete": "🗑️ Tangtanga",
+      "viewMessage": "💬 Tan-awa ang Mensahe"
+    },
+    "empty": {
+      "all": {
+        "icon": "🔔",
+        "title": "Walay pahibalo pa",
+        "text": "Tanan nakuha na nimo!"
+      },
+      "unread": {
+        "icon": "✅",
+        "title": "Tanan nakuha na!",
+        "text": "Walay wala pa mabasa nga pahibalo"
+      },
+      "read": {
+        "icon": "📋",
+        "title": "Walay nabasa nga pahibalo",
+        "text": "Markahi ang mga pahibalo nga nabasa aron makita dinhi"
+      }
+    },
+    "loading": {
+      "text": "Nag-load sa mga pahibalo..."
+    },
+    "toast": {
+      "markedRead": "Gimarka nga nabasa ang {{count}} nga mga pahibalo",
+      "allRead": "Tanan nga pahibalo nabasa na",
+      "cleared": "Gitangtang ang {{count}} nga mga pahibalo",
+      "markedSingleRead": "Gimarka nga nabasa",
+      "deleted": "Pahibalo gitangtang",
+      "confirmClear": "Tangtangon ang tanan nga pahibalo? Dili na kini mabalik."
     }
   },
   "farmermarket": {
@@ -308,11 +407,11 @@
         "label": "Teknik sa Pag-Compost nga Gigamit",
         "basic": {
           "title": "Basic Swine Manure",
-          "description": "Tradisyonal nga pamaagi sa pag-compost, 60-90 ka adlaw"
+          "description": "Tradisyonal nga pamaagi sa pag-compost, 21 ka adlaw"
         },
         "hot": {
           "title": "Hot Composting",
-          "description": "Paspas nga pamaagi gamit ang init, 30-45 ka adlaw"
+          "description": "Paspas nga pamaagi gamit ang init, 18 ka adlaw"
         }
       },
       "quantity": {
@@ -405,8 +504,9 @@
   "settings": {
     "nav": {
       "dashboard": "Dashboard",
+      "transactions": "Transakyon",
       "market": "Merkado",
-      "guides": "Mga Giya",
+      "guides": "Giya",
       "accountSettings": "Mga Setting sa Account",
       "subscription": "Subscription",
       "support": "Suporta"
@@ -548,7 +648,68 @@
       "accountDeleteConfirm": "Sigurado ka ba nga tangtangon ang imong account? Dili na kini mahimo nga i-undo.",
       "accountDeleted": "Malampuson ang pagtangtang sa account. Nag-redirect...",
       "accountDeleteFailed": "Napakyas ang pagtangtang sa account. Palihug sulayi pag-usab.",
-      "logoutConfirm": "Sigurado ka ba nga mo-logout?"
+      "logoutConfirm": "Sigurado ka ba nga gusto mong mag-logout?",
+      "phoneRequired": "Palihug isulod ang phone number",
+      "phoneInvalid": "Palihug isulod ang valid nga Philippine phone number (+63XXXXXXXXXX)",
+      "phoneCurrentSame": "Kini ang imong kasamtangan nga phone number",
+      "phoneSending": "Nagpadala sa verification code...",
+      "phoneAlreadyExists": "Naka-rehistro na kining phone number",
+      "phoneCodeSent": "Gipadala na ang verification code!",
+      "phoneTooManyRequests": "Daghan kaayong requests. Palihug sulayi pag-usab sa ulahi",
+      "phoneInvalidFormat": "Dili valid nga phone number format",
+      "phoneQuotaExceeded": "Nalapas na ang SMS quota. Palihug sulayi pag-usab sa ulahi",
+      "phoneSendFailed": "Napakyas ang pagpadala sa verification code",
+      "smsCodeIncomplete": "Palihug isulod ang kompleto nga 6-digit code",
+      "smsVerifying": "Nag-verify sa code...",
+      "smsCodeUpdated": "Na-update na ang phone number!",
+      "smsCodeInvalid": "Dili valid nga code. Palihug sulayi pag-usab",
+      "smsCodeExpired": "Nag-expire na ang code. Palihug mangayo og bag-o",
+      "smsCodeMissing": "Palihug isulod ang verification code",
+      "smsCredentialInUse": "Gigamit na kining phone number",
+      "smsRecentLoginRequired": "Para sa seguridad, palihug pag-sign out ug sign back in, dayon sulayi pag-usab",
+      "emailRequired": "Palihug isulod ang email address",
+      "emailInvalidFormat": "Palihug isulod ang valid nga email address",
+      "passwordRequired": "Palihug isulod ang password",
+      "passwordTooShort": "Ang password kinahanglan hindi mubu sa 6 ka karakter",
+      "passwordMismatch": "Dili parehas ang mga password",
+      "emailAdding": "Nagdugang og email & password...",
+      "emailAlreadyExists": "Naka-rehistro na kining email",
+      "emailPasswordAdded": "Naidugang na ang email & password!",
+      "emailAlreadyInUse": "Gigamit na kining email",
+      "passwordWeak": "Huyang kaayo ang password",
+      "providerAlreadyLinked": "Na-link na ang email provider",
+      "credentialAlreadyInUse": "Gigamit na kining credential",
+      "addEmailPasswordFailed": "Napakyas ang pagdugang sa email & password",
+      "currentPasswordRequired": "Palihug isulod ang imong kasamtangan nga password",
+      "newEmailRequired": "Palihug isulod ang bag-ong email",
+      "newEmailInvalid": "Palihug isulod ang valid nga email address",
+      "emailCurrentSame": "Kini ang imong kasamtangan nga email",
+      "emailChanging": "Nag-usab sa email...",
+      "emailChanged": "Na-usab na ang email!",
+      "passwordWrong": "Sayop ang kasamtangan nga password",
+      "recentLoginRequired": "Palihug pag-sign out ug sign back in, dayon sulayi pag-usab",
+      "changeEmailFailed": "Napakyas ang pag-usab sa email",
+      "newPasswordRequired": "Palihug isulod ang bag-ong password",
+      "newPasswordTooShort": "Ang password kinahanglan hindi mubu sa 6 ka karakter",
+      "passwordSame": "Ang bag-ong password kinahanglan lahi sa kasamtangan nga password",
+      "passwordChanging": "Nag-usab sa password...",
+      "passwordChanged": "Na-usab na ang password!",
+      "passwordUpdateFailed": "Napakyas ang pag-usab sa password",
+      "usernameMinLength": "Ang username kinahanglan hindi mubu sa 3 ka karakter",
+      "noChangesDetected": "Walay nakita nga kausaban",
+      "userTypeChanged": "Na-usab ang tipo sa account! Mag-reload ang page...",
+      "uploadingProfilePicture": "Nag-upload sa litrato sa profile...",
+      "profilePictureUploaded": "Malampuson ang pag-upload sa litrato sa profile!",
+      "profilePictureInvalidType": "Palihug pilia ang valid nga image file",
+      "profilePictureTooLarge": "Ang size sa litrato kinahanglan dili molapas sa 5MB",
+      "deletingAccount": "Nagtangtang sa account ug datos...",
+      "deleteConfirmText": "DELETE MY ACCOUNT",
+      "deleteCancelled": "Gi-kanselar ang pagtangtang sa account",
+      "recentLoginRequiredDelete": "Para sa seguridad, palihug pag-sign out ug sign back in una tangtangon ang account",
+      "addressInvalid": "Palihug pilia ang valid nga adres",
+      "addressSaving": "Nag-save sa adres...",
+      "addressSaved": "Malampuson ang pag-save sa adres!",
+      "addressSaveFailed": "Error sa pag-save sa adres"
     },
     "subscription": {
       "title": "Mga Setting sa Subscription",
@@ -647,6 +808,734 @@
         "activationSuccess": "Maayong pag-abut! Aktibo na ang imong subscription. Makalingaw sa imong unlimited features!",
         "activationPending": "Giproseso pa ang imong bayad. Ang imong subscription ma-activate sa dili madugay."
       }
+    }
+  },
+  "guides": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "transactions": "Transakyon",
+      "market": "Merkado",
+      "guides": "Giya"
+    },
+    "header": {
+      "title": "Kompleto nga Mga Giya sa Pag-Compost",
+      "subtitle": "Pilia ang imong pamaagi sa pag-compost para sa detalyado nga adlaw-adlaw nga mga panudlo"
+    },
+    "methods": {
+      "basic": {
+        "title": "Basic Swine Manure",
+        "subtitle": "(21 ka Adlaw - Sinugdanan)"
+      },
+      "hot": {
+        "title": "Hot Composting Method",
+        "subtitle": "(18 ka Adlaw - Advanced)"
+      }
+    },
+    "progress": {
+      "basic": "Giya sa Adlaw 1-21",
+      "hot": "Hot Method<br>Giya sa Adlaw 1-18"
+    },
+    "basicMethod": {
+      "title": "Basic Swine Manure Composting",
+      "subtitle": "Kompleto nga 21-Adlaw nga Giya Alang sa mga Bag-ohay",
+      "aboutTitle": "Mahitungod Niining Pamaagi",
+      "aboutText": "Tradisyonal nga aerobic composting gamit ang hugaw sa baboy ug tanom. Perpekto alang sa mga bag-ohay nga adunay gamay nga kagamitan. Makamugna og barato nga organikong pataba sulod sa 21 ka adlaw.",
+      "materialsTitle": "Mga Materyales nga Gikinahanglan",
+      "materials": {
+        "manure": "Presko nga hugaw sa baboy",
+        "plant": "Uga nga tanom",
+        "hulls": "Uhot sa bugas/sagbot",
+        "shovel": "Pala o tinidor",
+        "water": "Tubigan",
+        "cover": "Habol o tarpaulin"
+      },
+      "days": {
+        "day1": {
+          "title": "Pagsugod sa Pag-Setup",
+          "task": "Pag-layer sa hugaw sa baboy uban sa carbon materials",
+          "phase": "Setup Phase",
+          "description": "Paghimo og alternating layers sa hugaw sa baboy ug uga nga materyales:",
+          "step1": "1. Magsugod sa 6-pulgada nga layer sa mga gagmay nga tanom (batang mais, uhot sa bugas)",
+          "step2": "2. Idugang ang 4 ka pulgada nga presko nga hugaw sa baboy",
+          "step3": "3. Iwisik ang 2 ka pulgada nga uga nga materyales (uhot sa bugas, sagbot)",
+          "step4": "4. Balika ang pag-layer 3-4 ka beses hangtod moabot ang pundok sa 1.2-1.5 metros ang gitas-on",
+          "step5": "5. Iwisikan og gamay nga tubig matag layer samtang nagtukod",
+          "tipLabel": "Setup Phase:",
+          "tipText": "Paghimo og alternating layers sa hugaw sa baboy ug uga nga materyales. Huptan ang 3:1 nga ratio sa brown materials (puno sa carbon) ngadto sa green materials (puno sa nitrogen nga hugaw sa baboy)."
+        },
+        "day7": {
+          "title": "Unang Pagtuyok",
+          "task": "Pagsagol sa tanang layers para sa hustong hangin",
+          "phase": "Active Decomposition",
+          "description": "Tuyoka ang pundok para sa oxygen ug susiha ang lebel sa kaumog:",
+          "step1": "1. Gamit ang tinidor o pala, tuyoka ang tibuok pundok",
+          "step2": "2. Ibalhin ang gawas nga mga materyales ngadto sa sentro ug ang sentro nga mga materyales ngadto sa gawas",
+          "step3": "3. Pukona ang tanang dagko nga tipak",
+          "step4": "4. Susiha ang lebel sa kaumog sa tibuok pundok",
+          "step5": "5. Idugang ang tubig kon kinahanglan aron huptan ang hustong kaumog",
+          "step6": "6. I-rebuild ang pundok sa samang lokasyon",
+          "tipLabel": "Active Decomposition:",
+          "tipText": "Tuyoka ang pundok para sa oxygen ug susiha ang lebel sa kaumog. Human sa pagtuyok, ang temperatura sa pundok moubos temporaryo apan mobalik pag-usab sulod sa 24-48 ka oras."
+        },
+        "day14": {
+          "title": "Tungatunga nga Pagsusi",
+          "task": "Tuyoka ang pundok ug bantayi ang progreso sa pagkadunot",
+          "phase": "Maturation Phase",
+          "description": "Bantayi ang pagbag-o sa texture ug pag-uswag sa yutan-on nga baho:",
+          "step1": "1. Tuyoka ang pundok kompleto sama sa gihimo sa adlaw 7",
+          "step2": "2. Idugang ang dugang nga uga nga carbon materials kon kinahanglan (uhot sa bugas, uga nga dahon, sagbot)",
+          "step3": "3. Sagola pag-ayo aron masiguro ang patas nga pag-apod",
+          "step4": "4. I-adjust ang kaumog kon kinahanglan",
+          "step5": "5. Susiha ang hustong brown-to-green ratio",
+          "step6": "6. I-rebuild ang pundok",
+          "tipLabel": "Maturation Phase:",
+          "tipText": "Bantayi ang pagbag-o sa texture ug pag-uswag sa yutan-on nga baho. Kini maayong panahon aron i-adjust ang carbon-nitrogen ratio kon ang pundok sobra ra kabasa o baho."
+        },
+        "day17": {
+          "title": "Katapusan nga Pagtuyok",
+          "task": "Susiha ang uniformity sa texture ug i-adjust ang kaumog",
+          "phase": "Pre-Harvest",
+          "description": "Katapusan nga kalidad nga pagsusi ug pag-andam para sa pag-ani:",
+          "step1": "1. Himoa ang bug-os nga pagtuyok sa pundok",
+          "step2": "2. Susiha ang uniformity sa texture sa tibuok",
+          "step3": "3. I-adjust ang lebel sa kaumog kon kinahanglan",
+          "step4": "4. Siguruha nga maayo na ang pagkadunot sa mga materyales",
+          "step5": "5. Susiha ang yutan-on nga baho",
+          "step6": "6. I-rebuild ang pundok para sa katapusan nga pagkahinog",
+          "tipLabel": "Pre-Harvest:",
+          "tipText": "Katapusan nga kalidad nga pagsusi ug pag-andam para sa pag-ani. Ang mga materyales kinahanglan mas mangitom, dili kaayo fibrous, ug adunay maayo nga yutan-on nga baho."
+        },
+        "day21": {
+          "title": "Andam Na Para Aniton",
+          "task": "Ang compost andam na para gamiton o ibaligya",
+          "phase": "✓ Nahuman Na",
+          "description": "Mangitom, crumbly nga compost andam na para gamiton o ibaligya sa merkado:",
+          "step1": "1. Himoa ang katapusan nga pagtuyok sa pundok",
+          "step2": "2. I-screen ang compost pinaagi sa 1/2 pulgada nga mesh aron makuha ang dagko nga tipak",
+          "step3": "3. Ibalik ang dagko nga tipak sa bag-ong compost pile",
+          "step4": "4. Test ang pH (kinahanglan 6.5-7.5 para sa labing maayo nga paggamit)",
+          "step5": "5. Susiha ang hustong kaumog ug crumbly nga texture",
+          "step6": "6. I-package o tipigi ang nahuman nga compost",
+          "step7": "7. Tipigi sa uga, mabentilado nga lugar",
+          "tipLabel": "✓ Nahuman Na:",
+          "tipText": "Mangitom, crumbly nga compost andam na para gamiton o ibaligya sa merkado. Maayong compost kinahanglan dark brown, crumbly, adunay yutan-on nga baho, ug bugnaw sa paghikap."
+        }
+      }
+    },
+    "hotMethod": {
+      "title": "Hot Composting Method",
+      "subtitle": "18-adlaw nga walay pathogen nga pamaagi sa pag-compost",
+      "heatIndicator": "THERMOPHILIC PROCESS (55-70°C)",
+      "aboutTitle": "Mahitungod Niining Pamaagi",
+      "aboutText": "Walay pathogen nga compost gikan sa hugaw sa baboy pinaagi sa taas nga kainit nga pagkadunot. Kining advanced nga pamaagi naggamit sa kontrolado nga taas nga temperatura aron paspas nga madunot ang mga materyales samtang giwagtang ang makadaot nga mga pathogen.",
+      "materialsTitle": "Mga Materyales nga Gikinahanglan",
+      "materials": {
+        "manure": "Presko nga hugaw sa baboy",
+        "carbon": "Taas nga carbon materials",
+        "thermometer": "Thermometer sa compost",
+        "tools": "Mga gamit sa pagtuyok",
+        "water": "Tubigan",
+        "insulation": "Mga materyales sa insulation"
+      },
+      "days": {
+        "day1": {
+          "title": "High-Carbon Setup",
+          "task": "Pagtukod og pundok nga may hustong C:N ratio",
+          "phase": "Initial Phase",
+          "description": "Paghimo og labing maayong kondisyon para sa thermophilic decomposition:",
+          "step1": "1. Pagpili og silongan nga lokasyon nga may maayong drainage",
+          "step2": "2. Paghimo og base layer sa gagmay nga materyales (3 ka pulgada)",
+          "step3": "3. Pagsagol sa presko nga hugaw sa baboy uban sa high-carbon materials (2:1 ratio)",
+          "step4": "4. Pagtukod og paspas og pundok hangtod sa minimum 1.5m x 1.5m x 1.5m (kritikal nga masa)",
+          "step5": "5. Siguruha nga ang kaumog 55-65% sa tibuok",
+          "step6": "6. Isulod ang thermometer sa sentro sa pundok",
+          "step7": "7. Taboni og insulating material",
+          "tempLabel": "Initial Phase:",
+          "tempText": "Paghimo og labing maayong kondisyon para sa thermophilic decomposition. Pagpaabut nga moabot ang pundok sa 40-50°C sulod sa 24-48 ka oras."
+        },
+        "day3": {
+          "title": "Pagbantay sa Temperatura",
+          "task": "Susiha nga moabot ang sulod nga kainit sa 60-70°C",
+          "phase": "Heating Phase",
+          "description": "Bantayi ang pagsaka sa temperatura ug huptan ang labing maayong kondisyon:",
+          "step1": "1. I-record ang temperatura gamit ang thermometer",
+          "step2": "2. Susiha ang daghang punto sa pundok",
+          "step3": "3. Siguruha nga ang sentro moabot sa 60-70°C",
+          "step4": "4. I-verify nga ang insulation nagtabon pag-ayo sa pundok",
+          "step5": "5. Susiha ang lebel sa kaumog - kinahanglan mainit ug basa",
+          "step6": "6. I-document ang mga basahon sa temperatura",
+          "step7": "7. I-adjust ang tabon kon ang kainit mokawas",
+          "tempLabel": "Heating Phase:",
+          "tempText": "Bantayi ang pagsaka sa temperatura ug huptan ang labing maayong kondisyon. Target: 60-70°C para sa pagwagtang sa pathogen ug paspas nga pagkadunot."
+        },
+        "day8": {
+          "title": "Heat Maintenance",
+          "task": "Tuyoka ang pundok aron huptan ang thermophilic phase",
+          "phase": "Thermophilic Phase",
+          "description": "Huptan ang taas nga temperatura para sa paspas nga pagkadunot:",
+          "step1": "1. I-record ang temperatura sa dili pa tuyokon",
+          "step2": "2. Tuyoka ang tibuok pundok, ibalhin ang gawas nga materyales sa sentro",
+          "step3": "3. Siguruha nga ang tanang materyales moabot sa thermophilic zone",
+          "step4": "4. Susiha ang kaumog sa tibuok ug i-adjust kon kinahanglan",
+          "step5": "5. I-rebuild ang pundok nga gihuptan ang samang sukod",
+          "step6": "6. I-insert pag-usab ang thermometer sa bag-ong sentro",
+          "step7": "7. Taboni dayon aron huptan ang kainit",
+          "tempLabel": "Thermophilic Phase:",
+          "tempText": "Huptan ang taas nga temperatura para sa paspas nga pagkadunot. Ang temperatura moubos temporaryo apan mobalik sulod sa 24 ka oras."
+        },
+        "day12": {
+          "title": "Pagwagtang sa Pathogen",
+          "task": "Ipadayon ang taas nga temperatura para sa kaluwasan",
+          "phase": "Sanitization Phase",
+          "description": "Siguruha ang kompleto nga pagwagtang sa pathogen pinaagi sa kainit:",
+          "step1": "1. I-document ang temperatura sa dili pa tuyokon",
+          "step2": "2. Himoa ang kompleto nga pagtuyok sa tanang materyales",
+          "step3": "3. Susiha ang progreso sa pagkadunot - ang mga materyales kinahanglan mas mangitom",
+          "step4": "4. Susiha ang hustong texture (dili kaayo fibrous, mas parehas)",
+          "step5": "5. Test ang pH levels (kinahanglan moduol sa 6.5-7.5)",
+          "step6": "6. I-adjust ang kaumog kon kinahanglan",
+          "step7": "7. I-rebuild ang pundok nga gihuptan ang heat-retention structure",
+          "warningLabel": "Sanitization Phase:",
+          "warningText": "Siguruha ang kompleto nga pagwagtang sa pathogen pinaagi sa kainit. Huptan ang temperatura labaw sa 55°C para sa bug-os nga sanitization."
+        },
+        "day18": {
+          "title": "Nahuman Na ang Pag-hinug",
+          "task": "Estable na ang temperatura, andam na para aniton",
+          "phase": "✓ Nahuman Na",
+          "description": "Walay pathogen nga compost andam na para gamiton o ibaligya sa merkado:",
+          "step1": "1. I-screen ang compost pinaagi sa 1/2 pulgada nga mesh",
+          "step2": "2. Kuhaa ang bisan unsang nabilin nga dagko nga tipak",
+          "step3": "3. Test ang final pH ug kaumog",
+          "step4": "4. I-package ang nahuman nga compost para tipigan o gamiton",
+          "step5": "5. Ibalik ang sobrang kadaghan nga materyales sa bag-ong compost batch",
+          "step6": "6. I-document ang final yield ug kalidad",
+          "step7": "7. Tipigi sa uga, mabentilado nga lugar",
+          "tipLabel": "✓ Nahuman Na:",
+          "tipText": "Walay pathogen nga compost andam na para gamiton o ibaligya sa merkado. Ang perpekto nga hot compost kay dark brown, crumbly, baho og yuta, bugnaw, ug parehas ang texture."
+        }
+      }
+    }
+  },
+  "farmerListingView": {
+    "back": "← Balik sa Merkado",
+    "loading": "Nag-load sa listing...",
+    "badges": {
+      "available": "Anaa",
+      "soldOut": "Nahalin Na",
+      "basic": "Basic",
+      "hot": "Hot Method"
+    },
+    "price": {
+      "perKg": "matag kg"
+    },
+    "info": {
+      "quantityLeft": "Kantidad nga Nahibilin",
+      "totalProduced": "Kinatibuk-ang Gihimo",
+      "soldAmount": "Kantidad nga Nahalin",
+      "location": "Lokasyon",
+      "technique": "Teknik sa Pag-Compost",
+      "created": "Gilista",
+      "updated": "Katapusang Pag-update"
+    },
+    "buttons": {
+      "editMode": "Edit Mode",
+      "saveChanges": "I-save ang mga Kausaban",
+      "saving": "Nag-save...",
+      "toggleAvailability": "Usba ang Availability",
+      "deleteListing": "Tangtanga ang Listing",
+      "addImage": "Pagdugang og Litrato",
+      "deleteImage": "Tangtanga ang Litrato",
+      "changeLocation": "Usba"
+    },
+    "description": {
+      "title": "Deskripsyon"
+    },
+    "location": {
+      "title": "Lokasyon sa Pagkuha"
+    },
+    "stats": {
+      "title": "Mga Istatistika sa Pagbaligya"
+    },
+    "images": {
+      "counter": "sa"
+    },
+    "modal": {
+      "location": {
+        "title": "I-edit ang Lokasyon sa Pagkuha",
+        "search": "Pangitaa ang lokasyon...",
+        "instructions": "Pangitaa ang imong lokasyon o i-drag ang marker",
+        "preview": "Preview sa Lokasyon",
+        "confirm": "Kumpirma ang Lokasyon",
+        "cancel": "Kanselahon"
+      }
+    },
+    "notifications": {
+      "saved": "Malampuson ang pag-save sa mga kausaban!",
+      "saveFailed": "Napakyas ang pag-save sa mga kausaban",
+      "availabilityChanged": "Na-update na ang availability",
+      "deleteConfirm": "Sigurado ka ba nga tangtangon kini nga listing?",
+      "deleted": "Malampuson ang pagtangtang sa listing",
+      "deleteFailed": "Napakyas ang pagtangtang sa listing",
+      "imageDeleted": "Malampuson ang pagtangtang sa litrato",
+      "imageDeleteFailed": "Napakyas ang pagtangtang sa litrato",
+      "imageAdded": "Malampuson ang pagdugang sa litrato",
+      "locationUpdated": "Malampuson ang pag-update sa lokasyon"
+    }
+  },
+  "messages": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "transactions": "Transaksyon",
+      "market": "Merkado",
+      "guides": "Giya"
+    },
+    "pageTitle": "Mga Mensahe",
+    "searchPlaceholder": "Pangitag mga conversation...",
+    "emptyState": {
+      "icon": "💬",
+      "title": "Pilia ang conversation",
+      "description": "Pilia ang usa ka conversation gikan sa listahan aron magsugod og messaging"
+    },
+    "loading": "Nag-load sa mga conversation...",
+    "noConversations": "Walay conversation pa",
+    "userRole": {
+      "activeUser": "Aktibo nga User",
+      "swineFarmer": "Swine Farmer",
+      "fertilizerBuyer": "Organic Fertilizer Buyer"
+    },
+    "userBadge": {
+      "farmer": "Swine Farmer",
+      "buyer": "Fertilizer Buyer"
+    },
+    "conversationPreview": {
+      "photo": "📸 Litrato",
+      "video": "🎥 Video",
+      "startConversation": "Pagsugod og conversation"
+    },
+    "chatInput": {
+      "placeholder": "I-type ang imong mensahe...",
+      "attachTooltip": "Ikabit ang litrato o video",
+      "sendButton": "Ipadala"
+    },
+    "upload": {
+      "progress": "Nag-upload...",
+      "progressPercent": "Nag-upload... {{percent}}%"
+    },
+    "dealProposal": {
+      "buttonText": "📋 Mag-propose og Deal",
+      "modalTitle": "Mag-propose og Deal",
+      "quantityLabel": "Gidaghanon (kg)",
+      "quantityPlaceholder": "Isulod ang gidaghanon sa kilo",
+      "priceLabel": "Presyo matag kg (₱)",
+      "pricePlaceholder": "Isulod ang presyo matag kilo",
+      "totalLabel": "Kinatibuk-ang Kantidad",
+      "deliveryLabel": "Lokasyon sa Pagdala",
+      "deliveryPlaceholder": "Pangitag lokasyon o i-klik sa mapa",
+      "clearLocation": "Wagtanga ang Lokasyon",
+      "selectLocation": "📍 Pilia ang lokasyon sa mapa",
+      "notesLabel": "Dugang nga mga Nota (Opsyonal)",
+      "notesPlaceholder": "Idugang ang bisan unsang espesyal nga instruksyon o mga kinahanglanon...",
+      "cancelButton": "Kanselahon",
+      "sendButton": "Ipadala ang Proposal",
+      "priceOffer": "Nagpadala og tanyag sa presyo",
+      "proposalSent": "Nagpadala og deal proposal",
+      "errors": {
+        "fillFields": "Palihug pun-a ang gidaghanon, presyo, ug lokasyon sa pagdala",
+        "invalidQuantity": "Palihug isulod ang balido nga gidaghanon",
+        "invalidPrice": "Palihug isulod ang balido nga presyo",
+        "noLocation": "Palihug pilia ang lokasyon sa pagdala",
+        "sendFailed": "Napakyas ang pagpadala sa proposal"
+      },
+      "success": {
+        "sent": "Malampuson ang pagpadala sa deal proposal!"
+      }
+    },
+    "dealProposalMessage": {
+      "title": "Deal Proposal",
+      "quantity": "Gidaghanon",
+      "pricePerKg": "Presyo matag kg",
+      "totalAmount": "Kinatibuk-ang Kantidad",
+      "deliveryLocation": "Lokasyon sa Pagdala",
+      "additionalNotes": "Dugang nga mga Nota",
+      "status": {
+        "pending": "Naghulat",
+        "accepted": "Gidawat",
+        "declined": "Gisalikway",
+        "cancelled": "Gikansela",
+        "completed": "Nahuman"
+      },
+      "actions": {
+        "accept": "Dawata",
+        "decline": "Isalikway",
+        "cancel": "Kanselahon ang Proposal",
+        "viewTransaction": "Tan-awa ang Transaction"
+      },
+      "messages": {
+        "waitingResponse": "Naghulat sa tubag...",
+        "youAccepted": "Gidawat nimo kining proposal",
+        "accepted": "Gidawat ang proposal",
+        "youDeclined": "Gisalikway nimo kining proposal",
+        "declined": "Gisalikway ang proposal",
+        "youCancelled": "Gikansela nimo kining proposal",
+        "cancelled": "Gikansela ang proposal",
+        "completed": "Nahuman ang transaksyon",
+        "sentReceived": {
+          "sent": "Gipadala",
+          "received": "Nadawat"
+        },
+        "sending": "Nagpadala...",
+        "dealProposalProgress": "Nagpadayon ang deal proposal",
+        "dealProposalDeclined": "Gisalikway ang deal proposal",
+        "transactionCompleted": "Nahuman ang transaksyon! ✓"
+      }
+    },
+    "transaction": {
+      "bannerTitle": "Aktibo nga Transaksyon",
+      "bannerMessage": "Naa kay nagpadayon nga transaksyon para niining conversation.",
+      "viewButton": "Tan-awa ang Transaksyon",
+      "modalTitle": "Detalye sa Transaksyon",
+      "transactionId": "Transaction ID",
+      "status": "Kahimtang",
+      "quantity": "Gidaghanon",
+      "pricePerKg": "Presyo matag kg",
+      "totalAmount": "Kinatibuk-ang Kantidad",
+      "deliveryLocation": "Lokasyon sa Pagdala",
+      "additionalNotes": "Dugang nga mga Nota",
+      "openMaps": "Ablihi sa Google Maps",
+      "confirmationTitle": "Kahimtang sa Pagkumpirma",
+      "buyerConfirmed": "Gikumpirma sa Mopalit",
+      "sellerConfirmed": "Gikumpirma sa Nagbaligya",
+      "bothConfirm": "Kinahanglan nga kumpirmaon sa duha ka partido aron makompleto ang transaksyon",
+      "confirmButton": "Kumpirmaon ang Transaksyon",
+      "confirming": "Nag-kumpirma...",
+      "requestCancellation": "Mangayo og Pagkansela",
+      "closeButton": "Sirado",
+      "confirmReceipt": "Kumpirmaon ang Pagdawat",
+      "confirmDelivery": "Kumpirmaon ang Pagdala",
+      "statusTypes": {
+        "pending": "Naghulat sa Pagkumpirma",
+        "completed": "Nahuman",
+        "cancelled": "Gikansela"
+      },
+      "statusMessages": {
+        "completed": "✓ Nahuman ang Transaksyon",
+        "bothConfirmed": "✓ Gikumpirma na sa Duha - Nahuman na...",
+        "waitingForOther": "⏳ Naghulat sa pagkumpirma sa {{party}}",
+        "otherConfirmed": "⚠️ Ang {{party}} nakumpirma na. Palihug kumpirma aron makompleto!",
+        "waitingBoth": "⏳ Naghulat sa pagkumpirma gikan sa duha ka partido"
+      },
+      "parties": {
+        "seller": "nagbaligya",
+        "buyer": "mopalit"
+      },
+      "success": {
+        "confirmed": "Malampuson ang pagkumpirma sa transaksyon!",
+        "completed": "Malampuson ang pagkompleto sa transaksyon!"
+      },
+      "errors": {
+        "confirmFailed": "Napakyas ang pagkumpirma sa transaksyon",
+        "notFound": "Wala makit-an ang transaksyon",
+        "loadFailed": "Napakyas ang pag-load sa detalye sa transaksyon"
+      }
+    },
+    
+    "cancellation": {
+      "modalTitle": "Mangayo og Pagkansela",
+      "reasonLabel": "Hinungdan sa Pagkansela",
+      "reasonPlaceholder": "Palihug ihatag ang hinungdan sa pagkansela niining transaksyon...",
+      "cancelButton": "Kanselahon",
+      "submitButton": "Isumite ang Hangyo",
+      "requestTitle": "Hangyo sa Pagkansela",
+      "requestedMessage": "Gihangyo ang pagkansela sa transaksyon",
+      "reason": "Hinungdan",
+      "status": {
+        "pending": "Naghulat sa Pag-apruba",
+        "approved": "Gi-apruba",
+        "rejected": "Gisalikway"
+      },
+      "actions": {
+        "approve": "Aprubahan ang Pagkansela",
+        "approveAction": "Aprubaha",
+        "reject": "Isalikway"
+      },
+      "messages": {
+        "waitingApproval": "Naghulat sa pag-apruba sa laing partido...",
+        "waitingApprovalShort": "Naghulat sa pag-apruba",
+        "pendingResponse": "Naghulat sa imong tubag",
+        "youRequested": "Nangayo ka og pagkansela",
+        "approved": "Gi-apruba ang pagkansela",
+        "rejected": "Gisalikway ang pagkansela"
+      },
+      "success": {
+        "requested": "Gipadala ang hangyo sa pagkansela",
+        "approved": "Gi-apruba ang pagkansela"
+      },
+      "errors": {
+        "noReason": "Palihug ihatag ang hinungdan sa pagkansela",
+        "requestFailed": "Napakyas ang pagpadala sa hangyo sa pagkansela",
+        "approveFailed": "Napakyas ang pag-apruba sa pagkansela"
+      }
+    },
+    "toast": {
+      "success": "✓",
+      "error": "✗",
+      "info": "ℹ",
+      "locationCleared": "Giwala ang lokasyon",
+      "messageSendFailed": "Napakyas ang pagpadala sa mensahe. Palihug sulayi pag-usab.",
+      "proposalAccepted": "Gidawat ang deal proposal!",
+      "proposalDeclined": "Gisalikway ang deal proposal",
+      "proposalCancelled": "Gikansela ang deal proposal",
+      "proposalNotFound": "Wala makit-an ang proposal",
+      "listingNotFound": "Wala makit-an ang listing",
+      "proposalDeclineFailed": "Napakyas ang pagsalikway sa proposal. Palihug sulayi pag-usab.",
+      "proposalCancelFailed": "Napakyas ang pagkansela sa proposal. Palihug sulayi pag-usab.",
+      "conversationNotFound": "Wala makit-an ang conversation"
+    },
+    "confirmDialog": {
+      "icon": "⚠️",
+      "cancelButton": "Kanselahon",
+      "confirmButton": "Kumpirmaon",
+      "acceptProposal": "Dawaton kining deal proposal?",
+      "declineProposal": "Isalikway kining deal proposal?",
+      "cancelProposal": "Kanselahon kining deal proposal?"
+    },
+    "location": {
+      "selectedLocation": "Piniling Lokasyon"
+    },
+    "time": {
+      "justNow": "Bag-o lang",
+      "minutesAgo": "{{minutes}}m ang milabay",
+      "hoursAgo": "{{hours}}h ang milabay",
+      "daysAgo": "{{days}}d ang milabay"
+    }
+  },
+  "buyerMarketplace": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "transactions": "Transaksyon",
+      "market": "Merkado",
+      "guides": "Giya"
+    },
+    "hero": {
+      "title": "Merkado sa Organic Fertilizer",
+      "subtitle": "Pangitaa ang kalidad nga compost gikan sa lokal nga mga swine farmers",
+      "messagesButton": "Mga Mensahe"
+    },
+    "filter": {
+      "filterButton": "Filter ug Pag-ilis",
+      "searchPlaceholder": "Pangitaa ang swine compost..."
+    },
+    "filterDialog": {
+      "title": "Filter sa mga Listing",
+      "all": "Tanang Listing",
+      "available": "Available Lang",
+      "soldOut": "Nahalin Na",
+      "basic": "Basic Compost",
+      "hot": "Hot Compost"
+    },
+    "products": {
+      "title": "Available nga mga Listing gikan sa Swine Farmers",
+      "available": "kg available",
+      "soldOut": "Nahalin na",
+      "perKg": "/kg",
+      "viewDetails": "Tan-awa ang Detalye"
+    },
+    "empty": {
+      "noListings": "Walay nakit-ang produkto",
+      "tryAgain": "Sulayi pag-usab ang imong filter o search",
+      "checkBack": "Balik-i unya para sa bag-ong listings",
+      "loading": "Nag-load sa swine compost listings..."
+    },
+    "userRole": {
+      "organicFertilizerBuyer": "Mopalit sa Organic Fertilizer"
+    }
+  },
+  "listingDetails": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "transactions": "Transaksyon",
+      "market": "Merkado",
+      "guides": "Giya"
+    },
+    "back": "← Balik sa Marketplace",
+    "loading": "Nag-load sa mga detalye sa listing...",
+    "loadingSubtext": "Palihug paabta samtang nag-kuha og impormasyon sa produkto",
+    "badge": {
+      "basic": "Basic Compost",
+      "hot": "Hot Compost"
+    },
+    "price": {
+      "perKg": "/kg",
+      "note": "Ang bayad ug mga termino hisgutan direkta sa swine farmer pinaagi sa messaging"
+    },
+    "info": {
+      "totalProduced": "Kinatibuk-ang Gihimo",
+      "availableQuantity": "Available nga Kantidad",
+      "location": "Lokasyon",
+      "listedOn": "Gilista sa",
+      "soldOut": "NAHALIN NA"
+    },
+    "contact": {
+      "title": "💬 Mensahe sa Swine Farmer",
+      "inputPlaceholder": "Hi! Interesado ko niining compost",
+      "sendButton": "Ipadala",
+      "sending": "Nagpadala...",
+      "note": "💡 Magsugod og conversation sa swine farmer mahitungod niining listing"
+    },
+    "seller": {
+      "title": "Impormasyon sa Seller",
+      "rating": "Rating",
+      "review": "review",
+      "reviews": "ka review",
+      "noReviews": "Walay review pa",
+      "viewAllReviews": "Tan-awa ang Tanang Review →",
+      "verifiedFarmer": "Verified swine farmer nga nag-tanyag og kalidad nga compost"
+    },
+    "description": {
+      "title": "Mahitungod Niining Swine Compost",
+      "default": "Kalidad nga organic fertilizer gikan sa swine farming. Kontaka ang swine farmer para sa dugang detalye."
+    },
+    "location": {
+      "title": "Lokasyon sa Pagkuha",
+      "viewMap": "Tan-awa sa Mapa",
+      "clickMap": "I-klik ang mapa aron makita sa interactive mode",
+      "openInteractive": "🗺️ Ablihi ang Interactive Map",
+      "notAvailable": "Wala mahibal-an ang coordinates sa lokasyon",
+      "mapsNotAvailable": "Wala available ang Google Maps. Palihug susiha ang imong internet connection."
+    },
+    "reviews": {
+      "modalTitle": "Mga Review sa Seller",
+      "rating": "Rating",
+      "basedOn": "ka review",
+      "stars": "ka bituon",
+      "star": "bituon",
+      "noReviews": "Walay review pa",
+      "noComments": "Walay gibutang nga komento",
+      "close": "Sirado",
+      "buyer": "Organic Fertilizer Buyer",
+      "recently": "Bag-o lang"
+    },
+    "map": {
+      "modalTitle": "Mapa sa Lokasyon sa Pagkuha",
+      "pickupLocation": "Lokasyon sa Pagkuha sa Swine Compost",
+      "close": "Sirado"
+    },
+    "productDefaults": {
+      "name": "Premium Swine Compost",
+      "description": "Kalidad nga organic fertilizer gikan sa swine farming.",
+      "seller": "Swine Farmer",
+      "location": "Wala gispecify ang lokasyon",
+      "defaultLocation": "Cebu, Pilipinas",
+      "defaultFullAddress": "Cebu City, Pilipinas",
+      "recentlyListed": "Bag-o lang gilista"
+    },
+    "note": {
+      "title": "💡 Nota:",
+      "message": "Ang PigSoil+ nagkonekta sa mga mopalit og organic fertilizer ug swine farmers. Ang pagbayad ug delivery terms gihisgutan direkta tali kaninyo ug sa farmer pinaagi sa among messaging system."
+    },
+    "error": {
+      "title": "Napakyas ang pag-load sa mga detalye sa listing",
+      "message": "Palihug sulayi pag-usab o balik sa marketplace",
+      "listingNotFound": "Wala makit-an ang listing",
+      "noListingId": "Walay listing ID nga gihatag",
+      "backButton": "← Balik sa Marketplace",
+      "retryButton": "Sulayi Pag-usab",
+      "contactSeller": "Dili makontak ang seller. Palihug sulayi pag-usab.",
+      "missingData": "Kulang ang gikinahanglan nga datos para sa messaging",
+      "userNotFound": "Wala makit-an ang datos sa current user",
+      "sendFailed": "Napakyas ang pagpadala sa mensahe. Palihug sulayi pag-usab."
+    },
+    "messaging": {
+      "initiating": "Nagsugod og conversation sa swine farmer...",
+      "foundExisting": "Nakit-an ang existing conversation",
+      "createdNew": "Naghimo og bag-ong conversation",
+      "sentInitial": "Gipadala ang unang mensahe",
+      "checkingExisting": "Nag-check og existing conversation sa swine farmer...",
+      "noExisting": "Walay existing conversation nga nakit-an, naghimo og bag-o...",
+      "sentFirst": "Gipadala ang unang mensahe"
+    },
+    "userRole": {
+      "activeUser": "Aktibong User",
+      "swineFarmer": "Swine Farmer",
+      "fertilizerBuyer": "Mopalit sa Organic Fertilizer"
+    }
+  },
+  "transactions": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "transactions": "Transaksyon",
+      "market": "Merkado",
+      "guides": "Giya"
+    },
+    "header": {
+      "title": "Akong Mga Transaksyon",
+      "subtitle": "Tan-awa ang imong mga conversation ug transaction history sa mga sellers"
+    },
+    "userRole": {
+      "organicFertilizerBuyer": "Mopalit sa Organic Fertilizer"
+    },
+    "loading": "Nag-load sa mga transaksyon...",
+    "empty": {
+      "icon": "📦",
+      "title": "Wala Pay Transaksyon",
+      "message": "Sugdi ang pagpamalit og organic fertilizer aron makita ang imong mga transaksyon dinhi!",
+      "button": "Tan-awa ang Marketplace"
+    },
+    "seller": {
+      "type": "Swine Farmer",
+      "messageSeller": "Mensahe sa Seller",
+      "viewHistory": "Tan-awa ang History"
+    },
+    "product": {
+      "noTransactions": "Produkto gilista - Wala pay transaksyon",
+      "noProduct": "Wala pay transaksyon niining seller"
+    },
+    "transaction": {
+      "totalAmount": "Kinatibuk-ang Kantidad",
+      "quantity": "Gidaghanon",
+      "kg": "kg"
+    },
+    "status": {
+      "agreed": "✓ Nag-uyon",
+      "confirmed": "✓ Nakumpirma",
+      "completed": "✓ Nahuman",
+      "cancelled": "✗ Nakansela",
+      "cancellationRequested": "⏳ Naghulat sa Kanselasyon",
+      "contacted": "💬 Nag-negotiate"
+    }
+  },
+  "transactionHistory": {
+    "header": {
+      "title": "Kasaysayan sa Transaksyon uban ni",
+      "transactions": "mga transaksyon",
+      "messageSeller": "Mensahe sa Seller"
+    },
+    "loading": "Nag-load sa kasaysayan sa transaksyon...",
+    "empty": {
+      "icon": "📋",
+      "title": "Walay Kasaysayan sa Transaksyon",
+      "message": "Wala ka pay nahuman nga transaksyon niining seller."
+    },
+    "section": {
+      "title": "Tanang Transaksyon"
+    },
+    "product": {
+      "default": "Organic Compost"
+    },
+    "details": {
+      "quantity": "Gidaghanon",
+      "unitPrice": "Presyo sa Usa",
+      "totalAmount": "Kinatibuk-ang Kantidad",
+      "kg": "kg",
+      "perKg": "/kg"
+    },
+    "status": {
+      "negotiating": "Nag-negotiate",
+      "agreed": "Nag-uyon",
+      "confirmed": "Nakumpirma",
+      "completed": "✓ Nahuman",
+      "cancelled": "✗ Nakansela",
+      "cancellationPending": "Naghulat sa Kanselasyon"
     }
   }
 }

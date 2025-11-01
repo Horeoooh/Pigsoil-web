@@ -173,14 +173,6 @@ async function initializeFCM() {
                 
                 if (initialized) {
                     console.log('✅ Notification manager initialized successfully');
-                    
-                    // Update notification badge if needed
-                    updateNotificationBadge();
-                    
-                    // Listen for notification changes
-                    notificationManager.addListener(() => {
-                        updateNotificationBadge();
-                    });
                 } else {
                     console.warn('⚠️ Notification manager initialized with limited functionality');
                 }
@@ -190,50 +182,6 @@ async function initializeFCM() {
         });
     } catch (error) {
         console.error('❌ Error initializing FCM:', error);
-    }
-}
-
-// Update notification badge with unread count
-function updateNotificationBadge() {
-    try {
-        const notificationBtn = document.getElementById('notificationBtn');
-        if (!notificationBtn) return;
-        
-        const unreadCount = notificationManager.getUnreadCount();
-        
-        // Remove existing badge if any
-        const existingBadge = notificationBtn.querySelector('.notification-badge');
-        if (existingBadge) {
-            existingBadge.remove();
-        }
-        
-        // Add badge if there are unread notifications
-        if (unreadCount > 0) {
-            const badge = document.createElement('span');
-            badge.className = 'notification-badge';
-            badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
-            badge.style.cssText = `
-                position: absolute;
-                top: -4px;
-                right: -4px;
-                background: #ff4444;
-                color: white;
-                border-radius: 10px;
-                padding: 2px 6px;
-                font-size: 11px;
-                font-weight: 600;
-                min-width: 18px;
-                text-align: center;
-            `;
-            
-            // Make the button position relative if not already
-            notificationBtn.style.position = 'relative';
-            notificationBtn.appendChild(badge);
-            
-            console.log(`🔔 Updated notification badge: ${unreadCount} unread`);
-        }
-    } catch (error) {
-        console.error('❌ Error updating notification badge:', error);
     }
 }
 

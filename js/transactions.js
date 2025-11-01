@@ -3,6 +3,7 @@ import { auth, db } from './init.js';
 import { 
     getCurrentUser, 
     getCurrentUserData, 
+    getCachedUserData,
     getCachedProfilePic,
     onUserDataChange,
     DEFAULT_PROFILE_PIC 
@@ -18,6 +19,14 @@ import {
     onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
+
+// Get i18next instance for translations
+const t = (key, options = {}) => {
+    if (window.i18next && window.i18next.t) {
+        return window.i18next.t(key, options);
+    }
+    return key; // Fallback to key if i18next not loaded
+};
 
 // State management
 let currentUserId = null;
@@ -65,11 +74,25 @@ async function loadUserProfile(user) {
 // Update header profile with data
 function updateHeaderProfile(userData, user) {
     const userName = userData.userName || user?.displayName || 'User';
+    const userType = userData?.userType || 'fertilizer_buyer';
     const profilePicUrl = userData.userProfilePictureUrl || user?.photoURL || DEFAULT_PROFILE_PIC;
+    
+    // Determine user role display
+    let roleDisplay = 'Active Buyer';
+    if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
+        roleDisplay = 'Swine Farmer';
+    } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
+        roleDisplay = 'Organic Fertilizer Buyer';
+    }
     
     const userNameEl = document.getElementById('headerUserName');
     if (userNameEl) {
         userNameEl.textContent = userName;
+    }
+    
+    const userRoleEl = document.getElementById('headerUserRole');
+    if (userRoleEl) {
+        userRoleEl.textContent = roleDisplay;
     }
     
     // Set avatar using background image (no initials fallback)
@@ -296,7 +319,7 @@ function createSellerCard(item) {
 
     const sellerType = document.createElement('div');
     sellerType.className = 'seller-type';
-    sellerType.textContent = 'Swine Farmer';
+    sellerType.textContent = t('transactions.seller.type');
 
     sellerInfo.appendChild(sellerName);
     sellerInfo.appendChild(sellerType);
@@ -350,15 +373,15 @@ function createSellerCard(item) {
             const priceItem = document.createElement('div');
             priceItem.className = 'meta-item';
             priceItem.innerHTML = `
-                <div class="meta-label">Total Amount</div>
+                <div class="meta-label">${t('transactions.transaction.totalAmount')}</div>
                 <div class="meta-value price">₱${formatPrice(transaction.transactionTotalAmount)}</div>
             `;
 
             const quantityItem = document.createElement('div');
             quantityItem.className = 'meta-item';
             quantityItem.innerHTML = `
-                <div class="meta-label">Quantity</div>
-                <div class="meta-value">${transaction.transactionQuantityOrdered} kg</div>
+                <div class="meta-label">${t('transactions.transaction.quantity')}</div>
+                <div class="meta-value">${transaction.transactionQuantityOrdered} ${t('transactions.transaction.kg')}</div>
             `;
 
             meta.appendChild(priceItem);
@@ -374,14 +397,14 @@ function createSellerCard(item) {
             // No transaction yet
             const noTransaction = document.createElement('div');
             noTransaction.className = 'no-transactions';
-            noTransaction.textContent = 'Product listed - No transactions yet';
+            noTransaction.textContent = t('transactions.product.noTransactions');
             transactionInfo.appendChild(noTransaction);
         }
     } else {
         // No product or transactions
         const noTransaction = document.createElement('div');
         noTransaction.className = 'no-transactions';
-        noTransaction.textContent = 'No transactions with this seller yet';
+        noTransaction.textContent = t('transactions.product.noProduct');
         transactionInfo.appendChild(noTransaction);
     }
 
@@ -395,7 +418,7 @@ function createSellerCard(item) {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
-        Message Seller
+        ${t('transactions.seller.messageSeller')}
     `;
     messageBtn.addEventListener('click', () => {
         window.location.href = `/messages.html?conversation=${item.conversation.id}&seller=${item.sellerId}`;
@@ -408,7 +431,7 @@ function createSellerCard(item) {
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
-        View History
+        ${t('transactions.seller.viewHistory')}
     `;
     
     if (item.latestTransaction) {
@@ -449,12 +472,12 @@ function formatPrice(amount) {
 // Format transaction status
 function formatTransactionStatus(status) {
     const statusMap = {
-        'agreed': '✓ Agreed',
-        'confirmed': '✓ Confirmed',
-        'completed': '✓ Completed',
-        'cancelled': '✗ Cancelled',
-        'cancellation_requested': '⏳ Cancellation Pending',
-        'contacted': '💬 Negotiating'
+        'agreed': t('transactions.status.agreed'),
+        'confirmed': t('transactions.status.confirmed'),
+        'completed': t('transactions.status.completed'),
+        'cancelled': t('transactions.status.cancelled'),
+        'cancellation_requested': t('transactions.status.cancellationRequested'),
+        'contacted': t('transactions.status.contacted')
     };
     return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
 }

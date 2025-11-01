@@ -6,6 +6,10 @@
     <title>Listing Details - PigSoil+</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDxldiepJaqTaCW9kxCr-3cYgSlVD0fQYg&libraries=places"></script>
+    
+    <!-- i18next for internationalization -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -878,10 +882,10 @@
             </a>
             
             <ul class="nav-menu">
-                <li><a href="/buyer-dashboard.html" data-nav="dashboard">Dashboard</a></li>
-                                <li><a href="/transactions.html" data-nav="transactions">Transactions</a></li>
-                <li><a href="/buyer-marketplace.html" data-nav="market" class="active">Market</a></li>
-                <li><a href="/guides.html" data-nav="guides">Guides</a></li>
+                <li><a href="/buyer-dashboard.html" data-nav="dashboard" data-i18n="listingDetails.nav.dashboard">Dashboard</a></li>
+                                <li><a href="/transactions.html" data-nav="transactions" data-i18n="listingDetails.nav.transactions">Transactions</a></li>
+                <li><a href="/buyer-marketplace.html" data-nav="market" class="active" data-i18n="listingDetails.nav.market">Market</a></li>
+                <li><a href="/guides.html" data-nav="guides" data-i18n="listingDetails.nav.guides">Guides</a></li>
             </ul>
 
             <div class="user-section">
@@ -907,14 +911,14 @@
 
     <main class="main-content">
         <!-- Back Button -->
-        <a href="/buyer-marketplace.html" class="back-btn">
+        <a href="/buyer-marketplace.html" class="back-btn" data-i18n="listingDetails.back">
             ← Back to Marketplace
         </a>
 
         <!-- Loading State -->
         <div class="loading-container" id="loadingState">
             <div class="spinner"></div>
-            <h3>Loading listing details...</h3>
+            <h3 data-i18n="listingDetails.loading">Loading listing details...</h3>
             <p>Please wait while we fetch the product information</p>
         </div>
 
@@ -951,8 +955,15 @@
     </div>
 
     <!-- Firebase and App Scripts -->
+    <script src="/js/i18n.js"></script>
     <script type="module" src="/js/dashboard-auth-guard.js"></script>
     <script type="module" src="/js/listing-details.js"></script>
     <script type="module" src="/js/shared-user-manager.js"></script>
+    <script>
+        // Initialize i18next when DOM is ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.i18nManager.initialize();
+        });
+    </script>
 </body>
 </html>

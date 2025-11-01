@@ -3,8 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notifications - PigSoil+</title>
+  <title data-i18n="notifications.pageTitle">Notifications - PigSoil+</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- i18next for internationalization -->
+  <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
+
   <style>
     * {
       margin: 0;
@@ -13,8 +18,8 @@
     }
 
     body {
-      font-family: 'Poppins', Arial, sans-serif;
-      background: linear-gradient(103deg, #FFEED0 0%, #FFC7B8 170%);
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f4e4c1 0%, #f0d0a0 100%);
       min-height: 100vh;
     }
 
@@ -438,11 +443,11 @@
           <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
       </button>
-      <h1 class="header-title">Recent Notifications</h1>
+      <h1 class="header-title" data-i18n="notificationsPage.header.title">Recent Notifications</h1>
     </div>
     <div class="header-actions">
-      <button class="header-btn" id="markAllReadBtn">Mark All as Read</button>
-      <button class="header-btn danger" id="clearAllBtn">Clear All</button>
+      <button class="header-btn" id="markAllReadBtn" data-i18n="notificationsPage.header.markAllRead">Mark All as Read</button>
+      <button class="header-btn danger" id="clearAllBtn" data-i18n="notificationsPage.header.clearAll">Clear All</button>
     </div>
   </header>
 
@@ -450,29 +455,35 @@
   <main class="main-content">
     <!-- Filter Section -->
     <section class="filter-section">
-      <h2 class="filter-title">Filter Notifications</h2>
+      <h2 class="filter-title" data-i18n="notificationsPage.filter.title">Filter Notifications</h2>
       <div class="filter-buttons">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="unread">Unread</button>
-        <button class="filter-btn" data-filter="read">Read</button>
+        <button class="filter-btn active" data-filter="all" data-i18n="notificationsPage.filter.all">All</button>
+        <button class="filter-btn" data-filter="unread" data-i18n="notificationsPage.filter.unread">Unread</button>
+        <button class="filter-btn" data-filter="read" data-i18n="notificationsPage.filter.read">Read</button>
       </div>
-      <p class="filter-status" id="filterStatus">Showing: All Notifications</p>
+      <p class="filter-status" id="filterStatus" data-i18n="notificationsPage.filter.showingAll">Showing: All Notifications</p>
     </section>
 
     <!-- Notifications List -->
     <section class="notifications-container" id="notificationsContainer">
       <div class="loading-state">
         <div class="loading-spinner"></div>
-        <p>Loading notifications...</p>
+        <p data-i18n="notificationsPage.loading.text">Loading notifications...</p>
       </div>
     </section>
   </main>
 
+  <script src="/js/i18n.js"></script>
   <script type="module">
     import notificationManager from './js/notification-manager.js';
     import { auth } from './js/init.js';
 
     let currentFilter = 'all';
+
+    // Initialize i18next when DOM is ready
+    document.addEventListener('DOMContentLoaded', async () => {
+      await window.i18nManager.initialize();
+    });
 
     // Helper: get the current user's display name from cached user prefs
     function getCachedUserName() {
@@ -582,6 +593,12 @@
       updateStats();
     });
 
+    // Listen for language changes to reload UI
+    window.addEventListener('languageChanged', () => {
+      loadNotifications();
+      updateFilterStatus();
+    });
+
     // Back button - redirect to appropriate dashboard based on user type
     document.getElementById('backBtn').addEventListener('click', () => {
       try {
@@ -610,17 +627,21 @@
     document.getElementById('markAllReadBtn').addEventListener('click', () => {
       const count = notificationManager.markAllAsRead();
       if (count > 0) {
-        showToast(`Marked ${count} notifications as read`);
+        const message = window.i18n?.t('notificationsPage.toast.markedRead', { count }) || `Marked ${count} notifications as read`;
+        showToast(message);
       } else {
-        showToast('All notifications already read');
+        const message = window.i18n?.t('notificationsPage.toast.allRead') || 'All notifications already read';
+        showToast(message);
       }
     });
 
     // Clear all
     document.getElementById('clearAllBtn').addEventListener('click', () => {
-      if (confirm('Delete all notifications? This cannot be undone.')) {
+      const confirmMessage = window.i18n?.t('notificationsPage.toast.confirmClear') || 'Delete all notifications? This cannot be undone.';
+      if (confirm(confirmMessage)) {
         const count = notificationManager.clearAll();
-        showToast(`Cleared ${count} notifications`);
+        const message = window.i18n?.t('notificationsPage.toast.cleared', { count }) || `Cleared ${count} notifications`;
+        showToast(message);
       }
     });
 
@@ -720,18 +741,18 @@
             <div class="notification-actions">
               ${!notification.isRead ? `
                 <button class="notification-action-btn primary mark-read-btn" data-id="${notification.id}">
-                  ✓ Mark as Read
+                  ${window.i18n?.t('notificationsPage.actions.markRead') || '✓ Mark as Read'}
                 </button>
               ` : ''}
               ${notification.type === 'chat' && notification.conversationId ? `
                 <button class="notification-action-btn view-message-btn" 
                         data-conversation="${notification.conversationId}" 
                         data-sender="${notification.senderId}">
-                  💬 View Message
+                  ${window.i18n?.t('notificationsPage.actions.viewMessage') || '💬 View Message'}
                 </button>
               ` : ''}
               <button class="notification-action-btn danger delete-btn" data-id="${notification.id}">
-                🗑️ Delete
+                ${window.i18n?.t('notificationsPage.actions.delete') || '🗑️ Delete'}
               </button>
             </div>
           </div>
@@ -742,9 +763,21 @@
     // Render empty state
     function renderEmptyState() {
       const messages = {
-        all: { icon: '🔔', title: 'No notifications yet', text: 'You\'re all caught up!' },
-        unread: { icon: '✅', title: 'All caught up!', text: 'No unread notifications' },
-        read: { icon: '📋', title: 'No read notifications', text: 'Mark notifications as read to see them here' }
+        all: { 
+          icon: window.i18n?.t('notificationsPage.empty.all.icon') || '🔔', 
+          title: window.i18n?.t('notificationsPage.empty.all.title') || 'No notifications yet', 
+          text: window.i18n?.t('notificationsPage.empty.all.text') || 'You\'re all caught up!' 
+        },
+        unread: { 
+          icon: window.i18n?.t('notificationsPage.empty.unread.icon') || '✅', 
+          title: window.i18n?.t('notificationsPage.empty.unread.title') || 'All caught up!', 
+          text: window.i18n?.t('notificationsPage.empty.unread.text') || 'No unread notifications' 
+        },
+        read: { 
+          icon: window.i18n?.t('notificationsPage.empty.read.icon') || '📋', 
+          title: window.i18n?.t('notificationsPage.empty.read.title') || 'No read notifications', 
+          text: window.i18n?.t('notificationsPage.empty.read.text') || 'Mark notifications as read to see them here' 
+        }
       };
 
       const { icon, title, text } = messages[currentFilter] || messages.all;
@@ -752,8 +785,8 @@
       return `
         <div class="empty-state">
           <div class="empty-icon">${icon}</div>
-          <h3 class="empty-title">${title}</h3>
-          <p class="empty-text">${text}</p>
+          <div class="empty-title">${title}</div>
+          <div class="empty-text">${text}</div>
         </div>
       `;
     }
@@ -766,7 +799,8 @@
           e.stopPropagation();
           const id = btn.dataset.id;
           notificationManager.markAsRead(id);
-          showToast('Marked as read');
+          const message = window.i18n?.t('notificationsPage.toast.markedSingleRead') || 'Marked as read';
+          showToast(message);
         });
       });
 
@@ -777,7 +811,8 @@
           const id = btn.dataset.id;
           if (confirm('Delete this notification?')) {
             notificationManager.deleteNotification(id);
-            showToast('Notification deleted');
+            const message = window.i18n?.t('notificationsPage.toast.deleted') || 'Notification deleted';
+            showToast(message);
           }
         });
       });
@@ -822,9 +857,9 @@
     // Update filter status text
     function updateFilterStatus() {
       const statusText = {
-        all: 'Showing: All Notifications',
-        unread: 'Showing: Unread Notifications',
-        read: 'Showing: Read Notifications'
+        all: window.i18n?.t('notificationsPage.filter.showingAll') || 'Showing: All Notifications',
+        unread: window.i18n?.t('notificationsPage.filter.showingUnread') || 'Showing: Unread Notifications',
+        read: window.i18n?.t('notificationsPage.filter.showingRead') || 'Showing: Read Notifications'
       };
 
       document.getElementById('filterStatus').textContent = statusText[currentFilter] || statusText.all;

@@ -77,6 +77,13 @@ function updateContent() {
         element.innerHTML = i18next.t(key);
     });
     
+    // Update elements with data-i18n-step (for step-by-step lists)
+    document.querySelectorAll('[data-i18n-step]').forEach(element => {
+        const key = element.getAttribute('data-i18n-step');
+        const translation = i18next.t(key);
+        element.textContent = translation;
+    });
+    
     console.log('✅ Page content updated with translations');
 }
 
@@ -128,12 +135,21 @@ function getCurrentLanguage() {
     return i18next.language || DEFAULT_LANGUAGE;
 }
 
+// Translation helper function for dynamic content
+function translate(key, options = {}) {
+    if (typeof i18next !== 'undefined' && i18next.t) {
+        return i18next.t(key, options);
+    }
+    return key;
+}
+
 // Export functions for use in other modules
 window.i18nManager = {
     initialize: initializeI18n,
     switchLanguage: switchLanguage,
     getCurrentLanguage: getCurrentLanguage,
-    updateContent: updateContent
+    updateContent: updateContent,
+    t: translate  // Add translation function
 };
 
 console.log('🌐 i18next Manager loaded');

@@ -137,11 +137,16 @@ function updateProgressIndicator(method) {
     const progressIndicator = document.getElementById('progressIndicator');
     
     if (method === 'basic') {
-        progressIndicator.textContent = 'Day 1-21 Guide';
+        progressIndicator.setAttribute('data-i18n', 'guides.progress.basic');
         progressIndicator.classList.remove('hot');
     } else {
-        progressIndicator.innerHTML = 'Hot Method<br>Day 1-18 Guide';
+        progressIndicator.setAttribute('data-i18n-html', 'guides.progress.hot');
         progressIndicator.classList.add('hot');
+    }
+    
+    // Re-translate the element if i18n is available
+    if (window.i18nManager && window.i18nManager.i18next) {
+        window.i18nManager.updateContent();
     }
 }
 
@@ -238,10 +243,16 @@ function initProgressIndicator() {
         if (nearestDay && nearestDay !== currentDayVisible) {
             currentDayVisible = nearestDay;
             
+            // Get current language
+            const currentLang = window.i18nManager?.getCurrentLanguage() || 'en';
+            const methodLabel = currentLang === 'ceb' 
+                ? (methodType === 'basic' ? 'Basic Method' : 'Hot Method')
+                : (methodType === 'basic' ? 'Basic Method' : 'Hot Method');
+            
             if (methodType === 'basic') {
-                progressIndicator.innerHTML = `${nearestDay}<br>Basic Method`;
+                progressIndicator.innerHTML = `${nearestDay}<br>${methodLabel}`;
             } else {
-                progressIndicator.innerHTML = `${nearestDay}<br>Hot Method`;
+                progressIndicator.innerHTML = `${nearestDay}<br>${methodLabel}`;
             }
             
             // Add pulse animation
@@ -334,12 +345,7 @@ function initDayContainerInteractions() {
                 this.style.transform = '';
             }, 150);
             
-            // Get day info
-            const dayNumber = this.querySelector('.day-number').textContent;
-            const dayTitle = this.querySelector('.day-title').textContent;
-            const methodType = this.classList.contains('basic') ? 'Basic' : 'Hot';
-            
-            showNotification(`Day ${dayNumber}: ${dayTitle}`, 'info');
+            // Removed notification that appeared when clicking on steps
         });
     });
 }

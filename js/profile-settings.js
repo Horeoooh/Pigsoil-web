@@ -336,18 +336,18 @@ async function handleProfilePictureUpload(e) {
     if (!file) return;
     
     if (!file.type.startsWith('image/')) {
-        showAlert(i18next.t('settings.alerts.profilePictureFailed'), 'error');
+        showAlert(i18next.t('settings.alerts.profilePictureInvalidType'), 'error');
         return;
     }
     
     if (file.size > 5 * 1024 * 1024) {
-        showAlert(i18next.t('settings.alerts.profilePictureFailed'), 'error');
+        showAlert(i18next.t('settings.alerts.profilePictureTooLarge'), 'error');
         return;
     }
     
     try {
         setLoadingState(true);
-        showAlert(i18next.t('settings.alerts.profilePictureSuccess'), 'info');
+        showAlert(i18next.t('settings.alerts.uploadingProfilePicture'), 'info');
         
         // Create preview
         const reader = new FileReader();
@@ -390,7 +390,7 @@ async function handleProfilePictureUpload(e) {
                 currentUserData.userProfilePictureUrl = downloadURL;
                 updateProfileDisplay();
                 
-                showAlert(i18next.t('settings.alerts.profilePictureSuccess'), 'success');
+                showAlert(i18next.t('settings.alerts.profilePictureUploaded'), 'success');
                 setLoadingState(false);
             }
         );
@@ -444,29 +444,29 @@ async function handleSendPhoneCode() {
     const newPhone = document.getElementById('newPhoneNumber').value.trim();
     
     if (!newPhone) {
-        showModalAlert('phoneChangeAlert', 'Please enter a phone number', 'error');
+        showModalAlert('phoneChangeAlert', i18next.t('settings.alerts.phoneRequired'), 'error');
         return;
     }
     
     if (!newPhone.match(/^\+63[0-9]{10}$/)) {
-        showModalAlert('phoneChangeAlert', 'Please enter a valid Philippine phone number (+63XXXXXXXXXX)', 'error');
+        showModalAlert('phoneChangeAlert', i18next.t('settings.alerts.phoneInvalid'), 'error');
         return;
     }
     
     if (newPhone === currentUserData.userPhone) {
-        showModalAlert('phoneChangeAlert', 'This is your current phone number', 'error');
+        showModalAlert('phoneChangeAlert', i18next.t('settings.alerts.phoneCurrentSame'), 'error');
         return;
     }
     
     try {
-        showModalAlert('phoneChangeAlert', 'Sending verification code...', 'info');
+        showModalAlert('phoneChangeAlert', i18next.t('settings.alerts.phoneSending'), 'info');
         
         // Check if phone exists
         const phoneQuery = query(collection(db, COLLECTIONS.USERS), where('userPhone', '==', newPhone));
         const phoneSnapshot = await getDocs(phoneQuery);
         
         if (!phoneSnapshot.empty && phoneSnapshot.docs[0].id !== currentUser.uid) {
-            showModalAlert('phoneChangeAlert', 'This phone number is already registered', 'error');
+            showModalAlert('phoneChangeAlert', i18next.t('settings.alerts.phoneAlreadyExists'), 'error');
             return;
         }
         
@@ -482,7 +482,7 @@ async function handleSendPhoneCode() {
         
         console.log('✅ Verification SMS sent to:', newPhone);
         
-        showModalAlert('phoneChangeAlert', 'Verification code sent!', 'success');
+        showModalAlert('phoneChangeAlert', i18next.t('settings.alerts.phoneCodeSent'), 'success');
         
         setTimeout(() => {
             closePhoneChangeModal();
@@ -491,14 +491,14 @@ async function handleSendPhoneCode() {
         
     } catch (error) {
         console.error('❌ Error sending SMS:', error);
-        let errorMsg = 'Failed to send verification code';
+        let errorMsg = i18next.t('settings.alerts.phoneSendFailed');
         
         if (error.code === 'auth/too-many-requests') {
-            errorMsg = 'Too many requests. Please try again later';
+            errorMsg = i18next.t('settings.alerts.phoneTooManyRequests');
         } else if (error.code === 'auth/invalid-phone-number') {
-            errorMsg = 'Invalid phone number format';
+            errorMsg = i18next.t('settings.alerts.phoneInvalidFormat');
         } else if (error.code === 'auth/quota-exceeded') {
-            errorMsg = 'SMS quota exceeded. Please try again later';
+            errorMsg = i18next.t('settings.alerts.phoneQuotaExceeded');
         }
         
         showModalAlert('phoneChangeAlert', errorMsg, 'error');
@@ -568,12 +568,12 @@ async function handleVerifySmsCode() {
     const code = Array.from(codeInputs).map(input => input.value).join('');
     
     if (code.length !== 6) {
-        showModalAlert('smsVerificationAlert', 'Please enter the complete 6-digit code', 'error');
+        showModalAlert('smsVerificationAlert', i18next.t('settings.alerts.smsCodeIncomplete'), 'error');
         return;
     }
     
     try {
-        showModalAlert('smsVerificationAlert', 'Verifying code...', 'info');
+        showModalAlert('smsVerificationAlert', i18next.t('settings.alerts.smsVerifying'), 'info');
         
         // Create phone credential using the verification ID and code
         const phoneCredential = PhoneAuthProvider.credential(
@@ -598,7 +598,7 @@ async function handleVerifySmsCode() {
         currentUserData.userPhone = pendingNewPhone;
         if (phoneInput) phoneInput.value = pendingNewPhone;
         
-        showModalAlert('smsVerificationAlert', 'Phone number updated!', 'success');
+        showModalAlert('smsVerificationAlert', i18next.t('settings.alerts.smsCodeUpdated'), 'success');
         
         setTimeout(() => {
             closeSmsVerificationModal();
@@ -608,17 +608,17 @@ async function handleVerifySmsCode() {
     } catch (error) {
         console.error('❌ Verification failed:', error);
         
-        let errorMsg = 'Invalid verification code';
+        let errorMsg = i18next.t('settings.alerts.smsCodeInvalid');
         if (error.code === 'auth/invalid-verification-code') {
-            errorMsg = 'Invalid code. Please try again';
+            errorMsg = i18next.t('settings.alerts.smsCodeInvalid');
         } else if (error.code === 'auth/code-expired') {
-            errorMsg = 'Code expired. Please request a new one';
+            errorMsg = i18next.t('settings.alerts.smsCodeExpired');
         } else if (error.code === 'auth/missing-verification-code') {
-            errorMsg = 'Please enter the verification code';
+            errorMsg = i18next.t('settings.alerts.smsCodeMissing');
         } else if (error.code === 'auth/credential-already-in-use') {
-            errorMsg = 'This phone number is already in use';
+            errorMsg = i18next.t('settings.alerts.smsCredentialInUse');
         } else if (error.code === 'auth/requires-recent-login') {
-            errorMsg = 'For security, please sign out and sign back in, then try again';
+            errorMsg = i18next.t('settings.alerts.smsRecentLoginRequired');
         }
         
         showModalAlert('smsVerificationAlert', errorMsg, 'error');
@@ -678,39 +678,39 @@ async function handleAddEmailPassword() {
     
     // Validation
     if (!email) {
-        showModalAlert('addEmailAlert', 'Please enter an email address', 'error');
+        showModalAlert('addEmailAlert', i18next.t('settings.alerts.emailRequired'), 'error');
         return;
     }
     
     if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-        showModalAlert('addEmailAlert', 'Please enter a valid email address', 'error');
+        showModalAlert('addEmailAlert', i18next.t('settings.alerts.emailInvalidFormat'), 'error');
         return;
     }
     
     if (!password) {
-        showModalAlert('addEmailAlert', 'Please enter a password', 'error');
+        showModalAlert('addEmailAlert', i18next.t('settings.alerts.passwordRequired'), 'error');
         return;
     }
     
     if (password.length < 6) {
-        showModalAlert('addEmailAlert', 'Password must be at least 6 characters', 'error');
+        showModalAlert('addEmailAlert', i18next.t('settings.alerts.passwordTooShort'), 'error');
         return;
     }
     
     if (password !== confirmPassword) {
-        showModalAlert('addEmailAlert', 'Passwords do not match', 'error');
+        showModalAlert('addEmailAlert', i18next.t('settings.alerts.passwordMismatch'), 'error');
         return;
     }
     
     try {
-        showModalAlert('addEmailAlert', 'Adding email & password...', 'info');
+        showModalAlert('addEmailAlert', i18next.t('settings.alerts.emailAdding'), 'info');
         
         // Check if email already exists
         const emailQuery = query(collection(db, COLLECTIONS.USERS), where('userEmail', '==', email));
         const emailSnapshot = await getDocs(emailQuery);
         
         if (!emailSnapshot.empty && emailSnapshot.docs[0].id !== currentUser.uid) {
-            showModalAlert('addEmailAlert', 'This email is already registered', 'error');
+            showModalAlert('addEmailAlert', i18next.t('settings.alerts.emailAlreadyExists'), 'error');
             return;
         }
         
@@ -729,7 +729,7 @@ async function handleAddEmailPassword() {
         currentUserData.userEmail = email;
         if (emailInput) emailInput.value = email;
         
-        showModalAlert('addEmailAlert', 'Email & password added!', 'success');
+        showModalAlert('addEmailAlert', i18next.t('settings.alerts.emailPasswordAdded'), 'success');
         
         setTimeout(() => {
             closeAddEmailModal();
@@ -740,16 +740,16 @@ async function handleAddEmailPassword() {
     } catch (error) {
         console.error('❌ Failed to add email/password:', error);
         
-        let errorMsg = 'Failed to add email & password';
+        let errorMsg = i18next.t('settings.alerts.addEmailPasswordFailed');
         
         if (error.code === 'auth/email-already-in-use') {
-            errorMsg = 'This email is already in use';
+            errorMsg = i18next.t('settings.alerts.emailAlreadyInUse');
         } else if (error.code === 'auth/weak-password') {
-            errorMsg = 'Password is too weak';
+            errorMsg = i18next.t('settings.alerts.passwordWeak');
         } else if (error.code === 'auth/provider-already-linked') {
-            errorMsg = 'Email provider already linked';
+            errorMsg = i18next.t('settings.alerts.providerAlreadyLinked');
         } else if (error.code === 'auth/credential-already-in-use') {
-            errorMsg = 'This credential is already in use';
+            errorMsg = i18next.t('settings.alerts.credentialAlreadyInUse');
         }
         
         showModalAlert('addEmailAlert', errorMsg, 'error');
@@ -795,34 +795,34 @@ async function handleChangeEmail() {
     
     // Validation
     if (!currentPassword) {
-        showModalAlert('changeEmailAlert', 'Please enter your current password', 'error');
+        showModalAlert('changeEmailAlert', i18next.t('settings.alerts.currentPasswordRequired'), 'error');
         return;
     }
     
     if (!newEmail) {
-        showModalAlert('changeEmailAlert', 'Please enter a new email', 'error');
+        showModalAlert('changeEmailAlert', i18next.t('settings.alerts.newEmailRequired'), 'error');
         return;
     }
     
     if (!newEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-        showModalAlert('changeEmailAlert', 'Please enter a valid email address', 'error');
+        showModalAlert('changeEmailAlert', i18next.t('settings.alerts.newEmailInvalid'), 'error');
         return;
     }
     
     if (newEmail === currentEmail) {
-        showModalAlert('changeEmailAlert', 'This is your current email', 'error');
+        showModalAlert('changeEmailAlert', i18next.t('settings.alerts.emailCurrentSame'), 'error');
         return;
     }
     
     try {
-        showModalAlert('changeEmailAlert', 'Changing email...', 'info');
+        showModalAlert('changeEmailAlert', i18next.t('settings.alerts.emailChanging'), 'info');
         
         // Check if new email already exists (exclude current user)
         const emailQuery = query(collection(db, COLLECTIONS.USERS), where('userEmail', '==', newEmail));
         const emailSnapshot = await getDocs(emailQuery);
         
         if (!emailSnapshot.empty && emailSnapshot.docs[0].id !== currentUser.uid) {
-            showModalAlert('changeEmailAlert', 'This email is already registered', 'error');
+            showModalAlert('changeEmailAlert', i18next.t('settings.alerts.emailAlreadyExists'), 'error');
             return;
         }
         
@@ -844,7 +844,7 @@ async function handleChangeEmail() {
         currentUserData.userEmail = newEmail;
         if (emailInput) emailInput.value = newEmail;
         
-        showModalAlert('changeEmailAlert', 'Email changed!', 'success');
+        showModalAlert('changeEmailAlert', i18next.t('settings.alerts.emailChanged'), 'success');
         
         setTimeout(() => {
             closeChangeEmailModal();
@@ -854,16 +854,16 @@ async function handleChangeEmail() {
     } catch (error) {
         console.error('❌ Failed to change email:', error);
         
-        let errorMsg = 'Failed to change email';
+        let errorMsg = i18next.t('settings.alerts.changeEmailFailed');
         
         if (error.code === 'auth/wrong-password') {
-            errorMsg = 'Current password is incorrect';
+            errorMsg = i18next.t('settings.alerts.passwordWrong');
         } else if (error.code === 'auth/email-already-in-use') {
-            errorMsg = 'This email is already in use';
+            errorMsg = i18next.t('settings.alerts.emailAlreadyInUse');
         } else if (error.code === 'auth/requires-recent-login') {
-            errorMsg = 'Please sign out and sign back in, then try again';
+            errorMsg = i18next.t('settings.alerts.recentLoginRequired');
         } else if (error.code === 'auth/invalid-email') {
-            errorMsg = 'Invalid email format';
+            errorMsg = i18next.t('settings.alerts.newEmailInvalid');
         }
         
         showModalAlert('changeEmailAlert', errorMsg, 'error');
@@ -919,32 +919,32 @@ async function handlePasswordChange() {
     const confirmPassword = document.getElementById('confirmPassword').value;
     
     if (!currentPassword) {
-        showModalAlert('passwordChangeAlert', 'Please enter your current password', 'error');
+        showModalAlert('passwordChangeAlert', i18next.t('settings.alerts.currentPasswordRequired'), 'error');
         return;
     }
     
     if (!newPassword) {
-        showModalAlert('passwordChangeAlert', 'Please enter a new password', 'error');
+        showModalAlert('passwordChangeAlert', i18next.t('settings.alerts.newPasswordRequired'), 'error');
         return;
     }
     
     if (newPassword.length < 6) {
-        showModalAlert('passwordChangeAlert', 'Password must be at least 6 characters', 'error');
+        showModalAlert('passwordChangeAlert', i18next.t('settings.alerts.newPasswordTooShort'), 'error');
         return;
     }
     
     if (newPassword !== confirmPassword) {
-        showModalAlert('passwordChangeAlert', 'Passwords do not match', 'error');
+        showModalAlert('passwordChangeAlert', i18next.t('settings.alerts.passwordMismatch'), 'error');
         return;
     }
     
     if (newPassword === currentPassword) {
-        showModalAlert('passwordChangeAlert', 'New password must be different from current password', 'error');
+        showModalAlert('passwordChangeAlert', i18next.t('settings.alerts.passwordSame'), 'error');
         return;
     }
     
     try {
-        showModalAlert('passwordChangeAlert', 'Changing password...', 'info');
+        showModalAlert('passwordChangeAlert', i18next.t('settings.alerts.passwordChanging'), 'info');
         
         // Reauthenticate with current password
         const credential = EmailAuthProvider.credential(currentUserData.userEmail, currentPassword);
@@ -957,7 +957,7 @@ async function handlePasswordChange() {
         
         console.log('✅ Password updated successfully');
         
-        showModalAlert('passwordChangeAlert', 'Password changed!', 'success');
+        showModalAlert('passwordChangeAlert', i18next.t('settings.alerts.passwordChanged'), 'success');
         
         setTimeout(() => {
             closePasswordChangeModal();
@@ -967,14 +967,14 @@ async function handlePasswordChange() {
     } catch (error) {
         console.error('❌ Password update failed:', error);
         
-        let errorMsg = 'Failed to change password';
+        let errorMsg = i18next.t('settings.alerts.passwordUpdateFailed');
         
         if (error.code === 'auth/wrong-password') {
-            errorMsg = 'Current password is incorrect';
+            errorMsg = i18next.t('settings.alerts.passwordWrong');
         } else if (error.code === 'auth/weak-password') {
-            errorMsg = 'New password is too weak';
+            errorMsg = i18next.t('settings.alerts.passwordWeak');
         } else if (error.code === 'auth/requires-recent-login') {
-            errorMsg = 'Please sign out and sign back in, then try again';
+            errorMsg = i18next.t('settings.alerts.recentLoginRequired');
         }
         
         showModalAlert('passwordChangeAlert', errorMsg, 'error');
@@ -998,7 +998,7 @@ async function handleFormSubmission(e) {
         const newEmail = emailInput.value.trim();
         
         if (!newUserName || newUserName.length < 3) {
-            throw new Error('Username must be at least 3 characters');
+            throw new Error(i18next.t('settings.alerts.usernameMinLength'));
         }
         
         const nameChanged = newUserName !== currentUserData.userName;
@@ -1006,7 +1006,7 @@ async function handleFormSubmission(e) {
         const emailChanged = newEmail !== (currentUserData.userEmail || '');
         
         if (!nameChanged && !typeChanged && !emailChanged) {
-            showAlert(i18next.t('settings.alerts.saveSuccess'), 'info');
+            showAlert(i18next.t('settings.alerts.noChangesDetected'), 'info');
             setLoadingState(false);
             return;
         }
@@ -1020,7 +1020,7 @@ async function handleFormSubmission(e) {
         
         if (typeChanged) {
             updateData.userType = newUserType;
-            showAlert(i18next.t('settings.alerts.saveSuccess'), 'success');
+            showAlert(i18next.t('settings.alerts.userTypeChanged'), 'success');
         }
         
         if (emailChanged && newEmail) {
@@ -1070,15 +1070,15 @@ async function handleLogout() {
 async function handleDeleteAccount() {
     if (!confirm(i18next.t('settings.alerts.accountDeleteConfirm'))) return;
     
-    const confirmText = prompt('Type "DELETE MY ACCOUNT" to confirm:');
-    if (confirmText !== 'DELETE MY ACCOUNT') {
-        showAlert(i18next.t('settings.alerts.saveFailed'), 'info');
+    const confirmText = prompt(`Type "${i18next.t('settings.alerts.deleteConfirmText')}" to confirm:`);
+    if (confirmText !== i18next.t('settings.alerts.deleteConfirmText')) {
+        showAlert(i18next.t('settings.alerts.deleteCancelled'), 'info');
         return;
     }
     
     try {
         setLoadingState(true);
-        showAlert(i18next.t('settings.alerts.saveFailed'), 'info');
+        showAlert(i18next.t('settings.alerts.deletingAccount'), 'info');
         
         const uid = currentUser.uid;
         const batch = writeBatch(db);
@@ -1117,7 +1117,7 @@ async function handleDeleteAccount() {
         
         let errorMsg = i18next.t('settings.alerts.accountDeleteFailed');
         if (error.code === 'auth/requires-recent-login') {
-            errorMsg = i18next.t('settings.alerts.accountDeleteFailed');
+            errorMsg = i18next.t('settings.alerts.recentLoginRequiredDelete');
         }
         
         showAlert(errorMsg, 'error');
@@ -1492,7 +1492,7 @@ function extractAddressLocationName(result) {
 
 async function handleConfirmAddressChange() {
     if (!selectedAddress.lat || !selectedAddress.lng) {
-        showModalAlert('addressAlert', 'Please select a valid address', 'error');
+        showModalAlert('addressAlert', i18next.t('settings.alerts.addressInvalid'), 'error');
         return;
     }
     
@@ -1501,7 +1501,7 @@ async function handleConfirmAddressChange() {
         const confirmBtn = document.getElementById('confirmAddressChange');
         if (confirmBtn) {
             confirmBtn.disabled = true;
-            confirmBtn.innerHTML = '<span class="loading"></span> Saving...';
+            confirmBtn.innerHTML = '<span class="loading"></span> ' + i18next.t('settings.alerts.addressSaving');
         }
         
         // Create address document in addresses collection
@@ -1532,7 +1532,7 @@ async function handleConfirmAddressChange() {
             addressInput.value = selectedAddress.name;
         }
         
-        showModalAlert('addressAlert', 'Address saved successfully!', 'success');
+        showModalAlert('addressAlert', i18next.t('settings.alerts.addressSaved'), 'success');
         
         setTimeout(() => {
             closeAddressChangeModal();
@@ -1541,12 +1541,12 @@ async function handleConfirmAddressChange() {
         
     } catch (error) {
         console.error('Error saving address:', error);
-        showModalAlert('addressAlert', 'Error saving address: ' + error.message, 'error');
+        showModalAlert('addressAlert', i18next.t('settings.alerts.addressSaveFailed') + ': ' + error.message, 'error');
     } finally {
         const confirmBtn = document.getElementById('confirmAddressChange');
         if (confirmBtn) {
             confirmBtn.disabled = false;
-            confirmBtn.innerHTML = 'Save Address';
+            confirmBtn.innerHTML = i18next.t('settings.modals.addressChange.confirmButton');
         }
     }
 }

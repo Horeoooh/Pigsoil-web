@@ -26,6 +26,14 @@ import {
     getDownloadURL
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-storage.js';
 
+// Helper function to get translated text
+function t(key, options = {}) {
+    if (window.i18nManager && window.i18nManager.t) {
+        return window.i18nManager.t(key, options);
+    }
+    return key;
+}
+
 const COLLECTIONS = {
     CONVERSATIONS: 'conversations',
     MESSAGES: 'messages',
@@ -168,11 +176,11 @@ function loadUserProfile() {
     let profilePicUrl = userData?.userProfilePictureUrl || user?.photoURL || DEFAULT_PROFILE_PICTURE;
     
     // Determine user role display
-    let roleDisplay = 'Active User';
+    let roleDisplay = t('messages.userRole.activeUser');
     if (userType === 'swine_farmer' || userType === 'Swine Farmer') {
-        roleDisplay = 'Swine Farmer';
+        roleDisplay = t('messages.userRole.swineFarmer');
     } else if (userType === 'fertilizer_buyer' || userType === 'Organic Fertilizer Buyer') {
-        roleDisplay = 'Organic Fertilizer Buyer';
+        roleDisplay = t('messages.userRole.fertilizerBuyer');
     }
     
     // Generate initials
@@ -230,6 +238,18 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ User already loaded');
         initializeMessaging(user, userData);
     }
+    
+    // Listen for language changes and refresh content
+    document.addEventListener('languageChanged', () => {
+        console.log('🌐 Language changed, refreshing messages...');
+        // Re-render the current conversation if one is open
+        if (currentConversationId && currentConversation && currentReceiverId) {
+            const participantDetails = currentConversation.participantDetails?.[currentReceiverId];
+            const participantName = participantDetails?.participantName || 'User';
+            renderChatUI(participantName, participantDetails, currentConversation);
+            setupMessageInputForConversation();
+        }
+    });
 });
 
 function initializeMessaging(user, userData) {
@@ -260,7 +280,7 @@ function loadConversations(userId) {
         return;
     }
     
-    conversationList.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">Loading conversations...</div>';
+    conversationList.innerHTML = `<div style="text-align: center; padding: 20px; color: #888;">${t('messages.loading')}</div>`;
     
     const conversationsRef = collection(db, COLLECTIONS.CONVERSATIONS);
     const q = query(
@@ -333,20 +353,20 @@ function renderConversationItem(conversationId, conversation, currentUserId) {
     
     const lastMessageTimeFormatted = conversation.lastMessage?.lastMessageTimestamp ? 
         formatTimestamp(conversation.lastMessage.lastMessageTimestamp.toDate()) : 
-        'No messages';
+        t('messages.conversationPreview.startConversation');
     
-    let lastMessageText = conversation.lastMessage?.lastMessageText || 'Start a conversation';
+    let lastMessageText = conversation.lastMessage?.lastMessageText || t('messages.conversationPreview.startConversation');
     
     // Format media messages
     if (lastMessageText === '📸 Photo') {
-        lastMessageText = '📸 Photo';
+        lastMessageText = t('messages.conversationPreview.photo');
     } else if (lastMessageText === '🎥 Video') {
-        lastMessageText = '🎥 Video';
+        lastMessageText = t('messages.conversationPreview.video');
     }
     
     const userTypeBadge = otherParticipantType === 'swine_farmer' ? 
-        '<span class="user-badge farmer">Swine Farmer</span>' : 
-        '<span class="user-badge buyer">Fertilizer Buyer</span>';
+        `<span class="user-badge farmer">${t('messages.userBadge.farmer')}</span>` : 
+        `<span class="user-badge buyer">${t('messages.userBadge.buyer')}</span>`;
     
     conversationItem.innerHTML = `
         <div class="conversation-avatar">
@@ -529,7 +549,7 @@ function updateChatHeader(participantName, participantDetails, conversationData)
             chatHeaderActions.innerHTML = `
                 <button class="btn-propose-deal" id="proposeDealBtn">
                     <img src="/images/deal-proposal.png" alt="Deal" style="width: 16px; height: 16px;">
-                    Propose Deal
+                    ${t('messages.dealProposal.buttonText')}
                 </button>
             `;
             
@@ -554,7 +574,7 @@ function updateChatHeader(participantName, participantDetails, conversationData)
         const buyerStatus = conversationData.buyerTransactionStatus || 'none';
         const sellerStatus = conversationData.sellerTransactionStatus || 'none';
         
-        let statusMessage = 'Deal proposal in progress';
+        let statusMessage = t('messages.dealProposalMessage.messages.dealProposalProgress');
         let statusIcon = '⏳';
         
         // Determine status message based on user role and transaction status
@@ -649,14 +669,14 @@ function renderChatUI(participantName, participantDetails, conversationData) {
             dealProposalButtonHTML = `
                 <button class="btn-propose-deal" id="proposeDealBtn">
                     <img src="/images/deal-proposal.png" alt="Deal" style="width: 16px; height: 16px;">
-                    Propose Deal
+                    ${t('messages.dealProposal.buttonText')}
                 </button>
             `;
         } else if (conversationData.canProposeDeal === false) {
             transactionStatusHTML = `
                 <div class="transaction-status-banner">
                     <span class="status-icon">⏳</span>
-                    <span>Deal proposal in progress</span>
+                    <span>${t('messages.dealProposalMessage.messages.waitingResponse')}</span>
                 </div>
             `;
         }
@@ -671,7 +691,7 @@ function renderChatUI(participantName, participantDetails, conversationData) {
                 </div>
                 <div class="chat-user-details">
                     <h3>${participantName}</h3>
-                    <p class="user-type-label">${participantDetails?.participantUserType === 'swine_farmer' ? 'Swine Farmer' : 'Fertilizer Buyer'}</p>
+                    <p class="user-type-label">${participantDetails?.participantUserType === 'swine_farmer' ? t('messages.userBadge.farmer') : t('messages.userBadge.buyer')}</p>
                 </div>
             </div>
             <div class="chat-header-actions">
@@ -682,7 +702,7 @@ function renderChatUI(participantName, participantDetails, conversationData) {
         <div class="messages-area" id="messagesArea"></div>
         <div class="message-input-container">
             <input type="file" id="mediaInput" accept="image/*,video/*" style="display: none;">
-            <button class="attachment-btn" id="attachmentBtn" title="Attach image or video">
+            <button class="attachment-btn" id="attachmentBtn" title="${t('messages.chatInput.attachTooltip')}">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
                 </svg>
@@ -690,7 +710,7 @@ function renderChatUI(participantName, participantDetails, conversationData) {
             <input type="text" 
                    class="message-input" 
                    id="messageInput" 
-                   placeholder="Type your message..." 
+                   placeholder="${t('messages.chatInput.placeholder')}" 
                    autocomplete="off">
             <button class="send-btn" id="sendBtn">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -703,7 +723,7 @@ function renderChatUI(participantName, participantDetails, conversationData) {
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
-            <span class="progress-text" id="progressText">Uploading... 0%</span>
+            <span class="progress-text" id="progressText">${t('messages.upload.progress')} 0%</span>
         </div>
     `;
     
@@ -968,11 +988,11 @@ function renderDealProposalMessage(message, currentUserId) {
     if (status === 'accepted') {
         statusMessageHTML = `<div class="proposal-status-message accepted">Deal accepted! Complete transaction when ready.</div>`;
     } else if (status === 'declined') {
-        statusMessageHTML = `<div class="proposal-status-message declined">Deal proposal declined</div>`;
+        statusMessageHTML = `<div class="proposal-status-message declined">${t('messages.dealProposalMessage.messages.dealProposalDeclined')}</div>`;
     } else if (status === 'cancelled') {
         statusMessageHTML = `<div class="proposal-status-message cancelled">Proposal cancelled</div>`;
     } else if (status === 'completed') {
-        statusMessageHTML = `<div class="proposal-status-message accepted">Transaction completed! ✓</div>`;
+        statusMessageHTML = `<div class="proposal-status-message accepted">${t('messages.dealProposalMessage.messages.transactionCompleted')}</div>`;
     }
     
     messageDiv.innerHTML = `
@@ -980,7 +1000,7 @@ function renderDealProposalMessage(message, currentUserId) {
             <div class="proposal-header">
                 <div class="proposal-title">
                     <img src="/images/deal-proposal.png" alt="Deal">
-                    <span>Deal Proposal</span>
+                    <span>${t('messages.dealProposalMessage.title')}</span>
                 </div>
                 <div class="proposal-status" style="color: ${statusInfo.color}; background: ${statusInfo.bg};">
                     ${statusInfo.text}
@@ -1006,7 +1026,7 @@ function renderDealProposalMessage(message, currentUserId) {
             <!-- TIME AND STATUS MOVED INSIDE HERE -->
             <div class="proposal-time">${messageTime}</div>
             <div class="proposal-message-status">
-                <span class="proposal-message-status-text">${isSender ? 'Sent' : 'Received'}</span>
+                <span class="proposal-message-status-text">${isSender ? t('messages.dealProposalMessage.messages.sentReceived.sent') : t('messages.dealProposalMessage.messages.sentReceived.received')}</span>
                 <svg class="proposal-message-status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
@@ -1028,25 +1048,25 @@ function renderCancellationRequestMessage(message, currentUserId) {
     
     const messageTime = message.messageCreatedAt ? 
         formatMessageTime(message.messageCreatedAt.toDate()) : 
-        'Sending...';
+        t('messages.dealProposalMessage.messages.sending');
     
     let actionButtonsHTML = '';
     if (status === 'pending' && !isSender) {
         actionButtonsHTML = `
             <div class="cancellation-actions">
                 <button class="btn-approve" onclick="approveCancellation('${message.id}', '${metadata.transactionId}')">
-                    Approve
+                    ${t('messages.cancellation.actions.approveAction')}
                 </button>
                 <button class="btn-reject" onclick="rejectCancellation('${message.id}', '${metadata.transactionId}')">
-                    Reject
+                    ${t('messages.cancellation.actions.reject')}
                 </button>
             </div>
         `;
     }
     
-    const statusText = status === 'approved' ? 'Approved' : 
-                       status === 'rejected' ? 'Rejected' : 
-                       isSender ? 'Waiting for approval' : 'Pending your response';
+    const statusText = status === 'approved' ? t('messages.cancellation.status.approved') : 
+                       status === 'rejected' ? t('messages.cancellation.status.rejected') : 
+                       isSender ? t('messages.cancellation.messages.waitingApprovalShort') : t('messages.cancellation.messages.pendingResponse');
     
     messageDiv.innerHTML = `
         <div class="cancellation-card">
@@ -1056,12 +1076,12 @@ function renderCancellationRequestMessage(message, currentUserId) {
                     <line x1="15" y1="9" x2="9" y2="15"></line>
                     <line x1="9" y1="9" x2="15" y2="15"></line>
                 </svg>
-                <span>Cancellation Request</span>
+                <span>${t('messages.cancellation.requestTitle')}</span>
             </div>
             <div class="cancellation-status">${statusText}</div>
             ${metadata.reason ? `
                 <div class="cancellation-reason">
-                    <strong>Reason:</strong> ${escapeHtml(metadata.reason)}
+                    <strong>${t('messages.cancellation.reason')}:</strong> ${escapeHtml(metadata.reason)}
                 </div>
             ` : ''}
             ${actionButtonsHTML}
@@ -1074,7 +1094,7 @@ function renderCancellationRequestMessage(message, currentUserId) {
 
 function openDealProposalModal() {
     if (!currentListing) {
-        showToast('No listing associated with this conversation', 'error');
+        showToast(t('messages.dealProposal.errors.sendFailed'), 'error');
         return;
     }
     
@@ -1088,7 +1108,7 @@ function openDealProposalModal() {
     modal.innerHTML = `
         <div class="modal-content deal-proposal-modal">
             <div class="modal-header">
-                <h2>Propose Deal</h2>
+                <h2>${t('messages.dealProposal.modalTitle')}</h2>
                 <button class="close-btn" onclick="closeDealProposalModal()">&times;</button>
             </div>
             
@@ -1109,10 +1129,10 @@ function openDealProposalModal() {
                 
                 <div class="proposal-form">
                     <div class="form-group">
-                        <label>Quantity (kg) *</label>
+                        <label>${t('messages.dealProposal.quantityLabel')} *</label>
                         <input type="number" 
                                id="proposalQuantity" 
-                               placeholder="Enter quantity" 
+                               placeholder="${t('messages.dealProposal.quantityPlaceholder')}" 
                                min="1" 
                                max="${availableQuantity}"
                                oninput="updateProposalCalculation()">
@@ -1120,10 +1140,10 @@ function openDealProposalModal() {
                     </div>
                     
                     <div class="form-group">
-                        <label>Your Price Offer (optional)</label>
+                        <label>${t('messages.dealProposal.priceLabel')}</label>
                         <input type="number" 
                                id="proposalPrice" 
-                               placeholder="Leave empty to use listing price (₱${formatNumber(listingPrice)})" 
+                               placeholder="${t('messages.dealProposal.pricePlaceholder')}" 
                                min="0"
                                oninput="updateProposalCalculation()">
                         <span class="hint-text">If left empty, listing price will be used</span>
@@ -1132,24 +1152,24 @@ function openDealProposalModal() {
                     <!-- NEW: Location Picker Section -->
                     <div class="location-picker-section">
                         <div class="location-picker-header">
-                            <h4>Preferred Meetup Location</h4>
+                            <h4>${t('messages.dealProposal.deliveryLabel')}</h4>
                             <span class="optional-badge">Optional</span>
                         </div>
                         
                         <input type="text" 
                                id="locationSearchBox" 
                                class="location-search-box"
-                               placeholder="Search for a location...">
+                               placeholder="${t('messages.dealProposal.deliveryPlaceholder')}">
                         
                         <div id="mapContainer" class="map-container"></div>
                         
                         <div id="selectedLocationDisplay" class="selected-location-display">
                             <span class="location-icon">📍</span>
                             <div class="location-details">
-                                <div class="location-name" id="selectedLocationName">Selected Location</div>
+                                <div class="location-name" id="selectedLocationName">${t('messages.dealProposal.selectLocation')}</div>
                                 <div class="location-subtext">Tap to change or clear</div>
                             </div>
-                            <button class="btn-clear-location" onclick="clearSelectedLocation()">Clear</button>
+                            <button class="btn-clear-location" onclick="clearSelectedLocation()">${t('messages.dealProposal.clearLocation')}</button>
                         </div>
                         
                         <p class="location-hint">You can search for a place or click on the map to select a meetup location</p>
@@ -1157,15 +1177,15 @@ function openDealProposalModal() {
                     
                     <div class="calculation-summary">
                         <div class="calc-row">
-                            <span>Selected Quantity:</span>
+                            <span>${t('messages.dealProposalMessage.quantity')}:</span>
                             <strong id="calcQuantity">-- kg</strong>
                         </div>
                         <div class="calc-row">
-                            <span>Price per kg:</span>
+                            <span>${t('messages.dealProposalMessage.pricePerKg')}:</span>
                             <strong id="calcPrice">₱--</strong>
                         </div>
                         <div class="calc-row total">
-                            <span>Total Amount:</span>
+                            <span>${t('messages.dealProposal.totalLabel')}:</span>
                             <strong id="calcTotal">₱--</strong>
                         </div>
                     </div>
@@ -1173,9 +1193,9 @@ function openDealProposalModal() {
             </div>
             
             <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeDealProposalModal()">Cancel</button>
+                <button class="btn-secondary" onclick="closeDealProposalModal()">${t('messages.dealProposal.cancelButton')}</button>
                 <button class="btn-primary" id="sendProposalBtn" onclick="sendDealProposal()" disabled>
-                    Send Proposal
+                    ${t('messages.dealProposal.sendButton')}
                 </button>
             </div>
         </div>
@@ -1266,7 +1286,7 @@ function initializeLocationPicker() {
         
         // Store selected location
         proposalSelectedLocation = {
-            name: place.name || place.formatted_address || 'Selected Location',
+            name: place.name || place.formatted_address || t('messages.location.selectedLocation'),
             latitude: location.lat(),
             longitude: location.lng(),
             placeId: place.place_id || ''
@@ -1365,7 +1385,7 @@ function findBestLocationName(results) {
         return locality.long_name;
     }
     
-    return 'Selected Location';
+    return t('messages.location.selectedLocation');
 }
 
 function updateLocationDisplay() {
@@ -1389,7 +1409,7 @@ window.clearSelectedLocation = function() {
         searchBox.value = '';
     }
     
-    showToast('Location cleared', 'info');
+    showToast(t('messages.toast.locationCleared'), 'info');
 };
 
 window.closeDealProposalModal = function() {
@@ -1440,12 +1460,12 @@ window.sendDealProposal = async function() {
     const totalAmount = quantity * unitPrice;
     
     if (quantity <= 0 || quantity > window.proposalAvailableQuantity) {
-        showToast('Please enter a valid quantity', 'error');
+        showToast(t('messages.dealProposal.errors.invalidQuantity'), 'error');
         return;
     }
     
     sendBtn.disabled = true;
-    sendBtn.textContent = 'Sending...';
+    sendBtn.textContent = t('messages.upload.progress');
     
     try {
         const currentUser = getCurrentUser();
@@ -1468,7 +1488,7 @@ window.sendDealProposal = async function() {
             messageSenderId: currentUser.uid,
             messageReceiverId: currentReceiverId,
             messageText: customPrice > 0 && customPrice !== window.proposalListingPrice ? 
-                'Sent a price offer' : 'Sent a deal proposal',
+                t('messages.dealProposal.priceOffer') : t('messages.dealProposal.proposalSent'),
             messageType: 'deal_proposal',
             messageStatus: 'sent',
             messageCreatedAt: serverTimestamp(),
@@ -1494,25 +1514,25 @@ window.sendDealProposal = async function() {
         });
         
         closeDealProposalModal();
-        showToast('Deal proposal sent successfully!', 'success');
+        showToast(t('messages.dealProposal.success.sent'), 'success');
         
     } catch (error) {
         console.error('Error sending proposal:', error);
-        showToast('Failed to send proposal. Please try again.', 'error');
+        showToast(t('messages.dealProposal.errors.sendFailed'), 'error');
         sendBtn.disabled = false;
-        sendBtn.textContent = 'Send Proposal';
+        sendBtn.textContent = t('messages.dealProposal.sendButton');
     }
 };
 
 // Deal Proposal Actions
 window.acceptDealProposal = async function(messageId) {
-    showConfirmDialog('Accept this deal proposal?', async () => {
+    showConfirmDialog(t('messages.confirmDialog.acceptProposal'), async () => {
         try {
             const messageRef = doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId, COLLECTIONS.MESSAGES, messageId);
             const messageDoc = await getDoc(messageRef);
             
             if (!messageDoc.exists()) {
-                showToast('Proposal not found', 'error');
+                showToast(t('messages.toast.proposalNotFound'), 'error');
                 return;
             }
             
@@ -1522,7 +1542,7 @@ window.acceptDealProposal = async function(messageId) {
             // Get listing to determine roles
             const listingDoc = await getDoc(doc(db, COLLECTIONS.LISTINGS, metadata.listingId));
             if (!listingDoc.exists()) {
-                showToast('Listing not found', 'error');
+                showToast(t('messages.toast.listingNotFound'), 'error');
                 return;
             }
             
@@ -1573,15 +1593,17 @@ window.acceptDealProposal = async function(messageId) {
             
             showToast('Deal accepted! Transaction created.', 'success');
             
+            showToast(t('messages.toast.proposalAccepted'), 'success');
+            
         } catch (error) {
             console.error('Error accepting proposal:', error);
-            showToast('Failed to accept proposal. Please try again.', 'error');
+            showToast(t('messages.transaction.errors.confirmFailed'), 'error');
         }
     });
 };
 
 window.declineDealProposal = async function(messageId) {
-    showConfirmDialog('Decline this deal proposal?', async () => {
+    showConfirmDialog(t('messages.confirmDialog.declineProposal'), async () => {
         try {
             const messageRef = doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId, COLLECTIONS.MESSAGES, messageId);
             
@@ -1596,17 +1618,17 @@ window.declineDealProposal = async function(messageId) {
                 conversationUpdatedAt: serverTimestamp()
             });
             
-            showToast('Deal proposal declined', 'info');
+            showToast(t('messages.toast.proposalDeclined'), 'info');
             
         } catch (error) {
             console.error('Error declining proposal:', error);
-            showToast('Failed to decline proposal. Please try again.', 'error');
+            showToast(t('messages.toast.proposalDeclineFailed'), 'error');
         }
     });
 };
 
 window.cancelDealProposal = async function(messageId) {
-    showConfirmDialog('Cancel this deal proposal?', async () => {
+    showConfirmDialog(t('messages.confirmDialog.cancelProposal'), async () => {
         try {
             const messageRef = doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId, COLLECTIONS.MESSAGES, messageId);
             
@@ -1621,11 +1643,11 @@ window.cancelDealProposal = async function(messageId) {
                 conversationUpdatedAt: serverTimestamp()
             });
             
-            showToast('Deal proposal cancelled', 'info');
+            showToast(t('messages.toast.proposalCancelled'), 'info');
             
         } catch (error) {
             console.error('Error cancelling proposal:', error);
-            showToast('Failed to cancel proposal. Please try again.', 'error');
+            showToast(t('messages.toast.proposalCancelFailed'), 'error');
         }
     });
 };
@@ -1636,7 +1658,7 @@ window.openTransactionConfirmation = async function(transactionId) {
         const transactionDoc = await getDoc(doc(db, COLLECTIONS.TRANSACTIONS, transactionId));
         
         if (!transactionDoc.exists()) {
-            showToast('Transaction not found', 'error');
+            showToast(t('messages.transaction.errors.notFound'), 'error');
             return;
         }
         
@@ -1665,7 +1687,7 @@ window.openTransactionConfirmation = async function(transactionId) {
         
     } catch (error) {
         console.error('Error opening transaction:', error);
-        showToast('Failed to load transaction details', 'error');
+        showToast(t('messages.transaction.errors.loadFailed'), 'error');
     }
 };
 
@@ -1686,23 +1708,25 @@ function renderTransactionModal(transaction) {
     let actionButton = '';
     
     if (isCompleted) {
-        statusMessage = '<div class="status-completed">✓ Transaction Completed</div>';
+        statusMessage = `<div class="status-completed">${t('messages.transaction.statusMessages.completed')}</div>`;
     } else if (userConfirmed && otherConfirmed) {
-        statusMessage = '<div class="status-completed">✓ Both Confirmed - Completing...</div>';
+        statusMessage = `<div class="status-completed">${t('messages.transaction.statusMessages.bothConfirmed')}</div>`;
     } else if (userConfirmed) {
-        statusMessage = `<div class="status-waiting">⏳ Waiting for ${isBuyer ? 'seller' : 'buyer'} confirmation</div>`;
+        const party = isBuyer ? t('messages.transaction.parties.seller') : t('messages.transaction.parties.buyer');
+        statusMessage = `<div class="status-waiting">${t('messages.transaction.statusMessages.waitingForOther', { party })}</div>`;
     } else if (otherConfirmed) {
-        statusMessage = `<div class="status-action">⚠️ ${isBuyer ? 'Seller' : 'Buyer'} has confirmed. Please confirm to complete!</div>`;
+        const party = isBuyer ? t('messages.transaction.parties.seller') : t('messages.transaction.parties.buyer');
+        statusMessage = `<div class="status-action">${t('messages.transaction.statusMessages.otherConfirmed', { party })}</div>`;
         actionButton = `
             <button class="btn-primary btn-confirm" onclick="confirmTransaction('${transaction.id}', ${isBuyer})">
-                ${isBuyer ? 'Confirm Receipt' : 'Confirm Delivery'}
+                ${isBuyer ? t('messages.transaction.confirmReceipt') : t('messages.transaction.confirmDelivery')}
             </button>
         `;
     } else {
-        statusMessage = '<div class="status-pending">⏳ Waiting for confirmations from both parties</div>';
+        statusMessage = `<div class="status-pending">${t('messages.transaction.statusMessages.waitingBoth')}</div>`;
         actionButton = `
             <button class="btn-primary btn-confirm" onclick="confirmTransaction('${transaction.id}', ${isBuyer})">
-                ${isBuyer ? 'Confirm Receipt' : 'Confirm Delivery'}
+                ${isBuyer ? t('messages.transaction.confirmReceipt') : t('messages.transaction.confirmDelivery')}
             </button>
         `;
     }
@@ -1710,7 +1734,7 @@ function renderTransactionModal(transaction) {
     modal.innerHTML = `
         <div class="modal-content transaction-modal">
             <div class="modal-header">
-                <h2>Transaction Details</h2>
+                <h2>${t('messages.transaction.modalTitle')}</h2>
                 <button class="close-btn" onclick="closeTransactionModal()">&times;</button>
             </div>
             
@@ -1719,15 +1743,15 @@ function renderTransactionModal(transaction) {
                 
                 <div class="transaction-details">
                     <div class="detail-row">
-                        <span>Transaction ID:</span>
+                        <span>${t('messages.transaction.transactionId')}:</span>
                         <strong>#${transaction.id.slice(-8)}</strong>
                     </div>
                     <div class="detail-row">
-                        <span>Quantity:</span>
+                        <span>${t('messages.transaction.quantity')}:</span>
                         <strong>${transaction.transactionQuantityOrdered} kg</strong>
                     </div>
                     <div class="detail-row">
-                        <span>Unit Price:</span>
+                        <span>${t('messages.transaction.pricePerKg')}:</span>
                         <strong>₱${formatNumber(transaction.transactionUnitPrice)}/kg</strong>
                     </div>
                     <div class="detail-row total">
@@ -1854,7 +1878,7 @@ window.confirmTransaction = async function(transactionId, isBuyer) {
                     // Update all related deal proposal messages to completed
                     await updateRelatedProposalsToCompleted(transactionId);
                     
-                    showToast('Transaction completed! Both parties have confirmed.', 'success');
+                    showToast(t('messages.transaction.success.completed'), 'success');
                     
                 } else {
                     // Only one party confirmed - update conversation status
@@ -1870,12 +1894,12 @@ window.confirmTransaction = async function(transactionId, isBuyer) {
                     
                     await updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId), conversationUpdates);
                     
-                    showToast('Your confirmation recorded. Waiting for the other party.', 'info');
+                    showToast(t('messages.transaction.success.confirmed'), 'info');
                 }
                 
             } catch (error) {
                 console.error('Error confirming transaction:', error);
-                showToast('Failed to confirm transaction. Please try again.', 'error');
+                showToast(t('messages.transaction.errors.confirmFailed'), 'error');
             }
         }
     );
@@ -1918,8 +1942,8 @@ async function updateRelatedProposalsToCompleted(transactionId) {
 // Cancellation Request
 window.requestCancellation = async function(transactionId) {
     showPromptDialog(
-        'Request Cancellation',
-        'Please provide a reason for cancellation...',
+        t('messages.cancellation.modalTitle'),
+        t('messages.cancellation.reasonPlaceholder'),
         async (reason) => {
             try {
                 const currentUser = getCurrentUser();
@@ -1936,7 +1960,7 @@ window.requestCancellation = async function(transactionId) {
                 const messageData = {
                     messageSenderId: currentUser.uid,
                     messageReceiverId: currentReceiverId,
-                    messageText: 'Transaction cancellation requested',
+                    messageText: t('messages.cancellation.requestedMessage'),
                     messageType: 'cancellation_request',
                     messageStatus: 'sent',
                     messageCreatedAt: serverTimestamp(),
@@ -1963,18 +1987,18 @@ window.requestCancellation = async function(transactionId) {
                     conversationUpdatedAt: serverTimestamp()
                 });
                 
-                showToast('Cancellation request sent', 'info');
+                showToast(t('messages.cancellation.success.requested'), 'info');
                 
             } catch (error) {
                 console.error('Error requesting cancellation:', error);
-                showToast('Failed to send cancellation request', 'error');
+                showToast(t('messages.cancellation.errors.requestFailed'), 'error');
             }
         }
     );
 };
 
 window.approveCancellation = async function(messageId, transactionId) {
-    showConfirmDialog('Approve this cancellation request?', async () => {
+    showConfirmDialog(t('messages.cancellation.actions.approve'), async () => {
         try {
             const messageRef = doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId, COLLECTIONS.MESSAGES, messageId);
             
@@ -1997,11 +2021,11 @@ window.approveCancellation = async function(messageId, transactionId) {
                 });
             }, 1000);
             
-            showToast('Cancellation approved', 'success');
+            showToast(t('messages.cancellation.success.approved'), 'success');
             
         } catch (error) {
             console.error('Error approving cancellation:', error);
-            showToast('Failed to approve cancellation', 'error');
+            showToast(t('messages.cancellation.errors.approveFailed'), 'error');
         }
     });
 };
@@ -2020,7 +2044,7 @@ function handleUrlParameters() {
                 
                 if (!conversationDoc.exists()) {
                     console.error('❌ Conversation not found:', conversationId);
-                    showToast('Conversation not found', 'error');
+                    showToast(t('messages.toast.conversationNotFound'), 'error');
                     return;
                 }
                 
@@ -2185,7 +2209,7 @@ async function uploadMedia(file, mediaType) {
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 if (progressFill) progressFill.style.width = `${progress}%`;
-                if (progressText) progressText.textContent = `Uploading... ${Math.round(progress)}%`;
+                if (progressText) progressText.textContent = t('messages.upload.progressPercent', { percent: Math.round(progress) });
             },
             (error) => {
                 console.error('Upload error:', error);
@@ -2280,7 +2304,7 @@ async function sendMessageToFirestore(messageText, messageType, mediaUrl) {
         
     } catch (error) {
         console.error('Error sending message:', error);
-        showToast('Failed to send message. Please try again.', 'error');
+        showToast(t('messages.toast.messageSendFailed'), 'error');
     }
 }
 
@@ -2311,10 +2335,10 @@ function formatTimestamp(date) {
     const now = new Date();
     const diff = now - date;
     
-    if (diff < 60000) return 'Just now';
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-    if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
+    if (diff < 60000) return t('messages.time.justNow');
+    if (diff < 3600000) return t('messages.time.minutesAgo', { minutes: Math.floor(diff / 60000) });
+    if (diff < 86400000) return t('messages.time.hoursAgo', { hours: Math.floor(diff / 3600000) });
+    if (diff < 604800000) return t('messages.time.daysAgo', { days: Math.floor(diff / 86400000) });
     
     return date.toLocaleDateString();
 }

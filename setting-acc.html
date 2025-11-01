@@ -502,7 +502,7 @@
                 
               <ul class="nav-menu">
     <li><a href="/dashboard.html" data-nav="dashboard" data-i18n="settings.nav.dashboard">Dashboard</a></li>
-    <li style="display: none;"><a href="/transactions.html" data-nav="transactions">Transactions</a></li>
+    <li style="display: none;"><a href="/transactions.html" data-nav="transactions" data-i18n="settings.nav.transactions">Transactions</a></li>
     <li><a href="/farmermarket.html" data-nav="market" data-i18n="settings.nav.market">Market</a></li>
     <li><a href="/guides.html" data-nav="guides" data-i18n="settings.nav.guides">Guides</a></li>
 </ul>
@@ -814,6 +814,16 @@
                 display: flex;
             }
 
+            .modal-content {
+                background: white;
+                border-radius: 16px;
+                padding: 24px;
+                max-width: 500px;
+                width: 90%;
+                position: relative;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            }
+
             .modal {
                 background: white;
                 border-radius: 20px;
@@ -850,6 +860,17 @@
 
             .modal-close:hover {
                 color: #333;
+            }
+
+            .modal-body {
+                margin: 16px 0;
+            }
+
+            .modal-footer {
+                display: flex;
+                gap: 12px;
+                justify-content: flex-end;
+                margin-top: 24px;
             }
 
             .map-container {

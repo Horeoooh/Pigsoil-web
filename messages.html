@@ -6,6 +6,11 @@
     <title>Messages - PigSoil+</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/messages.css">
+    
+    <!-- i18next for internationalization -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
+    
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDxldiepJaqTaCW9kxCr-3cYgSlVD0fQYg&libraries=places"></script>
 
 </head>
@@ -20,10 +25,10 @@
             
             <!-- CRITICAL FIX: Added data-nav attributes to navigation links -->
             <ul class="nav-menu">
-                <li><a href="/dashboard.html" data-nav="dashboard">Dashboard</a></li>
-                <li style="display: none;"><a href="/transactions.html" data-nav="transactions">Transactions</a></li>
-                <li><a href="/farmermarket.html" data-nav="market">Market</a></li>
-                <li><a href="/guides.html" data-nav="guides">Guides</a></li>
+                <li><a href="/dashboard.html" data-nav="dashboard" data-i18n="messages.nav.dashboard">Dashboard</a></li>
+                <li style="display: none;"><a href="/transactions.html" data-nav="transactions" data-i18n="messages.nav.transactions">Transactions</a></li>
+                <li><a href="/farmermarket.html" data-nav="market" data-i18n="messages.nav.market">Market</a></li>
+                <li><a href="/guides.html" data-nav="guides" data-i18n="messages.nav.guides">Guides</a></li>
             </ul>
             
             <div class="user-section">
@@ -50,8 +55,8 @@
         <!-- Conversations List -->
         <div class="conversations-panel">
             <div class="conversations-header">
-                <h2>Messages</h2>
-                <input type="text" class="search-box" placeholder="Search conversations..." id="searchConversations">
+                <h2 data-i18n="messages.pageTitle">Messages</h2>
+                <input type="text" class="search-box" data-i18n="[placeholder]messages.searchPlaceholder" placeholder="Search conversations..." id="searchConversations">
             </div>
             <div class="conversation-list" id="conversationList">
                 <!-- Conversations will be loaded here -->
@@ -61,15 +66,22 @@
         <!-- Chat Panel -->
         <div class="chat-panel" id="chatPanel">
             <div class="empty-state">
-                <div class="empty-state-icon">💬</div>
-                <h3>Select a conversation</h3>
-                <p>Choose a conversation from the list to start messaging</p>
+                <div class="empty-state-icon" data-i18n="messages.emptyState.icon">💬</div>
+                <h3 data-i18n="messages.emptyState.title">Select a conversation</h3>
+                <p data-i18n="messages.emptyState.description">Choose a conversation from the list to start messaging</p>
             </div>
         </div>
     </div>
 
+    <script src="/js/i18n.js"></script>
     <script type="module" src="/js/dashboard-auth-guard.js"></script>
     <script type="module" src="/js/shared-user-manager.js"></script>
     <script type="module" src="/js/messages.js"></script>
+    <script>
+        // Initialize i18next when DOM is ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.i18nManager.initialize();
+        });
+    </script>
 </body>
 </html>

@@ -12,6 +12,14 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js';
 
+// Get i18next instance for translations
+const t = (key, options = {}) => {
+    if (window.i18next && window.i18next.t) {
+        return window.i18next.t(key, options);
+    }
+    return key; // Fallback to key if i18next not loaded
+};
+
 // Get URL parameters
 const urlParams = new URLSearchParams(window.location.search);
 const sellerId = urlParams.get('seller');
@@ -99,19 +107,19 @@ async function loadTransactionHistory() {
 
 // Load product name from listing
 async function loadProductName(listingId) {
-    if (!listingId) return 'Organic Compost';
+    if (!listingId) return t('transactionHistory.product.default');
 
     try {
         const listingDoc = await getDoc(doc(db, 'product_listings', listingId));
         if (listingDoc.exists()) {
             const listingData = listingDoc.data();
-            return listingData.listingProductName || 'Organic Compost';
+            return listingData.listingProductName || t('transactionHistory.product.default');
         }
     } catch (error) {
         console.error('Error loading product name:', error);
     }
     
-    return 'Organic Compost';
+    return t('transactionHistory.product.default');
 }
 
 // Show transactions
@@ -143,7 +151,7 @@ function createTransactionCard(transaction) {
 
     const productName = document.createElement('div');
     productName.className = 'product-name';
-    productName.textContent = transaction.productName || 'Organic Compost';
+    productName.textContent = transaction.productName || t('transactionHistory.product.default');
 
     const date = document.createElement('div');
     date.className = 'transaction-date';
@@ -166,21 +174,21 @@ function createTransactionCard(transaction) {
     const quantityItem = document.createElement('div');
     quantityItem.className = 'detail-item';
     quantityItem.innerHTML = `
-        <div class="detail-label">Quantity</div>
-        <div class="detail-value">${transaction.transactionQuantityOrdered} kg</div>
+        <div class="detail-label">${t('transactionHistory.details.quantity')}</div>
+        <div class="detail-value">${transaction.transactionQuantityOrdered} ${t('transactionHistory.details.kg')}</div>
     `;
 
     const unitPriceItem = document.createElement('div');
     unitPriceItem.className = 'detail-item';
     unitPriceItem.innerHTML = `
-        <div class="detail-label">Unit Price</div>
-        <div class="detail-value">₱${formatPrice(transaction.transactionUnitPrice)}/kg</div>
+        <div class="detail-label">${t('transactionHistory.details.unitPrice')}</div>
+        <div class="detail-value">₱${formatPrice(transaction.transactionUnitPrice)}${t('transactionHistory.details.perKg')}</div>
     `;
 
     const totalItem = document.createElement('div');
     totalItem.className = 'detail-item';
     totalItem.innerHTML = `
-        <div class="detail-label">Total Amount</div>
+        <div class="detail-label">${t('transactionHistory.details.totalAmount')}</div>
         <div class="detail-value price">₱${formatPrice(transaction.transactionTotalAmount)}</div>
     `;
 
@@ -222,12 +230,12 @@ function formatPrice(amount) {
 // Format transaction status
 function formatTransactionStatus(status) {
     const statusMap = {
-        'contacted': 'Negotiating',
-        'agreed': 'Agreed',
-        'confirmed': 'Confirmed',
-        'completed': '✓ Completed',
-        'cancelled': '✗ Cancelled',
-        'cancellation_requested': 'Cancellation Pending'
+        'contacted': t('transactionHistory.status.negotiating'),
+        'agreed': t('transactionHistory.status.agreed'),
+        'confirmed': t('transactionHistory.status.confirmed'),
+        'completed': t('transactionHistory.status.completed'),
+        'cancelled': t('transactionHistory.status.cancelled'),
+        'cancellation_requested': t('transactionHistory.status.cancellationPending')
     };
     return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
 }

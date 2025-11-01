@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transactions - PigSoil+</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- i18next for internationalization -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -513,10 +517,10 @@
             </div>
             
             <ul class="nav-menu">
-                <li><a href="/buyer-dashboard.html" data-nav="dashboard">Dashboard</a></li>
-                                <li><a href="/transactions.html" data-nav="transactions" class="active">Transactions</a></li>
-                <li><a href="/buyer-marketplace.html" data-nav="market">Market</a></li>
-                <li><a href="/guides.html" data-nav="guides">Guides</a></li>
+                <li><a href="/buyer-dashboard.html" data-nav="dashboard" data-i18n="transactions.nav.dashboard">Dashboard</a></li>
+                <li><a href="/transactions.html" data-nav="transactions" class="active" data-i18n="transactions.nav.transactions">Transactions</a></li>
+                <li><a href="/buyer-marketplace.html" data-nav="market" data-i18n="transactions.nav.market">Market</a></li>
+                <li><a href="/guides.html" data-nav="guides" data-i18n="transactions.nav.guides">Guides</a></li>
             </ul>
             
             <div class="user-section">
@@ -531,7 +535,7 @@
                 <a href="/setting-acc.html" class="user-profile" aria-label="View Profile">
                     <div class="user-info">
                         <span class="user-name" id="headerUserName">Loading...</span>
-                        <span class="user-role">Organic Fertilizer Buyer</span>
+                        <span class="user-role" id="headerUserRole">Please wait</span>
                     </div>
                     <div class="user-avatar" id="headerUserAvatar"></div>
                 </a>
@@ -542,8 +546,8 @@
     <main class="main-content">
         <!-- Page Header -->
         <section class="page-header">
-            <h1>My Transactions</h1>
-            <p class="page-subtitle">View your conversations and transaction history with sellers</p>
+            <h1 data-i18n="transactions.header.title">My Transactions</h1>
+            <p class="page-subtitle" data-i18n="transactions.header.subtitle">View your conversations and transaction history with sellers</p>
         </section>
 
         <!-- Loading State -->
@@ -554,9 +558,9 @@
         <!-- Empty State -->
         <div class="empty-state" id="emptyState">
             <div class="empty-icon">📦</div>
-            <h3>No Transactions Yet</h3>
-            <p>Start shopping for organic fertilizer to see your transactions here!</p>
-            <a href="/buyer-marketplace.html" class="empty-state-btn">Browse Marketplace</a>
+            <h3 data-i18n="transactions.empty.title">No Transactions Yet</h3>
+            <p data-i18n="transactions.empty.message">Start shopping for organic fertilizer to see your transactions here!</p>
+            <a href="/buyer-marketplace.html" class="empty-state-btn" data-i18n="transactions.empty.button">Browse Marketplace</a>
         </div>
 
         <!-- Conversations Container -->
@@ -565,7 +569,14 @@
         </div>
     </main>
 
+    <script src="/js/i18n.js"></script>
     <script type="module" src="/js/dashboard-auth-guard.js"></script>
     <script type="module" src="/js/transactions.js"></script>
+    <script>
+        // Initialize i18next when DOM is ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.i18nManager.initialize();
+        });
+    </script>
 </body>
 </html>

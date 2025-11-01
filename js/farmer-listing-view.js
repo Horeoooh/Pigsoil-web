@@ -243,9 +243,18 @@ function renderListingDetails() {
     const quantityLeft = parseFloat(currentListing.listingQuantityLeftKG || totalProduced);
     
     const isAvailable = currentListing.listingIsAvailable !== false && quantityLeft > 0;
+    
+    // Get translations
+    const t = (key, defaultValue) => {
+        if (window.i18n && window.i18n.t) {
+            return window.i18n.t(key);
+        }
+        return defaultValue;
+    };
+    
     const statusBadge = isAvailable ? 
-        '<span class="badge active">Available</span>' : 
-        '<span class="badge sold">Sold Out</span>';
+        `<span class="badge active">${t('farmerListingView.badges.available', 'Available')}</span>` : 
+        `<span class="badge sold">${t('farmerListingView.badges.soldOut', 'Sold Out')}</span>`;
     
     const location = extractLocationDisplay(currentListing);
     const fullAddress = extractFullAddress(currentListing);
@@ -291,7 +300,7 @@ function renderListingDetails() {
                     <!-- Image Counter -->
                     ${images.length > 0 ? `
                         <div class="image-counter">
-                            ${selectedImageIndex + 1} / ${images.length}
+                            ${selectedImageIndex + 1} ${t('farmerListingView.images.counter', 'of')} ${images.length}
                         </div>
                     ` : ''}
                     
@@ -347,7 +356,7 @@ function renderListingDetails() {
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px;">
                     <h1 id="productTitle">${productName}</h1>
                     <button class="btn-edit-toggle" onclick="toggleEditMode()" id="editToggleBtn">
-                        ${isEditMode ? '💾 Save Changes' : '✏️ Edit Listing'}
+                        ${isEditMode ? `💾 ${t('farmerListingView.buttons.saveChanges', 'Save Changes')}` : `✏️ ${t('farmerListingView.buttons.editMode', 'Edit Mode')}`}
                     </button>
                 </div>
                 
@@ -356,7 +365,7 @@ function renderListingDetails() {
                 </div>
                 
                 <div class="price-section">
-                    <div class="price" id="priceDisplay">₱${pricePerKg.toFixed(2)}<span style="font-size: 18px; font-weight: 400; color: #666;">/kg</span></div>
+                    <div class="price" id="priceDisplay">₱${pricePerKg.toFixed(2)}<span style="font-size: 18px; font-weight: 400; color: #666;">/${t('farmerListingView.price.perKg', 'per kg')}</span></div>
                     <p class="price-note">Listed price per kilogram</p>
                 </div>
                 
@@ -364,7 +373,7 @@ function renderListingDetails() {
                     <div class="info-item">
                         <span class="info-icon">🏭</span>
                         <div class="info-content">
-                            <div class="info-label">Total Produced</div>
+                            <div class="info-label">${t('farmerListingView.info.totalProduced', 'Total Produced')}</div>
                             <div class="info-value" id="totalProducedDisplay">${totalProduced.toFixed(1)} kg</div>
                         </div>
                     </div>
@@ -372,7 +381,7 @@ function renderListingDetails() {
                     <div class="info-item">
                         <span class="info-icon">📦</span>
                         <div class="info-content">
-                            <div class="info-label">Quantity Left</div>
+                            <div class="info-label">${t('farmerListingView.info.quantityLeft', 'Quantity Left')}</div>
                             <div class="info-value" id="quantityLeftDisplay">${quantityLeft.toFixed(1)} kg</div>
                         </div>
                     </div>
@@ -381,7 +390,7 @@ function renderListingDetails() {
                         <div class="info-item">
                             <span class="info-icon">✅</span>
                             <div class="info-content">
-                                <div class="info-label">Sold</div>
+                                <div class="info-label">${t('farmerListingView.info.soldAmount', 'Sold Amount')}</div>
                                 <div class="info-value">${soldAmount.toFixed(1)} kg</div>
                             </div>
                         </div>
@@ -390,7 +399,7 @@ function renderListingDetails() {
                     <div class="info-item">
                         <span class="info-icon">📍</span>
                         <div class="info-content">
-                            <div class="info-label">Pickup Location</div>
+                            <div class="info-label">${t('farmerListingView.info.location', 'Location')}</div>
                             <div class="info-value" id="locationDisplay">${location}</div>
                         </div>
                     </div>
@@ -398,7 +407,7 @@ function renderListingDetails() {
                     <div class="info-item">
                         <span class="info-icon">📅</span>
                         <div class="info-content">
-                            <div class="info-label">Last Updated</div>
+                            <div class="info-label">${t('farmerListingView.info.updated', 'Last Updated')}</div>
                             <div class="info-value">${updatedDate}</div>
                         </div>
                     </div>
@@ -406,7 +415,7 @@ function renderListingDetails() {
                     <div class="info-item">
                         <span class="info-icon">📅</span>
                         <div class="info-content">
-                            <div class="info-label">Date Created</div>
+                            <div class="info-label">${t('farmerListingView.info.created', 'Listed')}</div>
                             <div class="info-value">${createdDate}</div>
                         </div>
                     </div>
@@ -415,10 +424,10 @@ function renderListingDetails() {
                 <!-- Action Buttons -->
                 <div class="action-buttons">
                     <button class="btn-primary" onclick="toggleAvailability()">
-                        ${isAvailable ? '❌ Mark as Sold Out' : '✅ Mark as Available'}
+                        ${isAvailable ? `❌ ${t('farmerListingView.buttons.toggleAvailability', 'Toggle Availability')}` : `✅ ${t('farmerListingView.buttons.toggleAvailability', 'Toggle Availability')}`}
                     </button>
                     <button class="btn-danger" onclick="deleteListing()">
-                        🗑️ Delete Listing
+                        🗑️ ${t('farmerListingView.buttons.deleteListing', 'Delete Listing')}
                     </button>
                 </div>
                 
@@ -432,13 +441,13 @@ function renderListingDetails() {
         
         <!-- Description Section -->
         <div class="description-section">
-            <h2 class="section-title">Product Description</h2>
+            <h2 class="section-title">${t('farmerListingView.description.title', 'Description')}</h2>
             <div class="description-text" id="descriptionDisplay">${formatDescription(description)}</div>
         </div>
         
         <!-- Location Section -->
         <div class="location-section">
-            <h2 class="section-title">Pickup Location</h2>
+            <h2 class="section-title">${t('farmerListingView.location.title', 'Pickup Location')}</h2>
             <div style="background: #f8f9fa; padding: 16px; border-radius: 12px; margin-top: 12px;" id="locationSection">
                 <p style="font-size: 15px; color: #333; margin: 0;">
                     <strong>📍 ${fullAddress}</strong>
@@ -1068,9 +1077,16 @@ window.toggleEditMode = function() {
 };
 
 async function saveChanges() {
+    const t = (key, defaultValue) => {
+        if (window.i18n && window.i18n.t) {
+            return window.i18n.t(key);
+        }
+        return defaultValue;
+    };
+    
     const editBtn = document.getElementById('editToggleBtn');
     editBtn.disabled = true;
-    editBtn.textContent = '💾 Saving...';
+    editBtn.textContent = `💾 ${t('farmerListingView.buttons.saving', 'Saving...')}`;
     
     try {
         // Validate quantity inputs
@@ -1080,7 +1096,7 @@ async function saveChanges() {
         if (quantityLeftInput > totalProducedInput) {
             alert('❌ Quantity left cannot be greater than total produced!');
             editBtn.disabled = false;
-            editBtn.textContent = '💾 Save Changes';
+            editBtn.textContent = `💾 ${t('farmerListingView.buttons.saveChanges', 'Save Changes')}`;
             return;
         }
         
@@ -1115,20 +1131,27 @@ async function saveChanges() {
         await updateDoc(listingRef, updatedData);
         
         console.log('✅ Listing updated successfully');
-        alert('✅ Your listing has been updated successfully!');
+        alert(`✅ ${t('farmerListingView.notifications.saved', 'Changes saved successfully!')}`);
         
         // Reload to show updated data
         location.reload();
         
     } catch (error) {
         console.error('❌ Error saving changes:', error);
-        alert('Failed to save changes. Please try again.');
+        alert(t('farmerListingView.notifications.saveFailed', 'Failed to save changes. Please try again.'));
         editBtn.disabled = false;
-        editBtn.textContent = '✏️ Edit Listing';
+        editBtn.textContent = `✏️ ${t('farmerListingView.buttons.editMode', 'Edit Mode')}`;
     }
 }
 
 window.toggleAvailability = async function() {
+    const t = (key, defaultValue) => {
+        if (window.i18n && window.i18n.t) {
+            return window.i18n.t(key);
+        }
+        return defaultValue;
+    };
+    
     const currentStatus = currentListing.listingIsAvailable !== false;
     const newStatus = !currentStatus;
     
@@ -1148,7 +1171,7 @@ window.toggleAvailability = async function() {
         });
         
         console.log('✅ Listing availability updated');
-        alert(newStatus ? '✅ Listing is now active!' : '❌ Listing marked as sold out');
+        alert(newStatus ? `✅ ${t('farmerListingView.notifications.availabilityChanged', 'Availability updated')}` : `❌ ${t('farmerListingView.notifications.availabilityChanged', 'Availability updated')}`);
         
         location.reload();
         
@@ -1159,8 +1182,15 @@ window.toggleAvailability = async function() {
 };
 
 window.deleteListing = async function() {
+    const t = (key, defaultValue) => {
+        if (window.i18n && window.i18n.t) {
+            return window.i18n.t(key);
+        }
+        return defaultValue;
+    };
+    
     const confirmDelete = confirm(
-        '⚠️ Are you sure you want to delete this listing?\n\nThis action cannot be undone. All listing data will be permanently removed.'
+        `⚠️ ${t('farmerListingView.notifications.deleteConfirm', 'Are you sure you want to delete this listing?')}\n\nThis action cannot be undone. All listing data will be permanently removed.`
     );
     
     if (!confirmDelete) return;
@@ -1178,7 +1208,7 @@ window.deleteListing = async function() {
         await deleteDoc(listingRef);
         
         console.log('✅ Listing deleted successfully');
-        alert('✅ Listing deleted successfully!');
+        alert(`✅ ${t('farmerListingView.notifications.deleted', 'Listing deleted successfully')}`);
         
         window.location.href = '/farmermarket.html';
         

@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market - PigSoil+</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- i18next for internationalization -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -496,10 +500,10 @@
             </div>
             
             <ul class="nav-menu">
-                <li><a href="/buyer-dashboard.html" data-nav="dashboard">Dashboard</a></li>
-                <li><a href="/transactions.html" data-nav="transactions">Transactions</a></li>
-                <li><a href="/buyer-marketplace.html" data-nav="market" class="active">Market</a></li>
-                <li><a href="/guides.html" data-nav="guides">Guides</a></li>
+                <li><a href="/buyer-dashboard.html" data-nav="dashboard" data-i18n="buyerMarketplace.nav.dashboard">Dashboard</a></li>
+                <li><a href="/transactions.html" data-nav="transactions" data-i18n="buyerMarketplace.nav.transactions">Transactions</a></li>
+                <li><a href="/buyer-marketplace.html" data-nav="market" class="active" data-i18n="buyerMarketplace.nav.market">Market</a></li>
+                <li><a href="/guides.html" data-nav="guides" data-i18n="buyerMarketplace.nav.guides">Guides</a></li>
             </ul>
 
             <div class="user-section">
@@ -527,11 +531,11 @@
         <section class="hero-section">
             <div class="hero-header">
                 <div>
-                    <h1 class="hero-title">Swine Compost Marketplace</h1>
-                    <p class="hero-subtitle">Browse quality organic fertilizer from verified swine farmers</p>
+                    <h1 class="hero-title" data-i18n="buyerMarketplace.hero.title">Swine Compost Marketplace</h1>
+                    <p class="hero-subtitle" data-i18n="buyerMarketplace.hero.subtitle">Browse quality organic fertilizer from verified swine farmers</p>
                 </div>
                 <div class="hero-actions">
-                    <a href="/messages.html" class="messages-btn">
+                    <a href="/messages.html" class="messages-btn" data-i18n="buyerMarketplace.hero.messagesButton">
                         Messages
                         <span class="message-count" id="messageCount"></span>
                     </a>
@@ -554,16 +558,16 @@
                 <line x1="9" y1="8" x2="15" y2="8"></line>
                 <line x1="17" y1="16" x2="23" y2="16"></line>
             </svg>
-            Filter & Sort
+            <span data-i18n="buyerMarketplace.filter.filterButton">Filter & Sort</span>
         </button>
         <div class="search-container" style="flex: 1;">
-            <input type="text" class="search-input" placeholder="Search for swine compost...">
+            <input type="text" class="search-input" data-i18n-placeholder="buyerMarketplace.filter.searchPlaceholder" placeholder="Search for swine compost...">
         </div>
     </div>
 </section>
         <!-- Products Section -->
         <section class="products-section">
-            <h2>Available Listings from Swine Farmers</h2>
+            <h2 data-i18n="buyerMarketplace.products.title">Available Listings from Swine Farmers</h2>
             
             <!-- Products Grid - Will be populated by JavaScript from Firebase -->
             <div class="products-grid" id="productsGrid">
@@ -573,14 +577,21 @@
             <!-- Empty State - Hidden by default, shown when no listings -->
             <div class="empty-state" id="emptyState">
                 <div class="empty-icon">🔍</div>
-                <h3>No products found</h3>
-                <p>Try adjusting your filters or search terms</p>
+                <h3 data-i18n="buyerMarketplace.empty.noListings">No products found</h3>
+                <p data-i18n="buyerMarketplace.empty.tryAgain">Try adjusting your filters or search terms</p>
             </div>
         </section>
     </main>
 
     <!-- Firebase and App Scripts -->
+    <script src="/js/i18n.js"></script>
     <script type="module" src="/js/dashboard-auth-guard.js"></script>
     <script type="module" src="/js/buyer-marketplace.js"></script>
+    <script>
+        // Initialize i18next when DOM is ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.i18nManager.initialize();
+        });
+    </script>
 </body>
 </html>

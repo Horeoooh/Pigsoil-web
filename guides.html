@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Guides - PigSoil+</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- i18next for internationalization -->
+  <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.4.2/i18nextHttpBackend.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -493,10 +497,10 @@
       </div>
       
     <ul class="nav-menu">
-    <li><a href="/dashboard.html" data-nav="dashboard">Dashboard</a></li>
-        <li style="display: none;"><a href="/transactions.html" data-nav="transactions">Transactions</a></li>
-    <li><a href="/farmermarket.html" data-nav="market">Market</a></li>
-    <li><a href="/guides.html" data-nav="guides">Guides</a></li>
+    <li><a href="/dashboard.html" data-nav="dashboard" data-i18n="guides.nav.dashboard">Dashboard</a></li>
+        <li style="display: none;"><a href="/transactions.html" data-nav="transactions" data-i18n="guides.nav.transactions">Transactions</a></li>
+    <li><a href="/farmermarket.html" data-nav="market" data-i18n="guides.nav.market">Market</a></li>
+    <li><a href="/guides.html" data-nav="guides" data-i18n="guides.nav.guides">Guides</a></li>
 </ul>
                 
       <div class="user-section">
@@ -521,21 +525,21 @@
 
   <!-- Method Selector -->
   <div class="method-selector">
-    <h1>Complete Composting Guides</h1>
-    <p>Choose your composting method for detailed day-by-day instructions</p>
+    <h1 data-i18n="guides.header.title">Complete Composting Guides</h1>
+    <p data-i18n="guides.header.subtitle">Choose your composting method for detailed day-by-day instructions</p>
     <div class="method-buttons">
       <button class="method-btn active" data-method="basic">
-        Basic Swine Manure<br>
-        <small>(21 Days - Beginner)</small>
+        <span data-i18n="guides.methods.basic.title">Basic Swine Manure</span><br>
+        <small data-i18n="guides.methods.basic.subtitle">(21 Days - Beginner)</small>
       </button>
       <button class="method-btn hot" data-method="hot">
-        Hot Composting Method<br>
-        <small>(18 Days - Advanced)</small>
+        <span data-i18n="guides.methods.hot.title">Hot Composting Method</span><br>
+        <small data-i18n="guides.methods.hot.subtitle">(18 Days - Advanced)</small>
       </button>
     </div>
   </div>
 
-  <div class="progress-indicator" id="progressIndicator">
+  <div class="progress-indicator" id="progressIndicator" data-i18n="guides.progress.basic">
     Day 1-21 Guide
   </div>
 
@@ -543,24 +547,24 @@
     <!-- Basic Swine Manure Method -->
     <div class="guide-method active" id="basic-method">
       <div class="header-section">
-        <h1 class="title basic">Basic Swine Manure Composting</h1>
-        <p class="subtitle">Complete 21-Day Step-by-Step Guide for Beginners</p>
+        <h1 class="title basic" data-i18n="guides.basicMethod.title">Basic Swine Manure Composting</h1>
+        <p class="subtitle" data-i18n="guides.basicMethod.subtitle">Complete 21-Day Step-by-Step Guide for Beginners</p>
       </div>
 
       <div class="overview-box basic">
-        <h2 class="section-title basic">About This Method</h2>
-        <p>Traditional aerobic composting using swine waste and plant matter. Perfect for beginners with minimal equipment needed. Creates low-cost organic fertilizer in 21 days.</p>
+        <h2 class="section-title basic" data-i18n="guides.basicMethod.aboutTitle">About This Method</h2>
+        <p data-i18n="guides.basicMethod.aboutText">Traditional aerobic composting using swine waste and plant matter. Perfect for beginners with minimal equipment needed. Creates low-cost organic fertilizer in 21 days.</p>
       </div>
 
       <div class="materials-section">
-        <h2 class="section-title basic">Materials Needed</h2>
+        <h2 class="section-title basic" data-i18n="guides.basicMethod.materialsTitle">Materials Needed</h2>
         <div class="materials-grid">
-          <div class="material-item basic">Fresh swine manure</div>
-          <div class="material-item basic">Dry plant matter</div>
-          <div class="material-item basic">Rice hulls/sawdust</div>
-          <div class="material-item basic">Shovel or fork</div>
-          <div class="material-item basic">Water source</div>
-          <div class="material-item basic">Tarpaulin cover</div>
+          <div class="material-item basic" data-i18n="guides.basicMethod.materials.manure">Fresh swine manure</div>
+          <div class="material-item basic" data-i18n="guides.basicMethod.materials.plant">Dry plant matter</div>
+          <div class="material-item basic" data-i18n="guides.basicMethod.materials.hulls">Rice hulls/sawdust</div>
+          <div class="material-item basic" data-i18n="guides.basicMethod.materials.shovel">Shovel or fork</div>
+          <div class="material-item basic" data-i18n="guides.basicMethod.materials.water">Water source</div>
+          <div class="material-item basic" data-i18n="guides.basicMethod.materials.cover">Tarpaulin cover</div>
         </div>
       </div>
 
@@ -568,125 +572,120 @@
       <div class="day-container basic">
         <div class="day-header">
           <div class="day-number basic">1</div>
-          <div class="day-title basic">Initial Setup</div>
+          <div class="day-title basic" data-i18n="guides.basicMethod.days.day1.title">Initial Setup</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Layer swine manure with carbon materials<br>
-          <strong>Time Required:</strong> 2-3 hours<br>
-          <strong>Phase:</strong> Setup Phase<br><br>
+          <strong>Task:</strong> <span data-i18n="guides.basicMethod.days.day1.task">Layer swine manure with carbon materials</span><br>
+          <strong>Phase:</strong> <span data-i18n="guides.basicMethod.days.day1.phase">Setup Phase</span><br><br>
           
-          Create alternating layers of swine manure and dry materials:
+          <span data-i18n="guides.basicMethod.days.day1.description">Create alternating layers of swine manure and dry materials:</span>
           <br><br>
-          1. Start with a 6-inch layer of coarse plant material (corn stalks, rice straw)<br>
-          2. Add 4 inches of fresh swine manure<br>
-          3. Sprinkle 2 inches of dry materials (rice hulls, sawdust)<br>
-          4. Repeat layering 3-4 times until pile reaches 1.2-1.5 meters high<br>
-          5. Water each layer lightly as you build
+          <span data-i18n-step="guides.basicMethod.days.day1.step1">1. Start with a 6-inch layer of coarse plant material (corn stalks, rice straw)</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day1.step2">2. Add 4 inches of fresh swine manure</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day1.step3">3. Sprinkle 2 inches of dry materials (rice hulls, sawdust)</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day1.step4">4. Repeat layering 3-4 times until pile reaches 1.2-1.5 meters high</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day1.step5">5. Water each layer lightly as you build</span>
         </div>
         <div class="tip-box">
-          <div class="tip-label">Setup Phase:</div>
-          <div class="tip-text">Create alternating layers of swine manure and dry materials. Maintain a 3:1 ratio of brown materials (carbon-rich) to green materials (nitrogen-rich manure).</div>
+          <div class="tip-label" data-i18n="guides.basicMethod.days.day1.tipLabel">Setup Phase:</div>
+          <div class="tip-text" data-i18n="guides.basicMethod.days.day1.tipText">Create alternating layers of swine manure and dry materials. Maintain a 3:1 ratio of brown materials (carbon-rich) to green materials (nitrogen-rich manure).</div>
         </div>
       </div>
 
       <div class="day-container basic">
         <div class="day-header">
           <div class="day-number basic">7</div>
-          <div class="day-title basic">First Turning</div>
+          <div class="day-title basic" data-i18n="guides.basicMethod.days.day7.title">First Turning</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Mix all layers thoroughly for proper aeration<br>
-          <strong>Time Required:</strong> 1-2 hours<br>
-          <strong>Phase:</strong> Active Decomposition<br><br>
+          <strong>Task:</strong> <span data-i18n="guides.basicMethod.days.day7.task">Mix all layers thoroughly for proper aeration</span><br>
+          <strong>Phase:</strong> <span data-i18n="guides.basicMethod.days.day7.phase">Active Decomposition</span><br><br>
           
-          Turn pile for oxygen and check moisture levels:
+          <span data-i18n="guides.basicMethod.days.day7.description">Turn pile for oxygen and check moisture levels:</span>
           <br><br>
-          1. Using a pitchfork or shovel, turn the entire pile<br>
-          2. Move outside materials to the center and center materials to the outside<br>
-          3. Break up any large clumps<br>
-          4. Check moisture levels throughout the pile<br>
-          5. Add water if needed to maintain proper moisture<br>
-          6. Rebuild pile in same location
+          <span data-i18n-step="guides.basicMethod.days.day7.step1">1. Using a pitchfork or shovel, turn the entire pile</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day7.step2">2. Move outside materials to the center and center materials to the outside</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day7.step3">3. Break up any large clumps</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day7.step4">4. Check moisture levels throughout the pile</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day7.step5">5. Add water if needed to maintain proper moisture</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day7.step6">6. Rebuild pile in same location</span>
         </div>
         <div class="tip-box">
-          <div class="tip-label">Active Decomposition:</div>
-          <div class="tip-text">Turn pile for oxygen and check moisture levels. After turning, the pile temperature will drop temporarily but should rise again within 24-48 hours.</div>
+          <div class="tip-label" data-i18n="guides.basicMethod.days.day7.tipLabel">Active Decomposition:</div>
+          <div class="tip-text" data-i18n="guides.basicMethod.days.day7.tipText">Turn pile for oxygen and check moisture levels. After turning, the pile temperature will drop temporarily but should rise again within 24-48 hours.</div>
         </div>
       </div>
 
       <div class="day-container basic">
         <div class="day-header">
           <div class="day-number basic">14</div>
-          <div class="day-title basic">Mid-Point Check</div>
+          <div class="day-title basic" data-i18n="guides.basicMethod.days.day14.title">Mid-Point Check</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Turn pile and monitor decomposition progress<br>
-          <strong>Time Required:</strong> 1.5-2 hours<br>
-          <strong>Phase:</strong> Maturation Phase<br><br>
+          <strong>Task:</strong> <span data-i18n="guides.basicMethod.days.day14.task">Turn pile and monitor decomposition progress</span><br>
+          <strong>Phase:</strong> <span data-i18n="guides.basicMethod.days.day14.phase">Maturation Phase</span><br><br>
           
-          Monitor texture changes and earthy smell development:
+          <span data-i18n="guides.basicMethod.days.day14.description">Monitor texture changes and earthy smell development:</span>
           <br><br>
-          1. Turn the pile completely as done on day 7<br>
-          2. Add additional dry carbon materials if needed (rice hulls, dried leaves, sawdust)<br>
-          3. Mix thoroughly to ensure even distribution<br>
-          4. Adjust moisture if necessary<br>
-          5. Check for proper brown-to-green ratio<br>
-          6. Rebuild pile
+          <span data-i18n-step="guides.basicMethod.days.day14.step1">1. Turn the pile completely as done on day 7</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day14.step2">2. Add additional dry carbon materials if needed (rice hulls, dried leaves, sawdust)</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day14.step3">3. Mix thoroughly to ensure even distribution</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day14.step4">4. Adjust moisture if necessary</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day14.step5">5. Check for proper brown-to-green ratio</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day14.step6">6. Rebuild pile</span>
         </div>
         <div class="tip-box">
-          <div class="tip-label">Maturation Phase:</div>
-          <div class="tip-text">Monitor texture changes and earthy smell development. This is a good time to adjust the carbon-nitrogen ratio if the pile has been too wet or smelly.</div>
+          <div class="tip-label" data-i18n="guides.basicMethod.days.day14.tipLabel">Maturation Phase:</div>
+          <div class="tip-text" data-i18n="guides.basicMethod.days.day14.tipText">Monitor texture changes and earthy smell development. This is a good time to adjust the carbon-nitrogen ratio if the pile has been too wet or smelly.</div>
         </div>
       </div>
 
       <div class="day-container basic">
         <div class="day-header">
           <div class="day-number basic">17</div>
-          <div class="day-title basic">Final Turning</div>
+          <div class="day-title basic" data-i18n="guides.basicMethod.days.day17.title">Final Turning</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Check texture uniformity and adjust moisture<br>
-          <strong>Time Required:</strong> 1-2 hours<br>
-          <strong>Phase:</strong> Pre-Harvest<br><br>
+          <strong>Task:</strong> <span data-i18n="guides.basicMethod.days.day17.task">Check texture uniformity and adjust moisture</span><br>
+          <strong>Phase:</strong> <span data-i18n="guides.basicMethod.days.day17.phase">Pre-Harvest</span><br><br>
           
-          Final quality checks and preparation for harvest:
+          <span data-i18n="guides.basicMethod.days.day17.description">Final quality checks and preparation for harvest:</span>
           <br><br>
-          1. Perform thorough turning of the pile<br>
-          2. Check texture uniformity throughout<br>
-          3. Adjust moisture levels if needed<br>
-          4. Ensure materials are well-decomposed<br>
-          5. Check for earthy smell<br>
-          6. Rebuild pile for final curing
+          <span data-i18n-step="guides.basicMethod.days.day17.step1">1. Perform thorough turning of the pile</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day17.step2">2. Check texture uniformity throughout</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day17.step3">3. Adjust moisture levels if needed</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day17.step4">4. Ensure materials are well-decomposed</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day17.step5">5. Check for earthy smell</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day17.step6">6. Rebuild pile for final curing</span>
         </div>
         <div class="tip-box">
-          <div class="tip-label">Pre-Harvest:</div>
-          <div class="tip-text">Final quality checks and preparation for harvest. Materials should be darker, less fibrous, and have a pleasant earthy smell.</div>
+          <div class="tip-label" data-i18n="guides.basicMethod.days.day17.tipLabel">Pre-Harvest:</div>
+          <div class="tip-text" data-i18n="guides.basicMethod.days.day17.tipText">Final quality checks and preparation for harvest. Materials should be darker, less fibrous, and have a pleasant earthy smell.</div>
         </div>
       </div>
 
       <div class="day-container basic">
         <div class="day-header">
           <div class="day-number basic">21</div>
-          <div class="day-title basic">Harvest Ready</div>
+          <div class="day-title basic" data-i18n="guides.basicMethod.days.day21.title">Harvest Ready</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Compost is ready for use or sale<br>
-          <strong>Time Required:</strong> 2-3 hours<br>
-          <strong>Phase:</strong> ✓ Completion<br><br>
+          <strong>Task:</strong> <span data-i18n="guides.basicMethod.days.day21.task">Compost is ready for use or sale</span><br>
+          <strong>Phase:</strong> <span data-i18n="guides.basicMethod.days.day21.phase">✓ Completion</span><br><br>
           
-          Dark, crumbly compost ready for application or marketplace:
+          <span data-i18n="guides.basicMethod.days.day21.description">Dark, crumbly compost ready for application or marketplace:</span>
           <br><br>
-          1. Perform final turning of the pile<br>
-          2. Screen compost through 1/2 inch mesh to remove large particles<br>
-          3. Return large particles to a new compost pile<br>
-          4. Test pH (should be 6.5-7.5 for optimal use)<br>
-          5. Check for proper moisture and crumbly texture<br>
-          6. Package or store finished compost<br>
-          7. Store in dry, ventilated area
+          <span data-i18n-step="guides.basicMethod.days.day21.step1">1. Perform final turning of the pile</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day21.step2">2. Screen compost through 1/2 inch mesh to remove large particles</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day21.step3">3. Return large particles to a new compost pile</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day21.step4">4. Test pH (should be 6.5-7.5 for optimal use)</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day21.step5">5. Check for proper moisture and crumbly texture</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day21.step6">6. Package or store finished compost</span><br>
+          <span data-i18n-step="guides.basicMethod.days.day21.step7">7. Store in dry, ventilated area</span>
         </div>
         <div class="tip-box">
-          <div class="tip-label">✓ Completion:</div>
-          <div class="tip-text">Dark, crumbly compost ready for application or marketplace. Good compost should be dark brown, crumbly, have an earthy smell, and feel cool to the touch.</div>
+          <div class="tip-label" data-i18n="guides.basicMethod.days.day21.tipLabel">✓ Completion:</div>
+          <div class="tip-text" data-i18n="guides.basicMethod.days.day21.tipText">Dark, crumbly compost ready for application or marketplace. Good compost should be dark brown, crumbly, have an earthy smell, and feel cool to the touch.</div>
         </div>
       </div>
     </div>
@@ -694,25 +693,25 @@
     <!-- Hot Composting Method -->
     <div class="guide-method" id="hot-method">
       <div class="header-section">
-        <h1 class="title hot">Hot Composting Method</h1>
-        <p class="subtitle">18-day pathogen-free composting method</p>
-        <div class="heat-indicator">THERMOPHILIC PROCESS (55-70°C)</div>
+        <h1 class="title hot" data-i18n="guides.hotMethod.title">Hot Composting Method</h1>
+        <p class="subtitle" data-i18n="guides.hotMethod.subtitle">18-day pathogen-free composting method</p>
+        <div class="heat-indicator" data-i18n="guides.hotMethod.heatIndicator">THERMOPHILIC PROCESS (55-70°C)</div>
       </div>
 
       <div class="overview-box hot">
-        <h2 class="section-title hot">About This Method</h2>
-        <p>Pathogen-free compost from swine manure through high-heat decomposition. This advanced method uses controlled high temperatures to rapidly decompose materials while eliminating harmful pathogens.</p>
+        <h2 class="section-title hot" data-i18n="guides.hotMethod.aboutTitle">About This Method</h2>
+        <p data-i18n="guides.hotMethod.aboutText">Pathogen-free compost from swine manure through high-heat decomposition. This advanced method uses controlled high temperatures to rapidly decompose materials while eliminating harmful pathogens.</p>
       </div>
 
       <div class="materials-section">
-        <h2 class="section-title hot">Materials Needed</h2>
+        <h2 class="section-title hot" data-i18n="guides.hotMethod.materialsTitle">Materials Needed</h2>
         <div class="materials-grid">
-          <div class="material-item hot">Fresh swine manure</div>
-          <div class="material-item hot">High-carbon materials</div>
-          <div class="material-item hot">Compost thermometer</div>
-          <div class="material-item hot">Turning tools</div>
-          <div class="material-item hot">Water source</div>
-          <div class="material-item hot">Insulation materials</div>
+          <div class="material-item hot" data-i18n="guides.hotMethod.materials.manure">Fresh swine manure</div>
+          <div class="material-item hot" data-i18n="guides.hotMethod.materials.carbon">High-carbon materials</div>
+          <div class="material-item hot" data-i18n="guides.hotMethod.materials.thermometer">Compost thermometer</div>
+          <div class="material-item hot" data-i18n="guides.hotMethod.materials.tools">Turning tools</div>
+          <div class="material-item hot" data-i18n="guides.hotMethod.materials.water">Water source</div>
+          <div class="material-item hot" data-i18n="guides.hotMethod.materials.insulation">Insulation materials</div>
         </div>
       </div>
 
@@ -720,137 +719,139 @@
       <div class="day-container hot">
         <div class="day-header">
           <div class="day-number hot">1</div>
-          <div class="day-title hot">High-Carbon Setup</div>
+          <div class="day-title hot" data-i18n="guides.hotMethod.days.day1.title">High-Carbon Setup</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Build pile with proper C:N ratio<br>
-          <strong>Time Required:</strong> 3-4 hours<br>
-          <strong>Phase:</strong> Initial Phase<br><br>
+          <strong>Task:</strong> <span data-i18n="guides.hotMethod.days.day1.task">Build pile with proper C:N ratio</span><br>
+          <strong>Phase:</strong> <span data-i18n="guides.hotMethod.days.day1.phase">Initial Phase</span><br><br>
           
-          Create optimal conditions for thermophilic decomposition:
+          <span data-i18n="guides.hotMethod.days.day1.description">Create optimal conditions for thermophilic decomposition:</span>
           <br><br>
-          1. Choose a sheltered location with good drainage<br>
-          2. Create a base layer of coarse materials (3 inches)<br>
-          3. Mix fresh swine manure with high-carbon materials (2:1 ratio)<br>
-          4. Build pile rapidly to minimum 1.5m x 1.5m x 1.5m (critical mass)<br>
-          5. Ensure moisture content is 55-65% throughout<br>
-          6. Insert thermometer into center of pile<br>
-          7. Cover with insulating material
+          <span data-i18n-step="guides.hotMethod.days.day1.step1">1. Choose a sheltered location with good drainage</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day1.step2">2. Create a base layer of coarse materials (3 inches)</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day1.step3">3. Mix fresh swine manure with high-carbon materials (2:1 ratio)</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day1.step4">4. Build pile rapidly to minimum 1.5m x 1.5m x 1.5m (critical mass)</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day1.step5">5. Ensure moisture content is 55-65% throughout</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day1.step6">6. Insert thermometer into center of pile</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day1.step7">7. Cover with insulating material</span>
         </div>
         <div class="temperature-box">
-          <div class="temp-label">Initial Phase:</div>
-          <div class="temp-text">Create optimal conditions for thermophilic decomposition. Expect pile to reach 40-50°C within 24-48 hours.</div>
+          <div class="temp-label" data-i18n="guides.hotMethod.days.day1.tempLabel">Initial Phase:</div>
+          <div class="temp-text" data-i18n="guides.hotMethod.days.day1.tempText">Create optimal conditions for thermophilic decomposition. Expect pile to reach 40-50°C within 24-48 hours.</div>
         </div>
       </div>
 
       <div class="day-container hot">
         <div class="day-header">
           <div class="day-number hot">3</div>
-          <div class="day-title hot">Temperature Monitor</div>
+          <div class="day-title hot" data-i18n="guides.hotMethod.days.day3.title">Temperature Monitor</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Check internal heat reaches 60-70°C<br>
-          <strong>Time Required:</strong> 30 minutes - 1 hour<br>
-          <strong>Phase:</strong> Heating Phase<br><br>
+          <strong>Task:</strong> <span data-i18n="guides.hotMethod.days.day3.task">Check internal heat reaches 60-70°C</span><br>
+          <strong>Phase:</strong> <span data-i18n="guides.hotMethod.days.day3.phase">Heating Phase</span><br><br>
           
-          Monitor temperature rise and maintain optimal conditions:
+          <span data-i18n="guides.hotMethod.days.day3.description">Monitor temperature rise and maintain optimal conditions:</span>
           <br><br>
-          1. Record temperature using thermometer<br>
-          2. Check multiple points in the pile<br>
-          3. Ensure center reaches 60-70°C<br>
-          4. Verify insulation is properly covering pile<br>
-          5. Check moisture levels - should feel warm and moist<br>
-          6. Document temperature readings<br>
-          7. Adjust covering if heat is escaping
+          <span data-i18n-step="guides.hotMethod.days.day3.step1">1. Record temperature using thermometer</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day3.step2">2. Check multiple points in the pile</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day3.step3">3. Ensure center reaches 60-70°C</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day3.step4">4. Verify insulation is properly covering pile</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day3.step5">5. Check moisture levels - should feel warm and moist</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day3.step6">6. Document temperature readings</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day3.step7">7. Adjust covering if heat is escaping</span>
         </div>
         <div class="temperature-box">
-          <div class="temp-label">Heating Phase:</div>
-          <div class="temp-text">Monitor temperature rise and maintain optimal conditions. Target: 60-70°C for pathogen elimination and rapid decomposition.</div>
+          <div class="temp-label" data-i18n="guides.hotMethod.days.day3.tempLabel">Heating Phase:</div>
+          <div class="temp-text" data-i18n="guides.hotMethod.days.day3.tempText">Monitor temperature rise and maintain optimal conditions. Target: 60-70°C for pathogen elimination and rapid decomposition.</div>
         </div>
       </div>
 
       <div class="day-container hot">
         <div class="day-header">
           <div class="day-number hot">8</div>
-          <div class="day-title hot">Heat Maintenance</div>
+          <div class="day-title hot" data-i18n="guides.hotMethod.days.day8.title">Heat Maintenance</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Turn pile to maintain thermophilic phase<br>
-          <strong>Time Required:</strong> 1.5-2 hours<br>
-          <strong>Phase:</strong> Thermophilic Phase<br><br>
+          <strong>Task:</strong> <span data-i18n="guides.hotMethod.days.day8.task">Turn pile to maintain thermophilic phase</span><br>
+          <strong>Phase:</strong> <span data-i18n="guides.hotMethod.days.day8.phase">Thermophilic Phase</span><br><br>
           
-          Sustain high temperatures for rapid decomposition:
+          <span data-i18n="guides.hotMethod.days.day8.description">Sustain high temperatures for rapid decomposition:</span>
           <br><br>
-          1. Record temperature before turning<br>
-          2. Turn entire pile, moving outer materials to center<br>
-          3. Ensure all materials reach thermophilic zone<br>
-          4. Check moisture throughout and adjust as needed<br>
-          5. Rebuild pile maintaining same dimensions<br>
-          6. Re-insert thermometer in new center<br>
-          7. Cover immediately to retain heat
+          <span data-i18n-step="guides.hotMethod.days.day8.step1">1. Record temperature before turning</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day8.step2">2. Turn entire pile, moving outer materials to center</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day8.step3">3. Ensure all materials reach thermophilic zone</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day8.step4">4. Check moisture throughout and adjust as needed</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day8.step5">5. Rebuild pile maintaining same dimensions</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day8.step6">6. Re-insert thermometer in new center</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day8.step7">7. Cover immediately to retain heat</span>
         </div>
         <div class="temperature-box">
-          <div class="temp-label">Thermophilic Phase:</div>
-          <div class="temp-text">Sustain high temperatures for rapid decomposition. Temperature will drop temporarily but should recover within 24 hours.</div>
+          <div class="temp-label" data-i18n="guides.hotMethod.days.day8.tempLabel">Thermophilic Phase:</div>
+          <div class="temp-text" data-i18n="guides.hotMethod.days.day8.tempText">Sustain high temperatures for rapid decomposition. Temperature will drop temporarily but should recover within 24 hours.</div>
         </div>
       </div>
 
       <div class="day-container hot">
         <div class="day-header">
           <div class="day-number hot">12</div>
-          <div class="day-title hot">Pathogen Elimination</div>
+          <div class="day-title hot" data-i18n="guides.hotMethod.days.day12.title">Pathogen Elimination</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Continue high-temperature for safety<br>
-          <strong>Time Required:</strong> 1.5-2 hours<br>
-          <strong>Phase:</strong> Sanitization Phase<br><br>
+          <strong>Task:</strong> <span data-i18n="guides.hotMethod.days.day12.task">Continue high-temperature for safety</span><br>
+          <strong>Phase:</strong> <span data-i18n="guides.hotMethod.days.day12.phase">Sanitization Phase</span><br><br>
           
-          Ensure complete pathogen elimination through heat:
+          <span data-i18n="guides.hotMethod.days.day12.description">Ensure complete pathogen elimination through heat:</span>
           <br><br>
-          1. Document temperature before turning<br>
-          2. Perform complete turn of all materials<br>
-          3. Assess decomposition progress - materials should be darker<br>
-          4. Check for proper texture (less fibrous, more uniform)<br>
-          5. Test pH levels (should be approaching 6.5-7.5)<br>
-          6. Adjust moisture if needed<br>
-          7. Rebuild pile maintaining heat-retention structure
+          <span data-i18n-step="guides.hotMethod.days.day12.step1">1. Document temperature before turning</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day12.step2">2. Perform complete turn of all materials</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day12.step3">3. Assess decomposition progress - materials should be darker</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day12.step4">4. Check for proper texture (less fibrous, more uniform)</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day12.step5">5. Test pH levels (should be approaching 6.5-7.5)</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day12.step6">6. Adjust moisture if needed</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day12.step7">7. Rebuild pile maintaining heat-retention structure</span>
         </div>
         <div class="warning-box">
-          <div class="warning-label">Sanitization Phase:</div>
-          <div class="warning-text">Ensure complete pathogen elimination through heat. Maintain temperatures above 55°C for thorough sanitization.</div>
+          <div class="warning-label" data-i18n="guides.hotMethod.days.day12.warningLabel">Sanitization Phase:</div>
+          <div class="warning-text" data-i18n="guides.hotMethod.days.day12.warningText">Ensure complete pathogen elimination through heat. Maintain temperatures above 55°C for thorough sanitization.</div>
         </div>
       </div>
 
       <div class="day-container hot">
         <div class="day-header">
           <div class="day-number hot">18</div>
-          <div class="day-title hot">Curing Complete</div>
+          <div class="day-title hot" data-i18n="guides.hotMethod.days.day18.title">Curing Complete</div>
         </div>
         <div class="day-description">
-          <strong>Task:</strong> Temperature stabilized, ready for harvest<br>
-          <strong>Time Required:</strong> 2-3 hours<br>
-          <strong>Phase:</strong> ✓ Completion<br><br>
+          <strong>Task:</strong> <span data-i18n="guides.hotMethod.days.day18.task">Temperature stabilized, ready for harvest</span><br>
+          <strong>Phase:</strong> <span data-i18n="guides.hotMethod.days.day18.phase">✓ Completion</span><br><br>
           
-          Pathogen-free compost ready for use or marketplace:
+          <span data-i18n="guides.hotMethod.days.day18.description">Pathogen-free compost ready for use or marketplace:</span>
           <br><br>
-          1. Screen compost through 1/2 inch mesh<br>
-          2. Remove any remaining large particles<br>
-          3. Test final pH and moisture content<br>
-          4. Package finished compost for storage or use<br>
-          5. Return oversized materials to new compost batch<br>
-          6. Document final yield and quality<br>
-          7. Store in dry, ventilated area
+          <span data-i18n-step="guides.hotMethod.days.day18.step1">1. Screen compost through 1/2 inch mesh</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day18.step2">2. Remove any remaining large particles</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day18.step3">3. Test final pH and moisture content</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day18.step4">4. Package finished compost for storage or use</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day18.step5">5. Return oversized materials to new compost batch</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day18.step6">6. Document final yield and quality</span><br>
+          <span data-i18n-step="guides.hotMethod.days.day18.step7">7. Store in dry, ventilated area</span>
         </div>
         <div class="tip-box">
-          <div class="tip-label">✓ Completion:</div>
-          <div class="tip-text">Pathogen-free compost ready for use or marketplace. Perfect hot compost is dark brown, crumbly, smells earthy, feels cool, and has uniform texture.</div>
+          <div class="tip-label" data-i18n="guides.hotMethod.days.day18.tipLabel">✓ Completion:</div>
+          <div class="tip-text" data-i18n="guides.hotMethod.days.day18.tipText">Pathogen-free compost ready for use or marketplace. Perfect hot compost is dark brown, crumbly, smells earthy, feels cool, and has uniform texture.</div>
         </div>
       </div>
     </div>
   </div>
 
+  <script src="/js/i18n.js"></script>
   <script type="module" src="/js/dashboard-auth-guard.js"></script>
   <script type="module" src="/js/guides.js"></script>
   <script type="module" src="/js/shared-user-manager.js"></script>
+  <script>
+    // Initialize i18next when DOM is ready
+    document.addEventListener('DOMContentLoaded', async () => {
+      await window.i18nManager.initialize();
+    });
+  </script>
 </body>
 </html>
