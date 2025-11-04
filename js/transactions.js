@@ -190,6 +190,11 @@ async function processConversations(conversations, transactions) {
         
         const latestTransaction = sellerTransactions.length > 0 ? sellerTransactions[0] : null;
         
+        // Only show conversation if there's an actual transaction
+        if (!latestTransaction) {
+            continue; // Skip this conversation - no transaction exists
+        }
+        
         // Get listing ID from conversation or transaction
         const listingId = conversation.listingId || latestTransaction?.transactionListingID;
         
@@ -338,75 +343,60 @@ function createSellerCard(item) {
     const transactionInfo = document.createElement('div');
     transactionInfo.className = 'transaction-info';
 
-    if (item.productName || item.latestTransaction) {
-        // Product name
-        if (item.productName) {
-            const productName = document.createElement('div');
-            productName.className = 'product-name';
-            productName.textContent = item.productName;
-            
-            if (item.listingId) {
-                productName.style.cursor = 'pointer';
-                productName.addEventListener('click', () => {
-                    window.location.href = `/listing-details.html?id=${item.listingId}`;
-                });
-            } else {
-                productName.classList.add('disabled');
-            }
-            
-            transactionInfo.appendChild(productName);
-        }
-
-        if (item.latestTransaction) {
-            const transaction = item.latestTransaction;
-
-            // Transaction date
-            const date = document.createElement('div');
-            date.className = 'transaction-date';
-            date.textContent = formatTransactionDate(transaction.transactionOrderDate);
-            transactionInfo.appendChild(date);
-
-            // Transaction meta (price, quantity)
-            const meta = document.createElement('div');
-            meta.className = 'transaction-meta';
-
-            const priceItem = document.createElement('div');
-            priceItem.className = 'meta-item';
-            priceItem.innerHTML = `
-                <div class="meta-label">${t('transactions.transaction.totalAmount')}</div>
-                <div class="meta-value price">₱${formatPrice(transaction.transactionTotalAmount)}</div>
-            `;
-
-            const quantityItem = document.createElement('div');
-            quantityItem.className = 'meta-item';
-            quantityItem.innerHTML = `
-                <div class="meta-label">${t('transactions.transaction.quantity')}</div>
-                <div class="meta-value">${transaction.transactionQuantityOrdered} ${t('transactions.transaction.kg')}</div>
-            `;
-
-            meta.appendChild(priceItem);
-            meta.appendChild(quantityItem);
-            transactionInfo.appendChild(meta);
-
-            // Status badge
-            const statusBadge = document.createElement('span');
-            statusBadge.className = `status-badge ${transaction.transactionStatus}`;
-            statusBadge.textContent = formatTransactionStatus(transaction.transactionStatus);
-            transactionInfo.appendChild(statusBadge);
+    // Product name
+    if (item.productName) {
+        const productName = document.createElement('div');
+        productName.className = 'product-name';
+        productName.textContent = item.productName;
+        
+        if (item.listingId) {
+            productName.style.cursor = 'pointer';
+            productName.addEventListener('click', () => {
+                window.location.href = `/listing-details.html?id=${item.listingId}`;
+            });
         } else {
-            // No transaction yet
-            const noTransaction = document.createElement('div');
-            noTransaction.className = 'no-transactions';
-            noTransaction.textContent = t('transactions.product.noTransactions');
-            transactionInfo.appendChild(noTransaction);
+            productName.classList.add('disabled');
         }
-    } else {
-        // No product or transactions
-        const noTransaction = document.createElement('div');
-        noTransaction.className = 'no-transactions';
-        noTransaction.textContent = t('transactions.product.noProduct');
-        transactionInfo.appendChild(noTransaction);
+        
+        transactionInfo.appendChild(productName);
     }
+
+    // Transaction details (always exists now)
+    const transaction = item.latestTransaction;
+
+    // Transaction date
+    const date = document.createElement('div');
+    date.className = 'transaction-date';
+    date.textContent = formatTransactionDate(transaction.transactionOrderDate);
+    transactionInfo.appendChild(date);
+
+    // Transaction meta (price, quantity)
+    const meta = document.createElement('div');
+    meta.className = 'transaction-meta';
+
+    const priceItem = document.createElement('div');
+    priceItem.className = 'meta-item';
+    priceItem.innerHTML = `
+        <div class="meta-label">${t('transactions.transaction.totalAmount')}</div>
+        <div class="meta-value price">₱${formatPrice(transaction.transactionTotalAmount)}</div>
+    `;
+
+    const quantityItem = document.createElement('div');
+    quantityItem.className = 'meta-item';
+    quantityItem.innerHTML = `
+        <div class="meta-label">${t('transactions.transaction.quantity')}</div>
+        <div class="meta-value">${transaction.transactionQuantityOrdered} ${t('transactions.transaction.kg')}</div>
+    `;
+
+    meta.appendChild(priceItem);
+    meta.appendChild(quantityItem);
+    transactionInfo.appendChild(meta);
+
+    // Status badge
+    const statusBadge = document.createElement('span');
+    statusBadge.className = `status-badge ${transaction.transactionStatus}`;
+    statusBadge.textContent = formatTransactionStatus(transaction.transactionStatus);
+    transactionInfo.appendChild(statusBadge);
 
     // Action Buttons
     const actions = document.createElement('div');
@@ -434,13 +424,9 @@ function createSellerCard(item) {
         ${t('transactions.seller.viewHistory')}
     `;
     
-    if (item.latestTransaction) {
-        historyBtn.addEventListener('click', () => {
-            window.location.href = `/transaction-history.html?seller=${item.sellerId}&name=${encodeURIComponent(item.sellerName)}`;
-        });
-    } else {
-        historyBtn.disabled = true;
-    }
+    historyBtn.addEventListener('click', () => {
+        window.location.href = `/transaction-history.html?seller=${item.sellerId}&name=${encodeURIComponent(item.sellerName)}`;
+    });
 
     actions.appendChild(messageBtn);
     actions.appendChild(historyBtn);

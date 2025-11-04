@@ -249,6 +249,29 @@
             background: #f8f9fa;
         }
 
+        .support-btn {
+            margin-top: 24px;
+            padding: 12px 24px;
+            color: #888888;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .support-btn:hover {
+            color: #666;
+            background: #f8f9fa;
+        }
+
         /* Content Area */
         .content {
             flex: 1;
@@ -445,6 +468,10 @@
                 <button class="logout-btn" id="logoutBtn" title="Log Out" aria-label="Log out of your account" data-i18n="settings.sidebar.logout">
                     🚪 Log Out
                 </button>
+
+                <a href="/support.html" class="support-btn" title="Help & Support" aria-label="Get help and support" data-i18n="settings.sidebar.support">
+                    Help & Support
+                </a>
             </aside>
 
             <div class="content">

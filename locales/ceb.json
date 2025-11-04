@@ -515,6 +515,7 @@
       "accountSettings": "Account",
       "language": "Pinulongan",
       "subscription": "Subscription",
+      "support": "Tabang ug Suporta",
       "logout": "Logout"
     },
     "language": {
@@ -1122,7 +1123,7 @@
       "progressPercent": "Nag-upload... {{percent}}%"
     },
     "dealProposal": {
-      "buttonText": "📋 Mag-propose og Deal",
+      "buttonText": "Mag-propose og Deal",
       "modalTitle": "Mag-propose og Deal",
       "quantityLabel": "Gidaghanon (kg)",
       "quantityPlaceholder": "Isulod ang gidaghanon sa kilo",
@@ -1307,6 +1308,25 @@
       "minutesAgo": "{{minutes}}m ang milabay",
       "hoursAgo": "{{hours}}h ang milabay",
       "daysAgo": "{{days}}d ang milabay"
+    },
+    "menu": {
+      "title": "Menu",
+      "blockUser": "Bak-i ang User",
+      "unblockUser": "Aliha ang Pag-block"
+    },
+    "block": {
+      "confirmMessage": "Sigurado ka ba nga gusto nimo bak-an kining user? Dili ka na makahimo og send o receive og mga mensahe.",
+      "success": "Malampuson ang pag-block sa user",
+      "error": "Napakyas ang pag-block sa user",
+      "blockedByOther": "Gibak-an ka niining user",
+      "blockedByMe": "Gibak-an nimo kining user",
+      "cannotSendBlockedByOther": "Dili ka makapadala og mensahe. Gibak-an ka niining user.",
+      "cannotSendBlockedByMe": "Dili ka makapadala og mensahe. Gibak-an nimo kining user."
+    },
+    "unblock": {
+      "confirmMessage": "Sigurado ka ba nga gusto nimo aliha ang pag-block niining user?",
+      "success": "Malampuson ang pag-unblock sa user",
+      "error": "Napakyas ang pag-unblock sa user"
     }
   },
   "buyerMarketplace": {

@@ -515,6 +515,7 @@
       "accountSettings": "Account",
       "language": "Language",
       "subscription": "Subscription",
+      "support": "Help & Support",
       "logout": "Logout"
     },
     "language": {
@@ -1122,7 +1123,7 @@
       "progressPercent": "Uploading... {{percent}}%"
     },
     "dealProposal": {
-      "buttonText": "📋 Propose Deal",
+      "buttonText": "Propose Deal",
       "modalTitle": "Propose a Deal",
       "quantityLabel": "Quantity (kg)",
       "quantityPlaceholder": "Enter quantity in kilograms",
@@ -1307,6 +1308,25 @@
       "minutesAgo": "{{minutes}}m ago",
       "hoursAgo": "{{hours}}h ago",
       "daysAgo": "{{days}}d ago"
+    },
+    "menu": {
+      "title": "Menu",
+      "blockUser": "Block User",
+      "unblockUser": "Unblock User"
+    },
+    "block": {
+      "confirmMessage": "Are you sure you want to block this user? You will not be able to send or receive messages.",
+      "success": "User blocked successfully",
+      "error": "Failed to block user",
+      "blockedByOther": "This user has blocked you",
+      "blockedByMe": "You have blocked this user",
+      "cannotSendBlockedByOther": "You cannot send messages. This user has blocked you.",
+      "cannotSendBlockedByMe": "You cannot send messages. You have blocked this user."
+    },
+    "unblock": {
+      "confirmMessage": "Are you sure you want to unblock this user?",
+      "success": "User unblocked successfully",
+      "error": "Failed to unblock user"
     }
   },
   "buyerMarketplace": {

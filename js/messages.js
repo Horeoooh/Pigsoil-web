@@ -52,6 +52,10 @@ let messagesListener = null;
 let conversationDetailsListener = null;
 let uploadInProgress = false;
 
+// Block status tracking
+let isBlockedByOther = false;
+let hasBlockedOther = false;
+
 // Default profile picture
 const DEFAULT_PROFILE_PICTURE = 'https://i.pinimg.com/736x/d7/95/c3/d795c373a0539e64c7ee69bb0af3c5c3.jpg';
 
@@ -437,6 +441,12 @@ async function openConversation(conversationId, receiverId, participantName, par
     // IMPORTANT: Render the chat UI first (initial render)
     renderChatUI(participantName, participantDetails, conversationData);
     
+    // Check block status
+    checkBlockStatus();
+    
+    // Update menu items based on block status
+    updateMenuItems();
+    
     // Setup message input handlers
     setupMessageInputForConversation();
     
@@ -460,6 +470,8 @@ function setupConversationListener(conversationId, participantName, participantD
     let previousCanProposeDeal = currentConversation?.canProposeDeal;
     let previousBuyerStatus = currentConversation?.buyerTransactionStatus;
     let previousSellerStatus = currentConversation?.sellerTransactionStatus;
+    let previousBlockedByOther = isBlockedByOther;
+    let previousBlockedByMe = hasBlockedOther;
     
     conversationDetailsListener = onSnapshot(conversationRef, (docSnap) => {
         if (docSnap.exists()) {
@@ -468,24 +480,46 @@ function setupConversationListener(conversationId, participantName, participantD
             const newBuyerStatus = updatedConversation.buyerTransactionStatus;
             const newSellerStatus = updatedConversation.sellerTransactionStatus;
             
+            // Check block status from updated conversation
+            const currentUser = getCurrentUser();
+            const currentUserId = currentUser?.uid;
+            const currentUserDetails = updatedConversation.participantDetails?.[currentUserId];
+            const otherUserDetails = updatedConversation.participantDetails?.[currentReceiverId];
+            const newBlockedByOther = currentUserDetails?.participantIsBlocked ?? false;
+            const newBlockedByMe = otherUserDetails?.participantIsBlocked ?? false;
+            
             // Check if any relevant field changed
             const hasChanges = previousCanProposeDeal !== newCanProposeDeal ||
                               previousBuyerStatus !== newBuyerStatus ||
-                              previousSellerStatus !== newSellerStatus;
+                              previousSellerStatus !== newSellerStatus ||
+                              previousBlockedByOther !== newBlockedByOther ||
+                              previousBlockedByMe !== newBlockedByMe;
             
             if (hasChanges) {
                 console.log('🔄 Conversation status changed');
                 console.log('  canProposeDeal:', previousCanProposeDeal, '->', newCanProposeDeal);
                 console.log('  buyerStatus:', previousBuyerStatus, '->', newBuyerStatus);
                 console.log('  sellerStatus:', previousSellerStatus, '->', newSellerStatus);
+                console.log('  blockedByOther:', previousBlockedByOther, '->', newBlockedByOther);
+                console.log('  blockedByMe:', previousBlockedByMe, '->', newBlockedByMe);
                 
                 currentConversation = updatedConversation;
                 previousCanProposeDeal = newCanProposeDeal;
                 previousBuyerStatus = newBuyerStatus;
                 previousSellerStatus = newSellerStatus;
+                previousBlockedByOther = newBlockedByOther;
+                previousBlockedByMe = newBlockedByMe;
+                
+                // Update block status variables
+                isBlockedByOther = newBlockedByOther;
+                hasBlockedOther = newBlockedByMe;
                 
                 // Update only the header section, not the entire chat
                 updateChatHeader(participantName, participantDetails, updatedConversation);
+                
+                // Update UI based on block status
+                updateUIBasedOnBlockStatus();
+                updateMenuItems();
             } else {
                 // Just update the conversation object without re-rendering
                 currentConversation = updatedConversation;
@@ -696,9 +730,21 @@ function renderChatUI(participantName, participantDetails, conversationData) {
             </div>
             <div class="chat-header-actions">
                 ${dealProposalButtonHTML}
+                <button class="icon-btn" id="chatMenuBtn" onclick="toggleChatMenu()" title="${t('messages.menu.title') || 'Menu'}">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="1"></circle>
+                        <circle cx="12" cy="5" r="1"></circle>
+                        <circle cx="12" cy="19" r="1"></circle>
+                    </svg>
+                </button>
+                <div class="chat-menu" id="chatMenu" style="display: none;">
+                    <div class="menu-item" id="blockMenuItem" onclick="showBlockConfirmation()">${t('messages.menu.blockUser') || 'Block User'}</div>
+                    <div class="menu-item" id="unblockMenuItem" onclick="showUnblockConfirmation()" style="display: none;">${t('messages.menu.unblockUser') || 'Unblock User'}</div>
+                </div>
             </div>
         </div>
         ${transactionStatusHTML}
+        <div class="blocking-status-banner" id="blockingBanner"></div>
         <div class="messages-area" id="messagesArea"></div>
         <div class="message-input-container">
             <input type="file" id="mediaInput" accept="image/*,video/*" style="display: none;">
@@ -2244,6 +2290,16 @@ async function uploadMedia(file, mediaType) {
 }
 
 async function sendMediaMessage(mediaUrl, mediaType) {
+    // Check if blocked
+    if (isBlockedByOther || hasBlockedOther) {
+        if (isBlockedByOther) {
+            showToast(t('messages.block.cannotSendBlockedByOther') || 'You cannot send messages. This user has blocked you.', 'error');
+        } else if (hasBlockedOther) {
+            showToast(t('messages.block.cannotSendBlockedByMe') || 'You cannot send messages. You have blocked this user.', 'error');
+        }
+        return;
+    }
+    
     const messageText = mediaType === 'image' ? '📸 Photo' : '🎥 Video';
     await sendMessageToFirestore(messageText, mediaType, mediaUrl);
 }
@@ -2252,6 +2308,16 @@ async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     
     if (!messageInput || !currentConversationId || !currentReceiverId) return;
+    
+    // Check if blocked
+    if (isBlockedByOther || hasBlockedOther) {
+        if (isBlockedByOther) {
+            showToast(t('messages.block.cannotSendBlockedByOther') || 'You cannot send messages. This user has blocked you.', 'error');
+        } else if (hasBlockedOther) {
+            showToast(t('messages.block.cannotSendBlockedByMe') || 'You cannot send messages. You have blocked this user.', 'error');
+        }
+        return;
+    }
     
     const messageText = messageInput.value.trim();
     
@@ -2366,6 +2432,208 @@ window.addEventListener('beforeunload', () => {
     if (conversationsListener) conversationsListener();
     if (messagesListener) messagesListener();
     if (conversationDetailsListener) conversationDetailsListener();
+});
+
+// Block/Unblock User Functions
+function checkBlockStatus() {
+    const currentUser = getCurrentUser();
+    if (!currentUser || !currentConversation) {
+        isBlockedByOther = false;
+        hasBlockedOther = false;
+        return;
+    }
+    
+    const currentUserId = currentUser.uid;
+    const currentUserDetails = currentConversation.participantDetails?.[currentUserId];
+    const otherUserDetails = currentConversation.participantDetails?.[currentReceiverId];
+    
+    // Use ?? false for null handling
+    isBlockedByOther = currentUserDetails?.participantIsBlocked ?? false;
+    hasBlockedOther = otherUserDetails?.participantIsBlocked ?? false;
+    
+    console.log('🚫 Block status checked:', { isBlockedByOther, hasBlockedOther });
+    
+    updateUIBasedOnBlockStatus();
+}
+
+function updateMenuItems() {
+    const blockMenuItem = document.getElementById('blockMenuItem');
+    const unblockMenuItem = document.getElementById('unblockMenuItem');
+    
+    if (blockMenuItem && unblockMenuItem) {
+        if (hasBlockedOther) {
+            blockMenuItem.style.display = 'none';
+            unblockMenuItem.style.display = 'block';
+        } else {
+            blockMenuItem.style.display = 'block';
+            unblockMenuItem.style.display = 'none';
+        }
+    }
+}
+
+async function blockUser() {
+    if (!currentConversationId || !currentReceiverId) {
+        showToast(t('messages.block.error') || 'Cannot block user', 'error');
+        return;
+    }
+    
+    try {
+        const updates = {
+            [`participantDetails.${currentReceiverId}.participantIsBlocked`]: true,
+            [`participantDetails.${currentReceiverId}.participantBlockedAt`]: serverTimestamp(),
+            conversationUpdatedAt: serverTimestamp()
+        };
+        
+        await updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId), updates);
+        
+        hasBlockedOther = true;
+        showToast(t('messages.block.success') || 'User blocked successfully', 'success');
+        updateUIBasedOnBlockStatus();
+        
+        console.log('🚫 User blocked successfully');
+    } catch (error) {
+        console.error('❌ Error blocking user:', error);
+        showToast(t('messages.block.error') || 'Failed to block user', 'error');
+    }
+}
+
+async function unblockUser() {
+    if (!currentConversationId || !currentReceiverId) {
+        showToast(t('messages.unblock.error') || 'Cannot unblock user', 'error');
+        return;
+    }
+    
+    try {
+        const updates = {
+            [`participantDetails.${currentReceiverId}.participantIsBlocked`]: false,
+            [`participantDetails.${currentReceiverId}.participantBlockedAt`]: null,
+            conversationUpdatedAt: serverTimestamp()
+        };
+        
+        await updateDoc(doc(db, COLLECTIONS.CONVERSATIONS, currentConversationId), updates);
+        
+        hasBlockedOther = false;
+        showToast(t('messages.unblock.success') || 'User unblocked successfully', 'success');
+        updateUIBasedOnBlockStatus();
+        
+        console.log('✅ User unblocked successfully');
+    } catch (error) {
+        console.error('❌ Error unblocking user:', error);
+        showToast(t('messages.unblock.error') || 'Failed to unblock user', 'error');
+    }
+}
+
+function updateUIBasedOnBlockStatus() {
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const attachmentBtn = document.getElementById('attachmentBtn');
+    const mediaInput = document.getElementById('mediaInput');
+    const proposeDealBtn = document.getElementById('proposeDealBtn');
+    const blockingBanner = document.getElementById('blockingBanner');
+    const menuBtn = document.getElementById('chatMenuBtn');
+    const transactionBanner = document.querySelector('.transaction-status-banner');
+    
+    // Reset states
+    if (blockingBanner) {
+        blockingBanner.className = 'blocking-status-banner';
+        blockingBanner.style.display = 'none';
+    }
+    
+    if (isBlockedByOther) {
+        // Current user is blocked by other user
+        if (messageInput) messageInput.disabled = true;
+        if (sendBtn) sendBtn.disabled = true;
+        if (attachmentBtn) attachmentBtn.disabled = true;
+        if (mediaInput) mediaInput.disabled = true;
+        if (proposeDealBtn) proposeDealBtn.style.display = 'none';
+        if (menuBtn) {
+            menuBtn.disabled = true;
+            menuBtn.style.opacity = '0.5';
+        }
+        
+        if (blockingBanner) {
+            blockingBanner.textContent = `🚫 ${t('messages.block.blockedByOther') || 'This user has blocked you'}`;
+            blockingBanner.classList.add('blocked-by-other', 'active');
+            blockingBanner.style.display = 'block';
+        }
+        
+        // Hide transaction banner
+        if (transactionBanner) transactionBanner.style.display = 'none';
+        
+    } else if (hasBlockedOther) {
+        // Current user has blocked other user
+        if (messageInput) messageInput.disabled = true;
+        if (sendBtn) sendBtn.disabled = true;
+        if (attachmentBtn) attachmentBtn.disabled = true;
+        if (mediaInput) mediaInput.disabled = true;
+        if (proposeDealBtn) proposeDealBtn.style.display = 'none';
+        if (menuBtn) {
+            menuBtn.disabled = false;
+            menuBtn.style.opacity = '1';
+        }
+        
+        if (blockingBanner) {
+            blockingBanner.textContent = `🚫 ${t('messages.block.blockedByMe') || 'You have blocked this user'}`;
+            blockingBanner.classList.add('blocked-by-me', 'active');
+            blockingBanner.style.display = 'block';
+        }
+        
+        // Hide transaction banner
+        if (transactionBanner) transactionBanner.style.display = 'none';
+        
+    } else {
+        // No blocking - enable everything
+        if (messageInput) messageInput.disabled = false;
+        if (sendBtn) sendBtn.disabled = false;
+        if (attachmentBtn) attachmentBtn.disabled = false;
+        if (mediaInput) mediaInput.disabled = false;
+        if (menuBtn) {
+            menuBtn.disabled = false;
+            menuBtn.style.opacity = '1';
+        }
+        
+        // Show deal proposal button if conditions are met
+        if (proposeDealBtn && currentConversation?.canProposeDeal === true && currentListing) {
+            proposeDealBtn.style.display = 'block';
+        }
+        
+        if (blockingBanner) {
+            blockingBanner.style.display = 'none';
+        }
+    }
+}
+
+window.showBlockConfirmation = function() {
+    showConfirmDialog(
+        t('messages.block.confirmMessage') || 'Are you sure you want to block this user? You will not be able to send or receive messages.',
+        () => blockUser(),
+        null
+    );
+};
+
+window.showUnblockConfirmation = function() {
+    showConfirmDialog(
+        t('messages.unblock.confirmMessage') || 'Are you sure you want to unblock this user?',
+        () => unblockUser(),
+        null
+    );
+};
+
+window.toggleChatMenu = function() {
+    const menu = document.getElementById('chatMenu');
+    if (menu) {
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+};
+
+// Close menu when clicking outside
+document.addEventListener('click', function(event) {
+    const menu = document.getElementById('chatMenu');
+    const menuBtn = document.getElementById('chatMenuBtn');
+    
+    if (menu && menuBtn && !menu.contains(event.target) && !menuBtn.contains(event.target)) {
+        menu.style.display = 'none';
+    }
 });
 
 console.log('💬 Messages.js loaded with real-time updates and proper canProposeDeal logic');
