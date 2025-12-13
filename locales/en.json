@@ -9,8 +9,8 @@
   "buttons": {
     "signUp": "Sign Up",
     "signIn": "Sign In",
-    "haveAccount": "↻ I have an account",
-    "newUser": "⚲ I'm new to PigSoil+"
+    "haveAccount": "I have an account",
+    "newUser": "I'm new to PigSoil+"
   },
   "divider": {
     "or": "OR"

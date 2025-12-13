@@ -9,8 +9,8 @@
   "buttons": {
     "signUp": "Magparehistro",
     "signIn": "Maglogin",
-    "haveAccount": "↻ Naa nay akong account",
-    "newUser": "⚲ Bag-o ko sa PigSoil+"
+    "haveAccount": "Naa nay akong account",
+    "newUser": "Bag-o ko sa PigSoil+"
   },
   "divider": {
     "or": "O"
