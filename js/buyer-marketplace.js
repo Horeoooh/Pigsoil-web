@@ -218,14 +218,28 @@ function setupRealtimeListingsListener() {
         
         allListings = [];
         
-        // Process all listings
-        const listingPromises = snapshot.docs.map(async (docSnap) => {
-            const listing = { 
-                id: docSnap.id, 
-                ...docSnap.data() 
-            };
+        // Process all listings and filter out banned or unavailable ones
+        const listingPromises = snapshot.docs
+            .filter(docSnap => {
+                const data = docSnap.data();
+                // Filter out listings that are banned or not available
+                if (data.isBanned === true) {
+                    console.log(`🚫 Filtering out banned listing: ${docSnap.id}`);
+                    return false;
+                }
+                if (data.listingIsAvailable === false) {
+                    console.log(`🚫 Filtering out unavailable listing: ${docSnap.id}`);
+                    return false;
+                }
+                return true;
+            })
+            .map(async (docSnap) => {
+                const listing = { 
+                    id: docSnap.id, 
+                    ...docSnap.data() 
+                };
             
-            // Fetch seller info
+                // Fetch seller info
             try {
                 const sellerDocRef = doc(db, COLLECTIONS.USERS, listing.listingSellerID);
                 const sellerDoc = await getDoc(sellerDocRef);

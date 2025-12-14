@@ -377,12 +377,18 @@
             background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
         }
 
-        /* Sold Out Image Overlay */
-        .listing-image.sold-out-bg {
+        .badge.banned {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        }
+
+        /* Sold Out and Banned Image Overlay */
+        .listing-image.sold-out-bg,
+        .listing-image.banned-bg {
             position: relative;
         }
 
-        .listing-image.sold-out-bg::after {
+        .listing-image.sold-out-bg::after,
+        .listing-image.banned-bg::after {
             content: '';
             position: absolute;
             top: 0;
@@ -391,6 +397,10 @@
             bottom: 0;
             background: rgba(0, 0, 0, 0.4);
             z-index: 1;
+        }
+
+        .listing-image.banned-bg::after {
+            background: rgba(155, 89, 182, 0.3);
         }
 
         .listing-image.sold-out-bg .listing-badges {

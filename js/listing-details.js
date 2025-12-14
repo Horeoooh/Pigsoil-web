@@ -1222,6 +1222,8 @@ function showError(message) {
 window.addEventListener('click', function(event) {
     const reviewsModal = document.getElementById('reviewsModal');
     const mapModal = document.getElementById('mapModal');
+    const reportModal = document.getElementById('reportModal');
+    const actionsDropdown = document.getElementById('actionsDropdown');
     
     if (event.target === reviewsModal) {
         closeReviewsModal();
@@ -1230,6 +1232,254 @@ window.addEventListener('click', function(event) {
     if (event.target === mapModal) {
         closeMapModal();
     }
+    
+    if (event.target === reportModal) {
+        closeReportModal();
+    }
+    
+    // Close dropdown if clicking outside
+    if (!event.target.closest('.more-actions-container')) {
+        if (actionsDropdown) {
+            actionsDropdown.classList.remove('active');
+        }
+    }
 });
 
-console.log('🐷✅ PigSoil+ Listing Details loaded with Carousel, Reviews & Maps!');
+// ========== REPORT FUNCTIONALITY ==========
+
+// Global variable to store current listing ID
+let currentListingId = null;
+
+// Toggle actions dropdown
+function toggleActionsDropdown() {
+    const dropdown = document.getElementById('actionsDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('active');
+    }
+}
+
+// Open report modal
+function openReportModal() {
+    const modal = document.getElementById('reportModal');
+    if (modal) {
+        // Clear any previous selections
+        const radioButtons = modal.querySelectorAll('input[name="reportReason"]');
+        radioButtons.forEach(radio => radio.checked = false);
+        
+        const detailsInput = document.getElementById('reportDetailsInput');
+        if (detailsInput) {
+            detailsInput.value = '';
+            updateCharCount();
+        }
+        
+        modal.classList.add('active');
+    }
+    
+    // Close dropdown
+    const dropdown = document.getElementById('actionsDropdown');
+    if (dropdown) {
+        dropdown.classList.remove('active');
+    }
+}
+
+// Close report modal
+function closeReportModal() {
+    const modal = document.getElementById('reportModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Make functions globally accessible
+window.openReportModal = openReportModal;
+window.closeReportModal = closeReportModal;
+window.toggleActionsDropdown = toggleActionsDropdown;
+
+// Update character count
+function updateCharCount() {
+    const textarea = document.getElementById('reportDetailsInput');
+    const charCount = document.querySelector('.char-count');
+    
+    if (textarea && charCount) {
+        const currentLength = textarea.value.length;
+        charCount.textContent = `${currentLength}/500`;
+    }
+}
+
+// Check if user has already reported this listing
+async function checkIfAlreadyReported(listingId, userId) {
+    try {
+        const reportsQuery = query(
+            collection(db, 'product_listings', listingId, 'reports'),
+            where('reportedBy', '==', userId)
+        );
+        
+        const querySnapshot = await getDocs(reportsQuery);
+        return !querySnapshot.empty;
+    } catch (error) {
+        console.error('Error checking existing reports:', error);
+        return false;
+    }
+}
+
+// Submit report
+async function submitReport(listingId, reason, details) {
+    const currentUser = auth.currentUser;
+    
+    if (!currentUser) {
+        showToast('Please login to report', 'error');
+        return;
+    }
+    
+    // Check if already reported
+    const alreadyReported = await checkIfAlreadyReported(listingId, currentUser.uid);
+    
+    if (alreadyReported) {
+        showToast('You have already reported this listing', 'warning');
+        closeReportModal();
+        return;
+    }
+    
+    // Disable submit button and show loading
+    const submitBtn = document.getElementById('submitReportBtn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
+        submitBtn.textContent = 'Submitting...';
+    }
+    
+    try {
+        const reportData = {
+            reason: reason,
+            details: details,
+            reportedBy: currentUser.uid,
+            reportedAt: serverTimestamp()
+        };
+        
+        // Add report to subcollection
+        await addDoc(
+            collection(db, 'product_listings', listingId, 'reports'),
+            reportData
+        );
+        
+        showToast('Report submitted successfully. We\'ll review it shortly.', 'success');
+        closeReportModal();
+        
+    } catch (error) {
+        console.error('Failed to submit report:', error);
+        showToast('Failed to submit report: ' + error.message, 'error');
+        
+        // Re-enable button
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+            submitBtn.textContent = 'Submit Report';
+        }
+    }
+}
+
+// Show toast notification
+function showToast(message, type = 'info') {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#333'};
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10000;
+        font-family: 'Poppins', Arial, sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        max-width: 90%;
+        text-align: center;
+        animation: slideUp 0.3s ease;
+    `;
+    toast.textContent = message;
+    
+    // Add animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(toast);
+    
+    // Remove after 4 seconds
+    setTimeout(() => {
+        toast.style.animation = 'slideUp 0.3s ease reverse';
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 4000);
+}
+
+// Initialize report functionality when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // More actions button
+    const moreActionsBtn = document.getElementById('moreActionsBtn');
+    if (moreActionsBtn) {
+        moreActionsBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleActionsDropdown();
+        });
+    }
+    
+    // Report listing button
+    const reportListingBtn = document.getElementById('reportListingBtn');
+    if (reportListingBtn) {
+        reportListingBtn.addEventListener('click', function() {
+            openReportModal();
+        });
+    }
+    
+    // Submit report button
+    const submitReportBtn = document.getElementById('submitReportBtn');
+    if (submitReportBtn) {
+        submitReportBtn.addEventListener('click', function() {
+            // Get selected reason
+            const selectedReason = document.querySelector('input[name="reportReason"]:checked');
+            
+            if (!selectedReason) {
+                showToast('Please select a reason for reporting', 'warning');
+                return;
+            }
+            
+            const reason = selectedReason.value;
+            const details = document.getElementById('reportDetailsInput').value.trim();
+            
+            // Get current listing ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const listingId = urlParams.get('id');
+            
+            if (listingId) {
+                submitReport(listingId, reason, details);
+            } else {
+                showToast('Unable to report: Listing not found', 'error');
+            }
+        });
+    }
+    
+    // Character count update
+    const reportDetailsInput = document.getElementById('reportDetailsInput');
+    if (reportDetailsInput) {
+        reportDetailsInput.addEventListener('input', updateCharCount);
+    }
+});
+
+console.log('🐷✅ PigSoil+ Listing Details loaded with Carousel, Reviews, Maps & Report!');
