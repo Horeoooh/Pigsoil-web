@@ -73,6 +73,62 @@
         </div>
     </div>
 
+    <!-- Rate & Review Modal -->
+    <div id="rateReviewModal" class="modal">
+        <div class="modal-content rate-review-modal">
+            <div class="modal-header rate-review-header">
+                <div>
+                    <h2>Rate & Review</h2>
+                    <p style="font-size: 14px; color: #888; margin-top: 4px;">Share your experience</p>
+                </div>
+                <button class="close-btn" id="closeRateReviewModal">&times;</button>
+            </div>
+            <div class="modal-body rate-review-body">
+                <!-- User Profile Card -->
+                <div class="review-user-card">
+                    <div class="review-user-avatar" id="reviewUserAvatar">U</div>
+                    <div class="review-user-info">
+                        <h3 id="reviewUserName">Loading...</h3>
+                        <span class="review-user-type" id="reviewUserType">User</span>
+                    </div>
+                </div>
+                <div class="review-product-details" id="reviewProductDetails">Loading details...</div>
+
+                <!-- Rating Section -->
+                <div class="rating-section">
+                    <h3>How was your experience?</h3>
+                    <p class="rating-subtitle">Rate the seller and the transaction</p>
+                    
+                    <div class="star-rating" id="starRating">
+                        <span class="star active" data-rating="1">★</span>
+                        <span class="star active" data-rating="2">★</span>
+                        <span class="star active" data-rating="3">★</span>
+                        <span class="star active" data-rating="4">★</span>
+                        <span class="star active" data-rating="5">★</span>
+                    </div>
+                    <p class="rating-hint">Tap stars to rate</p>
+                </div>
+
+                <!-- Review Text Section -->
+                <div class="review-text-section">
+                    <label for="reviewTextarea">Write a Review (Optional)</label>
+                    <textarea 
+                        id="reviewTextarea" 
+                        class="review-textarea" 
+                        placeholder="Tell others about your experience with this seller..."
+                        maxlength="300"></textarea>
+                    <div class="char-count">
+                        <span id="charCount">0</span>/300 characters
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer review-actions">
+                <button class="btn-secondary" id="cancelReviewBtn">Cancel</button>
+                <button class="btn-primary" id="submitReviewBtn">Submit Review</button>
+            </div>
+        </div>
+    </div>
+
     <script src="/js/i18n.js"></script>
     <script type="module" src="/js/dashboard-auth-guard.js"></script>
     <script type="module" src="/js/shared-user-manager.js"></script>

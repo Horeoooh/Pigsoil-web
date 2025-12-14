@@ -1041,6 +1041,34 @@ function renderDealProposalMessage(message, currentUserId) {
         statusMessageHTML = `<div class="proposal-status-message accepted">${t('messages.dealProposalMessage.messages.transactionCompleted')}</div>`;
     }
     
+    // Rate & Review button for buyers (only for completed or cancelled transactions)
+    let rateReviewButtonHTML = '';
+    if ((status === 'completed' || status === 'cancelled') && metadata.transactionId) {
+        // Check if current user is the buyer
+        checkIfBuyerAndShowReviewButton(metadata.transactionId, currentUserId).then(showButton => {
+            if (showButton) {
+                const buttonId = `rateReviewBtn_${message.id}`;
+                const existingBtn = document.getElementById(buttonId);
+                if (!existingBtn && messageDiv) {
+                    const rateReviewBtn = document.createElement('div');
+                    rateReviewBtn.className = 'proposal-rate-review';
+                    rateReviewBtn.innerHTML = `
+                        <button class="btn-rate-review" id="${buttonId}" onclick="openRateReviewModal('${metadata.transactionId}', '${metadata.sellerId || ''}')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            Rate & Review
+                        </button>
+                    `;
+                    const proposalActions = messageDiv.querySelector('.proposal-actions');
+                    if (proposalActions) {
+                        proposalActions.appendChild(rateReviewBtn);
+                    }
+                }
+            }
+        });
+    }
+    
     messageDiv.innerHTML = `
         <div class="deal-proposal-card">
             <div class="proposal-header">
@@ -1138,10 +1166,22 @@ function renderCancellationRequestMessage(message, currentUserId) {
     messagesArea.appendChild(messageDiv);
 }
 
-function openDealProposalModal() {
+async function openDealProposalModal() {
     if (!currentListing) {
         showToast(t('messages.dealProposal.errors.sendFailed'), 'error');
         return;
+    }
+
+    // Refresh listing data to ensure quantity is up to date
+    try {
+        const listingId = currentListing.listingId || currentListing.id;
+        const listingDoc = await getDoc(doc(db, COLLECTIONS.LISTINGS, listingId));
+        if (listingDoc.exists()) {
+            currentListing = { id: listingDoc.id, ...listingDoc.data() };
+            console.log('📦 Listing refreshed for proposal:', currentListing.listingProductName);
+        }
+    } catch (error) {
+        console.error('Error refreshing listing:', error);
     }
     
     const modal = document.createElement('div');
@@ -2633,6 +2673,312 @@ document.addEventListener('click', function(event) {
     
     if (menu && menuBtn && !menu.contains(event.target) && !menuBtn.contains(event.target)) {
         menu.style.display = 'none';
+    }
+});
+
+// ========================================
+// RATE & REVIEW FUNCTIONALITY
+// ========================================
+
+// Check if current user is buyer for the transaction
+async function checkIfBuyerAndShowReviewButton(transactionId, currentUserId) {
+    try {
+        const transactionDoc = await getDoc(doc(db, COLLECTIONS.TRANSACTIONS, transactionId));
+        if (!transactionDoc.exists()) return false;
+        
+        const transaction = transactionDoc.data();
+        return transaction.transactionBuyerID === currentUserId;
+    } catch (error) {
+        console.error('Error checking buyer status:', error);
+        return false;
+    }
+}
+
+// Global variables for review modal
+let currentReviewTransactionId = null;
+let currentReviewedUserId = null;
+let currentReviewRating = 5;
+let existingReview = null;
+
+// Open Rate & Review Modal
+window.openRateReviewModal = async function(transactionId, sellerId) {
+    currentReviewTransactionId = transactionId;
+    currentReviewedUserId = sellerId;
+    currentReviewRating = 5;
+    existingReview = null;
+    
+    const modal = document.getElementById('rateReviewModal');
+    if (!modal) return;
+    
+    // Check if review already exists
+    const reviewExists = await checkExistingReview(transactionId);
+    
+    // Load transaction and user data
+    await loadReviewModalData(transactionId, sellerId);
+    
+    // Update button text if editing
+    const submitBtn = document.getElementById('submitReviewBtn');
+    if (submitBtn) {
+        submitBtn.textContent = reviewExists ? 'Update Review' : 'Submit Review';
+    }
+    
+    // Show modal
+    modal.style.display = 'block';
+    
+    // Initialize star rating
+    setupStarRating();
+    
+    // Initialize character counter
+    setupCharacterCounter();
+};
+
+// Close Rate & Review Modal
+window.closeRateReviewModal = function() {
+    const modal = document.getElementById('rateReviewModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    
+    // Reset form
+    document.getElementById('reviewTextarea').value = '';
+    document.getElementById('charCount').textContent = '0';
+    currentReviewRating = 5;
+    updateStarDisplay(5);
+};
+
+// Check if review already exists
+async function checkExistingReview(transactionId) {
+    try {
+        const currentUserId = auth.currentUser?.uid;
+        if (!currentUserId) return false;
+        
+        const q = query(
+            collection(db, 'reviews'),
+            where('reviewTransactionID', '==', transactionId),
+            where('reviewerID', '==', currentUserId),
+            where('reviewType', '==', 'buyer_to_seller')
+        );
+        
+        const reviewQuery = await getDocs(q);
+        
+        if (!reviewQuery.empty) {
+            existingReview = { id: reviewQuery.docs[0].id, ...reviewQuery.docs[0].data() };
+            
+            // Pre-fill existing review
+            currentReviewRating = existingReview.reviewRating || 5;
+            updateStarDisplay(currentReviewRating);
+            
+            const reviewTextarea = document.getElementById('reviewTextarea');
+            if (reviewTextarea) {
+                reviewTextarea.value = existingReview.reviewText || '';
+                document.getElementById('charCount').textContent = existingReview.reviewText?.length || 0;
+            }
+            
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('Error checking existing review:', error);
+        return false;
+    }
+}
+
+// Load transaction and user data for the modal
+async function loadReviewModalData(transactionId, sellerId) {
+    try {
+        // 1. Load transaction data first to ensure we have seller ID
+        const transactionDoc = await getDoc(doc(db, COLLECTIONS.TRANSACTIONS, transactionId));
+        let transaction = null;
+        
+        if (transactionDoc.exists()) {
+            transaction = transactionDoc.data();
+            
+            // If sellerId is missing, try to get it from transaction
+            if (!sellerId && transaction.transactionSellerID) {
+                sellerId = transaction.transactionSellerID;
+                currentReviewedUserId = sellerId; // Update global variable
+            }
+            
+            const listingId = transaction.transactionListingID;
+            
+            // Load product data
+            if (listingId) {
+                const listingDoc = await getDoc(doc(db, COLLECTIONS.LISTINGS, listingId));
+                if (listingDoc.exists()) {
+                    const listing = listingDoc.data();
+                    const productName = listing.listingProductName || 'Unknown Product';
+                    const price = transaction.transactionUnitPrice || 0;
+                    const quantity = transaction.transactionQuantityOrdered || 0;
+                    
+                    document.getElementById('reviewProductDetails').textContent = 
+                        `${productName} • ${quantity}kg • ₱${formatNumber(price)}/kg`;
+                }
+            }
+        }
+        
+        // 2. Load seller data if we have a sellerId
+        if (sellerId) {
+            const sellerDoc = await getDoc(doc(db, COLLECTIONS.USERS, sellerId));
+            if (sellerDoc.exists()) {
+                const seller = sellerDoc.data();
+                const sellerName = seller.userName || 'Unknown User';
+                const sellerType = seller.userType || 'user';
+                const sellerAvatar = seller.userProfileImageUrl;
+                
+                document.getElementById('reviewUserName').textContent = sellerName;
+                document.getElementById('reviewUserType').textContent = 
+                    sellerType === 'farmer' ? 'Farmer' : sellerType === 'buyer' ? 'Buyer' : sellerType.charAt(0).toUpperCase() + sellerType.slice(1);
+                
+                const avatarEl = document.getElementById('reviewUserAvatar');
+                // Clear previous content and styles
+                avatarEl.innerHTML = '';
+                avatarEl.style.backgroundImage = 'none';
+                avatarEl.textContent = '';
+                
+                const img = document.createElement('img');
+                img.src = sellerAvatar || DEFAULT_PROFILE_PICTURE;
+                img.alt = sellerName;
+                img.onerror = function() { this.src = DEFAULT_PROFILE_PICTURE; };
+                
+                // Apply styles to image
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '50%';
+                
+                avatarEl.appendChild(img);
+            }
+        } else {
+            console.warn('No seller ID found for review modal');
+        }
+    } catch (error) {
+        console.error('Error loading review modal data:', error);
+        showToast('Failed to load transaction details', 'error');
+    }
+}
+
+// Setup star rating
+function setupStarRating() {
+    const stars = document.querySelectorAll('.star-rating .star');
+    
+    stars.forEach((star, index) => {
+        star.onclick = () => {
+            currentReviewRating = index + 1;
+            updateStarDisplay(currentReviewRating);
+        };
+    });
+    
+    // Set initial rating
+    updateStarDisplay(currentReviewRating);
+}
+
+// Update star display
+function updateStarDisplay(rating) {
+    const stars = document.querySelectorAll('.star-rating .star');
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.add('active');
+        } else {
+            star.classList.remove('active');
+        }
+    });
+}
+
+// Setup character counter
+function setupCharacterCounter() {
+    const textarea = document.getElementById('reviewTextarea');
+    const charCount = document.getElementById('charCount');
+    
+    if (textarea && charCount) {
+        textarea.addEventListener('input', () => {
+            charCount.textContent = textarea.value.length;
+        });
+    }
+}
+
+// Submit review
+window.submitReview = async function() {
+    const reviewText = document.getElementById('reviewTextarea').value.trim();
+    
+    if (reviewText.length > 300) {
+        showToast('Review text must be 300 characters or less', 'error');
+        return;
+    }
+    
+    const currentUserId = auth.currentUser?.uid;
+    if (!currentUserId) {
+        showToast('You must be logged in to submit a review', 'error');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('submitReviewBtn');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = existingReview ? 'Updating...' : 'Submitting...';
+    
+    try {
+        if (existingReview) {
+            // Update existing review
+            await updateDoc(doc(db, 'reviews', existingReview.id), {
+                reviewRating: currentReviewRating,
+                reviewText: reviewText,
+                reviewUpdatedAt: serverTimestamp()
+            });
+            
+            showToast('Review updated successfully!', 'success');
+        } else {
+            // Create new review
+            const review = {
+                reviewerID: currentUserId,
+                reviewedUserID: currentReviewedUserId,
+                reviewTransactionID: currentReviewTransactionId,
+                reviewType: 'buyer_to_seller',
+                reviewRating: currentReviewRating,
+                reviewText: reviewText,
+                reviewCreatedAt: serverTimestamp()
+            };
+            
+            await addDoc(collection(db, 'reviews'), review);
+            
+            showToast('Review submitted successfully!', 'success');
+        }
+        
+        closeRateReviewModal();
+    } catch (error) {
+        console.error('Error submitting review:', error);
+        showToast('Failed to submit review: ' + error.message, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+};
+
+// Event listeners for modal
+document.addEventListener('DOMContentLoaded', () => {
+    const closeBtn = document.getElementById('closeRateReviewModal');
+    const cancelBtn = document.getElementById('cancelReviewBtn');
+    const submitBtn = document.getElementById('submitReviewBtn');
+    const modal = document.getElementById('rateReviewModal');
+    
+    if (closeBtn) {
+        closeBtn.onclick = closeRateReviewModal;
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.onclick = closeRateReviewModal;
+    }
+    
+    if (submitBtn) {
+        submitBtn.onclick = submitReview;
+    }
+    
+    // Close modal when clicking outside
+    if (modal) {
+        window.onclick = (event) => {
+            if (event.target === modal) {
+                closeRateReviewModal();
+            }
+        };
     }
 });
 

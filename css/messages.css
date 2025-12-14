@@ -1870,3 +1870,222 @@ font-weight: 500;
 .blocking-status-banner .block-icon {
     margin-right: 6px;
 }
+
+/* Rate & Review Modal Styles */
+.rate-review-modal {
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 16px;
+}
+
+.rate-review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.rate-review-header h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #2C3E2F;
+    margin: 0;
+}
+
+.rate-review-body {
+    padding: 24px;
+}
+
+.review-user-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e8f5e9 100%);
+    border-radius: 12px;
+    margin-bottom: 32px;
+}
+
+.review-user-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #4CAF50;
+}
+
+.review-user-info h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2C3E2F;
+    margin: 0 0 4px 0;
+}
+
+.review-user-type {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 8px 0;
+}
+
+.review-product-details {
+    font-size: 13px;
+    color: #555;
+    margin: 0;
+}
+
+.rating-section {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.rating-section h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2C3E2F;
+    margin: 0 0 8px 0;
+}
+
+.rating-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 24px 0;
+}
+
+.star-rating {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.star {
+    cursor: pointer;
+    color: #ddd;
+    font-size: 32px;
+    transition: all 0.2s ease;
+}
+
+.star:hover,
+.star.active {
+    color: #FFC107;
+    transform: scale(1.1);
+}
+
+.rating-hint {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+.review-text-section {
+    margin-bottom: 24px;
+}
+
+.review-text-section label {
+    display: block;
+    font-size: 16px;
+    font-weight: 500;
+    color: #2C3E2F;
+    margin-bottom: 12px;
+}
+
+.review-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    color: #333;
+    resize: vertical;
+    min-height: 120px;
+    transition: border-color 0.3s;
+}
+
+.review-textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.char-count {
+    display: block;
+    text-align: right;
+    font-size: 12px;
+    color: #999;
+    margin-top: 8px;
+}
+
+.review-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.review-actions .btn-secondary,
+.review-actions .btn-primary {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+}
+
+.review-actions .btn-secondary {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.review-actions .btn-secondary:hover {
+    background: #e0e0e0;
+}
+
+.review-actions .btn-primary {
+    background: #4CAF50;
+    color: white;
+}
+
+.review-actions .btn-primary:hover {
+    background: #45a049;
+}
+
+.review-actions .btn-primary:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Rate & Review Button in Deal Proposal */
+.proposal-rate-review {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.btn-rate-review {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.btn-rate-review:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.4);
+}
+
+.btn-rate-review svg {
+    flex-shrink: 0;
+}
